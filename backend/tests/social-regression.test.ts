@@ -34,6 +34,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   db.$transaction.mockImplementation(async (operation: (transaction: typeof db) => Promise<unknown>) => operation(db));
   db.intent.findUnique.mockResolvedValue({ ...intent });
+  db.user.findUnique.mockResolvedValue(creator);
   db.follow.findUnique.mockResolvedValue(null);
   db.support.findUnique.mockResolvedValue(null);
   db.domainEvent.create.mockResolvedValue({});
@@ -326,5 +327,94 @@ describe('atomicidade entre estado e auditoria', () => {
     expect(state).toMatchObject({ status: 'REALIZED', supportCount: 3, supportGoal: 3, realizedAt: expect.any(Date) });
     expect(supports).toEqual([viewerId]);
     expect(events).toEqual(['support-received:last-support', `intent-realized:${intentId}:v1`]);
+  });
+});
+
+describe('Etapa 13 — permissões e consistência transacional', () => {
+  const command = { title: 'Intent de teste', story: 'História de teste', supportGoal: 3, revealContent: 'segredo' };
+
+  it.each([null, { status: 'SUSPENDED' }, { status: 'DELETED' }])('revalida conta na criação e alterações: %j', async (actor) => {
+    db.user.findUnique.mockResolvedValue(actor);
+    for (const operation of [
+      () => createIntent(creatorId, command),
+      () => supportIntent(intentId, viewerId),
+      () => removeSupport(intentId, viewerId),
+    ]) await expect(operation()).rejects.toMatchObject({ code: 'ACCOUNT_INACTIVE' });
+    expect(db.intent.create).not.toHaveBeenCalled();
+    expect(db.intent.update).not.toHaveBeenCalled();
+    expect(db.support.create).not.toHaveBeenCalled();
+    expect(db.support.delete).not.toHaveBeenCalled();
+    expect(db.domainEvent.create).not.toHaveBeenCalled();
+  });
+
+  it('consulta o ator autenticado dentro da transação', async () => {
+    await removeSupport(intentId, viewerId);
+    expect(db.user.findUnique).toHaveBeenCalledWith({ where: { id: viewerId }, select: { status: true } });
+    expect(db.user.findUnique.mock.invocationCallOrder[0]).toBeGreaterThan(db.$transaction.mock.invocationCallOrder[0]!);
+  });
+
+  it('nega apoio quando o criador está inativo', async () => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, creator: { ...creator, status: 'SUSPENDED' } });
+    await expect(supportIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_NOT_FOUND' });
+    expect(db.support.create).not.toHaveBeenCalled();
+  });
+
+  it.each(['PRIVATE', 'UNKNOWN'])('nega apoio com visibilidade %s', async (visibility) => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, visibility });
+    await expect(supportIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_FORBIDDEN' });
+    expect(db.support.create).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { supportCount: -1 }, { supportCount: 0.5 }, { supportGoal: 0 },
+    { supportCount: 3 }, { realizedAt: new Date('2026-09-01T00:00:00Z') },
+  ])('não altera Intent publicada inconsistente: %j', async (state) => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, ...state });
+    await expect(supportIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_STATE_INVALID' });
+    await expect(removeSupport(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_STATE_INVALID' });
+    expect(db.support.create).not.toHaveBeenCalled();
+    expect(db.support.delete).not.toHaveBeenCalled();
+    expect(db.intent.update).not.toHaveBeenCalled();
+    expect(db.domainEvent.create).not.toHaveBeenCalled();
+  });
+
+  it('não mascara apoio existente com contador zero na retirada', async () => {
+    db.support.findUnique.mockResolvedValue({ id: 'support-1' });
+    await expect(removeSupport(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_STATE_INVALID' });
+    expect(db.support.delete).not.toHaveBeenCalled();
+  });
+
+  it('retirada só procura apoio pertencente ao ator, mesmo se outro usuário apoiou', async () => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, supportCount: 1 });
+    db.support.findUnique.mockResolvedValue(null);
+    await expect(removeSupport(intentId, viewerId)).resolves.toMatchObject({ removed: false, supportCount: 1 });
+    expect(db.support.findUnique).toHaveBeenCalledWith({ where: { intentId_userId: { intentId, userId: viewerId } } });
+    expect(db.support.delete).not.toHaveBeenCalled();
+    expect(db.domainEvent.create).not.toHaveBeenCalled();
+  });
+
+  it('preserva retirada do próprio apoio após deixar de seguir', async () => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, visibility: 'FOLLOWERS', supportCount: 1 });
+    db.support.findUnique.mockResolvedValue({ id: 'support-1' });
+    db.intent.update.mockResolvedValue({ ...intent, supportCount: 0 });
+    await expect(removeSupport(intentId, viewerId)).resolves.toMatchObject({ removed: true, supportCount: 0 });
+    expect(db.follow.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('evento duplicado aborta a transação sem ser confundido com apoio duplicado', async () => {
+    const duplicate = new Prisma.PrismaClientKnownRequestError('duplicate event', {
+      code: 'P2002', clientVersion: '6.19.0', meta: { target: ['idempotency_key'] },
+    });
+    db.support.create.mockResolvedValue({ id: 'support-1' });
+    db.intent.update.mockResolvedValue({ ...intent, supportCount: 1 });
+    db.domainEvent.create.mockRejectedValue(duplicate);
+    await expect(supportIntent(intentId, viewerId)).rejects.toBe(duplicate);
+    expect(db.intent.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('preserva metadados de Intent cancelada sem liberar conteúdo', async () => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, status: 'CANCELLED', visibility: 'PRIVATE' });
+    await expect(getIntent(intentId, creatorId)).resolves.toMatchObject({ status: 'CANCELLED', revealContent: null });
+    await expect(getIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_FORBIDDEN' });
   });
 });

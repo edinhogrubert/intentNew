@@ -184,10 +184,13 @@ describe('autoridade HTTP do backend', () => {
     expect(db.domainEvent.create.mock.calls[0]![0].data).toMatchObject({ actorId: viewer.id, type: 'INTENT_CREATED' });
   });
 
-  it.each(['PATCH', 'PUT'])('não permite alterar condição ativa ou liberar manualmente via %s, nem ao criador', async (method) => {
+  it.each([
+    ['PATCH', { supportGoal: 1 }], ['PUT', { supportGoal: 1 }],
+    ['PATCH', { status: 'REALIZED' }], ['PUT', { status: 'REALIZED' }],
+  ] as const)('não permite alterar condição ativa ou liberar manualmente via %s: %j, nem ao criador', async (method, change) => {
     db.user.findUnique.mockResolvedValue({ ...viewer, id: creatorId });
     db.user.update.mockResolvedValue({ ...viewer, id: creatorId });
-    const response = await write(`/v1/intents/${intentId}`, method, { supportGoal: 1, status: 'REALIZED' });
+    const response = await write(`/v1/intents/${intentId}`, method, change);
     expect(response.status).toBe(404);
     expect(db.$transaction).not.toHaveBeenCalled();
   });
