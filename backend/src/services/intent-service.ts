@@ -5,15 +5,7 @@ import { AppError } from '../errors.js';
 import { prisma } from '../lib/prisma.js';
 import { openReveal, revealAssociatedData, sealReveal } from '../domain/reveal-crypto.js';
 import { isSupportConditionSatisfied } from '../domain/support-condition.js';
-
-interface CreateIntentCommand {
-  title: string;
-  story: string;
-  category: string;
-  supportGoal: number;
-  revealContent: string;
-  visibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
-}
+import { createIntentSchema } from '../domain/intent-schemas.js';
 
 const publicIntentSelection = {
   id: true,
@@ -38,7 +30,9 @@ const publicIntentSelection = {
   },
 } as Prisma.IntentSelect;
 
-export async function createIntent(creatorId: string, command: CreateIntentCommand) {
+// Actor IDs come from the authenticated server context, never from command fields.
+export async function createIntent(creatorId: string, input: unknown) {
+  const command = createIntentSchema.parse(input);
   const intentId = randomUUID();
   const revealVersion = 1;
   const sealed = sealReveal(
@@ -52,6 +46,10 @@ export async function createIntent(creatorId: string, command: CreateIntentComma
       data: {
         id: intentId,
         creatorId,
+        type: 'SUPPORT_REVEAL',
+        status: 'PUBLISHED',
+        supportCount: 0,
+        realizedAt: null,
         title: command.title,
         story: command.story,
         category: command.category,
@@ -167,6 +165,12 @@ export async function getIntent(intentId: string, viewerId?: string) {
     throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
   }
 
+  // Unknown persisted values must never fall through to public access.
+  if (!['PUBLIC', 'FOLLOWERS', 'PRIVATE'].includes(intent.visibility)
+    || !['PUBLISHED', 'REALIZED'].includes(intent.status)) {
+    throw new AppError(403, 'INTENT_FORBIDDEN', 'Esta Intent não está disponível.');
+  }
+
   if (intent.visibility === 'PRIVATE' && intent.creatorId !== viewerId) {
     throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não pode acessar esta Intent.');
   }
@@ -207,6 +211,10 @@ export async function getIntent(intentId: string, viewerId?: string) {
     return { ...publicIntent, revealContent: null, viewerHasSupported: Boolean(viewerSupport) };
   }
 
+  if (!intent.realizedAt || !isSupportConditionSatisfied(intent.supportCount, intent.supportGoal)) {
+    throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+  }
+
   const revealContent = openReveal(
     {
       ciphertext: revealCiphertext,
@@ -244,7 +252,7 @@ async function ensureSupportAccess(
   intent: { creatorId: string; visibility: string },
   supporterId: string,
 ): Promise<void> {
-  if (intent.visibility === 'PRIVATE') {
+  if (!['PUBLIC', 'FOLLOWERS'].includes(intent.visibility)) {
     throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não pode apoiar uma Intent privada.');
   }
 
@@ -315,6 +323,11 @@ export async function supportIntent(intentId: string, supporterId: string) {
         });
 
         realizedNow = result.count === 1;
+
+        if (!realizedNow) {
+          // Abort the entire transaction, including the support and its event.
+          throw new AppError(409, 'INTENT_STATE_CONFLICT', 'Não foi possível realizar esta Intent.');
+        }
 
         if (realizedNow) {
           await transaction.domainEvent.create({

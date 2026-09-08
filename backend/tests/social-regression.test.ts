@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { openReveal, revealAssociatedData } from '../src/domain/reveal-crypto.js';
+import { openReveal, sealReveal, revealAssociatedData } from '../src/domain/reveal-crypto.js';
 
 // Only the persistence boundary is replaced. Services and reveal encryption are real.
 const { db, key } = vi.hoisted(() => ({
@@ -228,5 +228,103 @@ describe('apoio alternável', () => {
     db.intent.findUnique.mockResolvedValue({ ...intent, status: 'REALIZED', supportCount: 3 });
     await expect(removeSupport(intentId, viewerId)).rejects.toMatchObject({ code: 'SUPPORT_LOCKED_AFTER_REVEAL' });
     expect(db.support.delete).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('fundação de autoridade', () => {
+  it('valida o comando também na fronteira do serviço', async () => {
+    await expect(createIntent(creatorId, {
+      title: 'Uma Intent', story: 'Uma história', supportGoal: 1, revealContent: 'segredo', status: 'REALIZED',
+    })).rejects.toThrow();
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it.each(['PRIVATE', 'FOLLOWERS'])('mantém acesso do criador à revelação %s após a meta', async (visibility) => {
+    const sealed = sealReveal('conteúdo protegido', key, revealAssociatedData(intentId, 1));
+    db.intent.findUnique.mockResolvedValue({ ...intent, visibility, status: 'REALIZED', supportCount: 3,
+      realizedAt: new Date(), revealCiphertext: sealed.ciphertext, revealIv: sealed.iv, revealAuthTag: sealed.authTag });
+    await expect(getIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_FORBIDDEN' });
+    const result = await getIntent(intentId, creatorId);
+    expect(result.revealContent).toBe('conteúdo protegido');
+    expect(result).not.toHaveProperty('revealCiphertext');
+  });
+
+  it.each([{ visibility: 'UNKNOWN' }, { status: 'RELEASED' }])('nega acesso para valores desconhecidos: %j', async (state) => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, ...state });
+    await expect(getIntent(intentId, creatorId)).rejects.toMatchObject({ code: 'INTENT_FORBIDDEN' });
+  });
+
+  it.each([{ supportCount: 2, realizedAt: new Date() }, { supportCount: 3, realizedAt: null }])('não decifra estado realizado inconsistente: %j', async (state) => {
+    db.intent.findUnique.mockResolvedValue({ ...intent, status: 'REALIZED', ...state });
+    await expect(getIntent(intentId, creatorId)).rejects.toMatchObject({ code: 'INTENT_STATE_INVALID' });
+  });
+
+  it('repetir apoio não duplica contador nem evento', async () => {
+    db.support.create.mockResolvedValueOnce({ id: 'support-1' }).mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('duplicate', { code: 'P2002', clientVersion: '6.19.0' }));
+    db.intent.update.mockResolvedValue({ ...intent, supportCount: 1 });
+    await supportIntent(intentId, viewerId);
+    await expect(supportIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'SUPPORT_ALREADY_EXISTS' });
+    expect(db.intent.update).toHaveBeenCalledTimes(1);
+    expect(db.domainEvent.create).toHaveBeenCalledTimes(1);
+    expect(db.domainEvent.create.mock.calls[0]![0].data.idempotencyKey).toBe('support-received:support-1');
+  });
+
+  it('aborta a transação se a transição de realização não acontecer', async () => {
+    db.support.create.mockResolvedValue({ id: 'last-support' });
+    db.intent.update.mockResolvedValue({ ...intent, supportCount: 3 });
+    db.intent.updateMany.mockResolvedValue({ count: 0 });
+    await expect(supportIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_STATE_CONFLICT' });
+    expect(db.domainEvent.create.mock.calls.map(([args]) => args.data.type)).not.toContain('INTENT_REALIZED');
+  });
+
+  it('repete conflitos de serialização e publica somente o evento da tentativa confirmada', async () => {
+    db.$transaction.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError('serialization', {
+      code: 'P2034', clientVersion: '6.19.0',
+    }));
+    db.support.create.mockResolvedValue({ id: 'support-1' });
+    db.intent.update.mockResolvedValue({ ...intent, supportCount: 1 });
+    await expect(supportIntent(intentId, viewerId)).resolves.toMatchObject({ supportCount: 1, realized: false });
+    expect(db.$transaction).toHaveBeenCalledTimes(2);
+    expect(db.domainEvent.create).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+describe('atomicidade entre estado e auditoria', () => {
+  it('falha de auditoria reverte apoio, contador e realização; nova tentativa confirma uma única realização', async () => {
+    // Transaction double models commit/rollback only; domain decisions remain in the real service.
+    let state = { ...intent, supportCount: 2, realizedAt: null as Date | null };
+    let supports: string[] = [];
+    let events: string[] = [];
+    let rejectAudit = true;
+    db.$transaction.mockImplementation(async (operation) => {
+      const snapshot = { state: { ...state }, supports: [...supports], events: [...events] };
+      try { return await operation(db); }
+      catch (error) {
+        state = snapshot.state; supports = snapshot.supports; events = snapshot.events;
+        throw error;
+      }
+    });
+    db.intent.findUnique.mockImplementation(async () => ({ ...state }));
+    db.support.create.mockImplementation(async () => { supports.push(viewerId); return { id: 'last-support' }; });
+    db.intent.update.mockImplementation(async () => { state.supportCount += 1; return { ...state }; });
+    db.intent.updateMany.mockImplementation(async ({ data }) => { Object.assign(state, data); return { count: 1 }; });
+    db.domainEvent.create.mockImplementation(async ({ data }) => {
+      if (data.type === 'INTENT_REALIZED' && rejectAudit) throw new Error('audit unavailable');
+      events.push(data.idempotencyKey);
+      return {};
+    });
+    await expect(supportIntent(intentId, viewerId)).rejects.toThrow('audit unavailable');
+    expect(state).toMatchObject({ status: 'PUBLISHED', supportCount: 2, supportGoal: 3, realizedAt: null });
+    expect(supports).toEqual([]);
+    expect(events).toEqual([]);
+    rejectAudit = false;
+    await expect(supportIntent(intentId, viewerId)).resolves.toMatchObject({ realizedNow: true, supportCount: 3 });
+    await expect(supportIntent(intentId, viewerId)).rejects.toMatchObject({ code: 'INTENT_NOT_OPEN' });
+    expect(state).toMatchObject({ status: 'REALIZED', supportCount: 3, supportGoal: 3, realizedAt: expect.any(Date) });
+    expect(supports).toEqual([viewerId]);
+    expect(events).toEqual(['support-received:last-support', `intent-realized:${intentId}:v1`]);
   });
 });

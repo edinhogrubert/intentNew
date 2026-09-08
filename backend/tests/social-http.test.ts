@@ -6,7 +6,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 const { db, verifyIdToken } = vi.hoisted(() => ({
   db: {
     user: { findUnique: vi.fn(), update: vi.fn() },
-    intent: { findMany: vi.fn(), findUnique: vi.fn() },
+    intent: { findMany: vi.fn(), findUnique: vi.fn(), create: vi.fn() },
+    $transaction: vi.fn(),
+    domainEvent: { create: vi.fn() },
     follow: { findUnique: vi.fn() },
     support: { findUnique: vi.fn() },
   },
@@ -141,5 +143,57 @@ describe('acesso HTTP a Intent exclusiva', () => {
     const body = await response.json();
     expect(body.data).toMatchObject({ id: intentId, visibility: 'FOLLOWERS', revealContent: null });
     for (const field of ['revealCiphertext', 'revealIv', 'revealAuthTag']) expect(body.data).not.toHaveProperty(field);
+  });
+});
+
+
+describe('autoridade HTTP do backend', () => {
+  const command = { title: 'Intent válida', story: 'Uma história válida', supportGoal: 3, revealContent: 'segredo' };
+  function write(path: string, method: string, body: unknown, authenticated = true) {
+    return fetch(`${baseUrl}${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(authenticated ? { Authorization: 'Bearer synthetic-test-token' } : {}) },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it.each([
+    { status: 'REALIZED' }, { realizedAt: new Date().toISOString() },
+    { supportCount: 3 }, { creatorId }, { conditions: { satisfied: true } },
+  ])('rejeita campos de autoridade na criação: %j', async (extra) => {
+    const response = await write('/v1/intents', 'POST', { ...command, ...extra });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: { code: 'VALIDATION_ERROR' } });
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('exige autenticação para criar', async () => {
+    expect((await write('/v1/intents', 'POST', command, false)).status).toBe(401);
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('preserva o contrato de criação e atribui propriedade à identidade autenticada', async () => {
+    db.$transaction.mockImplementation(async (operation) => operation(db));
+    db.intent.create.mockResolvedValue({ id: intentId, status: 'PUBLISHED' });
+    const response = await write('/v1/intents', 'POST', command);
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ data: { id: intentId, status: 'PUBLISHED' } });
+    expect(db.intent.create.mock.calls[0]![0].data).toMatchObject({
+      creatorId: viewer.id, status: 'PUBLISHED', supportCount: 0, realizedAt: null, supportGoal: 3,
+    });
+    expect(db.domainEvent.create.mock.calls[0]![0].data).toMatchObject({ actorId: viewer.id, type: 'INTENT_CREATED' });
+  });
+
+  it.each(['PATCH', 'PUT'])('não permite alterar condição ativa ou liberar manualmente via %s, nem ao criador', async (method) => {
+    db.user.findUnique.mockResolvedValue({ ...viewer, id: creatorId });
+    db.user.update.mockResolvedValue({ ...viewer, id: creatorId });
+    const response = await write(`/v1/intents/${intentId}`, method, { supportGoal: 1, status: 'REALIZED' });
+    expect(response.status).toBe(404);
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('não oferece comando de liberação manual', async () => {
+    expect((await write(`/v1/intents/${intentId}/release`, 'POST', {})).status).toBe(404);
+    expect(db.$transaction).not.toHaveBeenCalled();
   });
 });
