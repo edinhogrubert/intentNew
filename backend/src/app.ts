@@ -27,7 +27,7 @@ export function createApp() {
     },
     credentials: false,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Authorization', 'Content-Type', 'X-Request-Id'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'X-Request-Id', 'Idempotency-Key'],
   }));
   app.use(pinoHttp({
     logger,

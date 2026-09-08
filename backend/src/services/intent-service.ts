@@ -5,15 +5,8 @@ import { AppError } from '../errors.js';
 import { prisma } from '../lib/prisma.js';
 import { openReveal, revealAssociatedData, sealReveal } from '../domain/reveal-crypto.js';
 import { isSupportConditionSatisfied } from '../domain/support-condition.js';
-
-interface CreateIntentCommand {
-  title: string;
-  story: string;
-  category: string;
-  supportGoal: number;
-  revealContent: string;
-  visibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
-}
+import { createIntentSchema } from '../domain/intent-schemas.js';
+import { runIntentMutation } from './intent-mutation.js';
 
 const publicIntentSelection = {
   id: true,
@@ -38,7 +31,17 @@ const publicIntentSelection = {
   },
 } as Prisma.IntentSelect;
 
-export async function createIntent(creatorId: string, command: CreateIntentCommand) {
+function assertPublishedState(intent: { supportCount: number; supportGoal: number; realizedAt: Date | null }) {
+  if (!Number.isInteger(intent.supportCount) || intent.supportCount < 0
+    || !Number.isInteger(intent.supportGoal) || intent.supportGoal < 1
+    || intent.supportCount >= intent.supportGoal || intent.realizedAt != null) {
+    throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+  }
+}
+
+// Actor IDs come from the authenticated server context, never from command fields.
+export async function createIntent(creatorId: string, input: unknown, idempotencyKey?: string) {
+  const command = createIntentSchema.parse(input);
   const intentId = randomUUID();
   const revealVersion = 1;
   const sealed = sealReveal(
@@ -47,11 +50,15 @@ export async function createIntent(creatorId: string, command: CreateIntentComma
     revealAssociatedData(intentId, revealVersion),
   );
 
-  return prisma.$transaction(async (transaction) => {
+  return runIntentMutation(creatorId, 'CREATE_INTENT', idempotencyKey, command, async (transaction) => {
     const intent = await transaction.intent.create({
       data: {
         id: intentId,
         creatorId,
+        type: 'SUPPORT_REVEAL',
+        status: 'PUBLISHED',
+        supportCount: 0,
+        realizedAt: null,
         title: command.title,
         story: command.story,
         category: command.category,
@@ -167,6 +174,12 @@ export async function getIntent(intentId: string, viewerId?: string) {
     throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
   }
 
+  // Unknown persisted values must never fall through to public access.
+  if (!['PUBLIC', 'FOLLOWERS', 'PRIVATE'].includes(intent.visibility)
+    || !['PUBLISHED', 'REALIZED', 'CANCELLED'].includes(intent.status)) {
+    throw new AppError(403, 'INTENT_FORBIDDEN', 'Esta Intent não está disponível.');
+  }
+
   if (intent.visibility === 'PRIVATE' && intent.creatorId !== viewerId) {
     throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não pode acessar esta Intent.');
   }
@@ -207,6 +220,10 @@ export async function getIntent(intentId: string, viewerId?: string) {
     return { ...publicIntent, revealContent: null, viewerHasSupported: Boolean(viewerSupport) };
   }
 
+  if (!intent.realizedAt || !isSupportConditionSatisfied(intent.supportCount, intent.supportGoal)) {
+    throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+  }
+
   const revealContent = openReveal(
     {
       ciphertext: revealCiphertext,
@@ -220,31 +237,12 @@ export async function getIntent(intentId: string, viewerId?: string) {
   return { ...publicIntent, revealContent, viewerHasSupported: Boolean(viewerSupport) };
 }
 
-const SERIALIZABLE_RETRY_LIMIT = 3;
-
-async function runSerializableTransaction<T>(
-  operation: (transaction: Prisma.TransactionClient) => Promise<T>,
-): Promise<T> {
-  for (let attempt = 1; attempt <= SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
-    try {
-      return await prisma.$transaction(operation, {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      });
-    } catch (error) {
-      const retryable = error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034';
-      if (!retryable || attempt === SERIALIZABLE_RETRY_LIMIT) throw error;
-    }
-  }
-
-  throw new Error('Limite de repetição transacional excedido.');
-}
-
 async function ensureSupportAccess(
   transaction: Prisma.TransactionClient,
   intent: { creatorId: string; visibility: string },
   supporterId: string,
 ): Promise<void> {
-  if (intent.visibility === 'PRIVATE') {
+  if (!['PUBLIC', 'FOLLOWERS'].includes(intent.visibility)) {
     throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não pode apoiar uma Intent privada.');
   }
 
@@ -265,93 +263,103 @@ async function ensureSupportAccess(
   }
 }
 
-export async function supportIntent(intentId: string, supporterId: string) {
-  try {
-    return await runSerializableTransaction(async (transaction) => {
-      const existing = await transaction.intent.findUnique({ where: { id: intentId } });
-
-      if (!existing) {
-        throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
-      }
-
-      if (existing.creatorId === supporterId) {
-        throw new AppError(409, 'CREATOR_CANNOT_SUPPORT', 'O criador não pode apoiar a própria Intent.');
-      }
-
-      if (existing.status !== 'PUBLISHED') {
-        throw new AppError(409, 'INTENT_NOT_OPEN', 'Esta Intent não está aberta para novos apoios.');
-      }
-
-      await ensureSupportAccess(transaction, existing, supporterId);
-
-      const support = await transaction.support.create({
-        data: { intentId, userId: supporterId },
-      });
-
-      const updated = await transaction.intent.update({
-        where: { id: intentId },
-        data: { supportCount: { increment: 1 } },
-      });
-
-      await transaction.domainEvent.create({
-        data: {
-          intentId,
-          actorId: supporterId,
-          type: 'SUPPORT_RECEIVED',
-          idempotencyKey: `support-received:${support.id}`,
-          payload: {
-            supportId: support.id,
-            supportCount: updated.supportCount,
-            supportGoal: updated.supportGoal,
-          },
-        },
-      });
-
-      let realizedNow = false;
-      if (isSupportConditionSatisfied(updated.supportCount, updated.supportGoal)) {
-        const result = await transaction.intent.updateMany({
-          where: { id: intentId, status: 'PUBLISHED' },
-          data: { status: 'REALIZED', realizedAt: new Date() },
-        });
-
-        realizedNow = result.count === 1;
-
-        if (realizedNow) {
-          await transaction.domainEvent.create({
-            data: {
-              intentId,
-              actorId: supporterId,
-              type: 'INTENT_REALIZED',
-              idempotencyKey: `intent-realized:${intentId}:v${updated.revealVersion}`,
-              payload: {
-                supportCount: updated.supportCount,
-                supportGoal: updated.supportGoal,
-                revealVersion: updated.revealVersion,
-              },
-            },
-          });
-        }
-      }
-
-      return {
-        intentId,
-        supportCount: updated.supportCount,
-        supportGoal: updated.supportGoal,
-        supported: true,
-        realized: realizedNow || updated.status === 'REALIZED',
-        realizedNow,
-      };
+export async function supportIntent(intentId: string, supporterId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(supporterId, `SUPPORT_INTENT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
+    const existing = await transaction.intent.findUnique({
+      where: { id: intentId },
+      include: { creator: { select: { status: true } } },
     });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      throw new AppError(409, 'SUPPORT_ALREADY_EXISTS', 'Você já apoiou esta Intent.');
+
+    if (!existing || existing.creator.status !== 'ACTIVE') {
+      throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
     }
-    throw error;
-  }
+
+    if (existing.creatorId === supporterId) {
+      throw new AppError(409, 'CREATOR_CANNOT_SUPPORT', 'O criador não pode apoiar a própria Intent.');
+    }
+
+    if (existing.status !== 'PUBLISHED') {
+      throw new AppError(409, 'INTENT_NOT_OPEN', 'Esta Intent não está aberta para novos apoios.');
+    }
+
+    assertPublishedState(existing);
+
+    await ensureSupportAccess(transaction, existing, supporterId);
+
+    const support = await transaction.support.create({
+      data: { intentId, userId: supporterId },
+    }).catch((error: unknown) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new AppError(409, 'SUPPORT_ALREADY_EXISTS', 'Você já apoiou esta Intent.');
+      }
+      throw error;
+    });
+
+    const updated = await transaction.intent.update({
+      where: { id: intentId },
+      data: { supportCount: { increment: 1 } },
+    });
+
+    await transaction.domainEvent.create({
+      data: {
+        intentId,
+        actorId: supporterId,
+        type: 'SUPPORT_RECEIVED',
+        idempotencyKey: `support-received:${support.id}`,
+        payload: {
+          supportId: support.id,
+          supportCount: updated.supportCount,
+          supportGoal: updated.supportGoal,
+        },
+      },
+    });
+
+    let realizedNow = false;
+    if (isSupportConditionSatisfied(updated.supportCount, updated.supportGoal)) {
+      const result = await transaction.intent.updateMany({
+        where: { id: intentId, status: 'PUBLISHED' },
+        data: { status: 'REALIZED', realizedAt: new Date() },
+      });
+
+      realizedNow = result.count === 1;
+
+      if (!realizedNow) {
+        // Abort the entire transaction, including the support and its event.
+        throw new AppError(409, 'INTENT_STATE_CONFLICT', 'Não foi possível realizar esta Intent.');
+      }
+
+      if (realizedNow) {
+        await transaction.domainEvent.create({
+          data: {
+            intentId,
+            actorId: supporterId,
+            type: 'INTENT_REALIZED',
+            idempotencyKey: `intent-realized:${intentId}:v${updated.revealVersion}`,
+            payload: {
+              supportCount: updated.supportCount,
+              supportGoal: updated.supportGoal,
+              revealVersion: updated.revealVersion,
+            },
+          },
+        });
+      }
+    }
+
+    return {
+      intentId,
+      supportCount: updated.supportCount,
+      supportGoal: updated.supportGoal,
+      supported: true,
+      realized: realizedNow || updated.status === 'REALIZED',
+      realizedNow,
+    };
+  });
 }
 
-export async function removeSupport(intentId: string, supporterId: string) {
-  return runSerializableTransaction(async (transaction) => {
+export async function removeSupport(intentId: string, supporterId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(supporterId, `REMOVE_SUPPORT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
     const intent = await transaction.intent.findUnique({ where: { id: intentId } });
 
     if (!intent) {
@@ -365,6 +373,8 @@ export async function removeSupport(intentId: string, supporterId: string) {
     if (intent.status !== 'PUBLISHED') {
       throw new AppError(409, 'SUPPORT_LOCKED_AFTER_REVEAL', 'O apoio não pode ser alterado depois da realização.');
     }
+
+    assertPublishedState(intent);
 
     const support = await transaction.support.findUnique({
       where: { intentId_userId: { intentId, userId: supporterId } },
@@ -382,11 +392,15 @@ export async function removeSupport(intentId: string, supporterId: string) {
       };
     }
 
+    if (intent.supportCount === 0) {
+      throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+    }
+
     await transaction.support.delete({ where: { id: support.id } });
     const updated = await transaction.intent.update({
       where: { id: intentId },
       data: {
-        supportCount: intent.supportCount > 0 ? { decrement: 1 } : 0,
+        supportCount: { decrement: 1 },
       },
     });
 

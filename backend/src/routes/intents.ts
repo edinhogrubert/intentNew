@@ -65,7 +65,7 @@ intentsRouter.get('/:id', optionalAuthenticatedUser, async (request, response, n
 intentsRouter.post('/', requireAuthenticatedUser, async (request, response, next) => {
   try {
     const command = createIntentSchema.parse(request.body);
-    const intent = await createIntent(request.appUser!.id, command);
+    const intent = await createIntent(request.appUser!.id, command, request.get('Idempotency-Key'));
     response.status(201).json({ data: intent });
   } catch (error) {
     next(error);
@@ -75,7 +75,7 @@ intentsRouter.post('/', requireAuthenticatedUser, async (request, response, next
 intentsRouter.post('/:id/supports', requireAuthenticatedUser, async (request, response, next) => {
   try {
     const intentId = identifierSchema.parse(request.params.id);
-    const result = await supportIntent(intentId, request.appUser!.id);
+    const result = await supportIntent(intentId, request.appUser!.id, request.get('Idempotency-Key'));
     response.status(201).json({ data: result });
   } catch (error) {
     next(error);
@@ -85,7 +85,7 @@ intentsRouter.post('/:id/supports', requireAuthenticatedUser, async (request, re
 intentsRouter.delete('/:id/supports', requireAuthenticatedUser, async (request, response, next) => {
   try {
     const intentId = identifierSchema.parse(request.params.id);
-    const result = await removeSupport(intentId, request.appUser!.id);
+    const result = await removeSupport(intentId, request.appUser!.id, request.get('Idempotency-Key'));
     response.json({ data: result });
   } catch (error) {
     next(error);

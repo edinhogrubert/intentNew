@@ -40,6 +40,19 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: intent_test_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -62,6 +75,11 @@ jobs:
 
       - name: Executar testes
         run: npm test
+
+      - name: Testar idempotência em PostgreSQL real
+        env:
+          TEST_DATABASE_URL: postgresql://postgres@127.0.0.1:${{ job.services.postgres.ports[5432] }}/intent_test_ci
+        run: npm run test:postgres
 
       - name: Gerar build
         run: npm run build

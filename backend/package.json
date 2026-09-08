@@ -13,7 +13,8 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
-    "db:migrate": "prisma migrate deploy"
+    "db:migrate": "prisma migrate deploy",
+    "test:postgres": "vitest run --config vitest.postgres.config.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.0",
