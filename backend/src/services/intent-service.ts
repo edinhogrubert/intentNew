@@ -6,6 +6,7 @@ import { prisma } from '../lib/prisma.js';
 import { openReveal, revealAssociatedData, sealReveal } from '../domain/reveal-crypto.js';
 import { isSupportConditionSatisfied } from '../domain/support-condition.js';
 import { createIntentSchema } from '../domain/intent-schemas.js';
+import { runIntentMutation } from './intent-mutation.js';
 
 const publicIntentSelection = {
   id: true,
@@ -30,16 +31,6 @@ const publicIntentSelection = {
   },
 } as Prisma.IntentSelect;
 
-async function requireActiveActor(transaction: Prisma.TransactionClient, actorId: string) {
-  const actor = await transaction.user.findUnique({
-    where: { id: actorId },
-    select: { status: true },
-  });
-  if (!actor || actor.status !== 'ACTIVE') {
-    throw new AppError(403, 'ACCOUNT_INACTIVE', 'Esta conta não está ativa.');
-  }
-}
-
 function assertPublishedState(intent: { supportCount: number; supportGoal: number; realizedAt: Date | null }) {
   if (!Number.isInteger(intent.supportCount) || intent.supportCount < 0
     || !Number.isInteger(intent.supportGoal) || intent.supportGoal < 1
@@ -49,7 +40,7 @@ function assertPublishedState(intent: { supportCount: number; supportGoal: numbe
 }
 
 // Actor IDs come from the authenticated server context, never from command fields.
-export async function createIntent(creatorId: string, input: unknown) {
+export async function createIntent(creatorId: string, input: unknown, idempotencyKey?: string) {
   const command = createIntentSchema.parse(input);
   const intentId = randomUUID();
   const revealVersion = 1;
@@ -59,8 +50,7 @@ export async function createIntent(creatorId: string, input: unknown) {
     revealAssociatedData(intentId, revealVersion),
   );
 
-  return prisma.$transaction(async (transaction) => {
-    await requireActiveActor(transaction, creatorId);
+  return runIntentMutation(creatorId, 'CREATE_INTENT', idempotencyKey, command, async (transaction) => {
     const intent = await transaction.intent.create({
       data: {
         id: intentId,
@@ -247,25 +237,6 @@ export async function getIntent(intentId: string, viewerId?: string) {
   return { ...publicIntent, revealContent, viewerHasSupported: Boolean(viewerSupport) };
 }
 
-const SERIALIZABLE_RETRY_LIMIT = 3;
-
-async function runSerializableTransaction<T>(
-  operation: (transaction: Prisma.TransactionClient) => Promise<T>,
-): Promise<T> {
-  for (let attempt = 1; attempt <= SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
-    try {
-      return await prisma.$transaction(operation, {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      });
-    } catch (error) {
-      const retryable = error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034';
-      if (!retryable || attempt === SERIALIZABLE_RETRY_LIMIT) throw error;
-    }
-  }
-
-  throw new Error('Limite de repetição transacional excedido.');
-}
-
 async function ensureSupportAccess(
   transaction: Prisma.TransactionClient,
   intent: { creatorId: string; visibility: string },
@@ -292,9 +263,9 @@ async function ensureSupportAccess(
   }
 }
 
-export async function supportIntent(intentId: string, supporterId: string) {
-  return await runSerializableTransaction(async (transaction) => {
-    await requireActiveActor(transaction, supporterId);
+export async function supportIntent(intentId: string, supporterId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(supporterId, `SUPPORT_INTENT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
     const existing = await transaction.intent.findUnique({
       where: { id: intentId },
       include: { creator: { select: { status: true } } },
@@ -386,9 +357,9 @@ export async function supportIntent(intentId: string, supporterId: string) {
   });
 }
 
-export async function removeSupport(intentId: string, supporterId: string) {
-  return runSerializableTransaction(async (transaction) => {
-    await requireActiveActor(transaction, supporterId);
+export async function removeSupport(intentId: string, supporterId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(supporterId, `REMOVE_SUPPORT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
     const intent = await transaction.intent.findUnique({ where: { id: intentId } });
 
     if (!intent) {

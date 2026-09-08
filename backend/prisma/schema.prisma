@@ -23,6 +23,7 @@ model User {
   supports       Support[]
   following      Follow[]      @relation("Follower")
   followers      Follow[]      @relation("Following")
+  idempotencyRequests IdempotencyRequest[]
   authoredEvents DomainEvent[] @relation("EventActor")
 
   @@map("users")
@@ -97,4 +98,19 @@ model DomainEvent {
   @@index([intentId, occurredAt])
   @@index([actorId, occurredAt])
   @@map("domain_events")
+}
+
+
+model IdempotencyRequest {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String   @map("actor_id") @db.Uuid
+  operation   String   @db.VarChar(80)
+  key         String   @db.VarChar(128)
+  requestHash String   @map("request_hash") @db.VarChar(64)
+  response    Json?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  actor       User     @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, operation, key])
+  @@map("idempotency_requests")
 }
