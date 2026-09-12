@@ -9,7 +9,7 @@ import { MvpIntentDetail } from './components/MvpIntentDetail';
 import { MvpSocialProfile } from './components/MvpSocialProfile';
 import { auth, onAuthStateChanged, signOut } from './utils/firebase';
 import { logoutUser, setCurrentSessionUser } from './utils/storage';
-import { syncAuthenticatedUser } from './services/intentApi';
+import { IS_MOCK_MODE, syncAuthenticatedUser } from './services/intentApi';
 
 type View = 'home' | 'create' | 'mine' | 'detail' | 'profile';
 type SessionStatus = 'checking' | 'unauthenticated' | 'authenticated' | 'error';
@@ -80,7 +80,7 @@ export default function App() {
   ];
 
   return <div className="min-h-screen bg-[#f7f6fc] text-[#1b1c1a]">
-    <header className="sticky top-0 z-30 bg-white border-b border-[#e4e2de]"><div className="max-w-5xl mx-auto h-16 px-4 flex items-center justify-between"><button onClick={() => setView('home')} className="text-xl font-black tracking-tight text-[#000666]">INTENT</button><nav className="hidden sm:flex items-center gap-1">{items.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => { if (id === 'profile') setSelectedProfileId(currentUser.id); setView(id); }} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 ${view === id ? 'bg-[#e0e0ff] text-[#000666]' : 'text-[#666] hover:bg-[#f5f3ef]'}`}><Icon className="w-4 h-4"/>{label}</button>)}</nav><div className="flex items-center gap-3"><button onClick={() => selectProfile(currentUser.id)} className="hidden md:block text-right"><p className="text-xs font-bold">{currentUser.name}</p><p className="text-[11px] text-[#666]">@{currentUser.username.replace(/^@+/, '')}</p></button><button onClick={() => void handleLogout()} className="p-2 rounded-full hover:bg-[#f5f3ef] text-[#666]" aria-label="Sair"><LogOut className="w-5 h-5"/></button></div></div></header>
+    <header className="sticky top-0 z-30 bg-white border-b border-[#e4e2de]"><div className="max-w-5xl mx-auto h-16 px-4 flex items-center justify-between"><div className="flex items-center gap-2"><button onClick={() => setView('home')} className="text-xl font-black tracking-tight text-[#000666]">INTENT</button>{IS_MOCK_MODE && (<span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200" title="Modo Preview isolado ativo via VITE_USE_MOCKS. No ambiente local com PostgreSQL ou produção, mantenha VITE_USE_MOCKS=false">⚡ Preview / Mock</span>)}</div><nav className="hidden sm:flex items-center gap-1">{items.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => { if (id === 'profile') setSelectedProfileId(currentUser.id); setView(id); }} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 ${view === id ? 'bg-[#e0e0ff] text-[#000666]' : 'text-[#666] hover:bg-[#f5f3ef]'}`}><Icon className="w-4 h-4"/>{label}</button>)}</nav><div className="flex items-center gap-3"><button onClick={() => selectProfile(currentUser.id)} className="hidden md:block text-right"><p className="text-xs font-bold">{currentUser.name}</p><p className="text-[11px] text-[#666]">@{currentUser.username.replace(/^@+/, '')}</p></button><button onClick={() => void handleLogout()} className="p-2 rounded-full hover:bg-[#f5f3ef] text-[#666]" aria-label="Sair"><LogOut className="w-5 h-5"/></button></div></div></header>
 
     <main className="pb-24 sm:pb-8">
       {view === 'home' && <MvpHomeFeed currentUser={currentUser} onCreate={() => setView('create')} onSelectIntent={selectIntent} onSelectProfile={selectProfile}/>} 
