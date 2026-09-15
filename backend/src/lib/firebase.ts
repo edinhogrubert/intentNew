@@ -1,7 +1,22 @@
-import { applicationDefault, getApps, initializeApp } from 'firebase-admin/app';
+import { cert, applicationDefault, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { config } from '../config.js';
 
-const firebaseApp = getApps()[0] ?? initializeApp({ credential: applicationDefault(), projectId: config.firebaseProjectId });
+function getCredential() {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+      const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      return cert(sa);
+    } catch {
+      // fallback
+    }
+  }
+  return applicationDefault();
+}
+
+const firebaseApp = getApps()[0] ?? initializeApp({
+  credential: getCredential(),
+  projectId: config.firebaseProjectId,
+});
 
 export const firebaseAuth = getAuth(firebaseApp);

@@ -21,7 +21,19 @@ export function createApp() {
   app.use(helmet());
   app.use(cors({
     origin(origin, callback) {
-      if (!origin || config.corsOrigins.includes(origin)) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      // Permitir localhost, domínios do Google Cloud Run (ais-dev / ais-pre) e origens configuradas
+      if (
+        config.corsOrigins.includes('*') ||
+        config.corsOrigins.includes(origin) ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.run.app') ||
+        origin.endsWith('.google.com')
+      ) {
         callback(null, true);
         return;
       }
