@@ -66,15 +66,19 @@ beforeEach(() => {
   db.user.findMany.mockResolvedValue([]);
   db.user.update.mockResolvedValue(viewer);
   db.intent.findMany.mockResolvedValue([]);
+  db.intent.count.mockResolvedValue(0);
   db.follow.findUnique.mockResolvedValue(null);
   db.follow.count.mockResolvedValue(0);
+  db.support.count.mockResolvedValue(0);
   db.support.findUnique.mockResolvedValue(null);
   db.notification.findMany.mockResolvedValue([]);
   db.notification.count.mockResolvedValue(0);
   db.notification.createMany.mockResolvedValue({ count: 1 });
   db.notification.updateMany.mockResolvedValue({ count: 0 });
   db.notification.findFirst.mockResolvedValue(null);
+  db.intentComment.count.mockResolvedValue(0);
   db.intentComment.findMany.mockResolvedValue([]);
+  db.intentReaction.count.mockResolvedValue(0);
   db.intentReaction.groupBy.mockResolvedValue([]);
   db.intentReaction.findUnique.mockResolvedValue(null);
   db.$transaction.mockImplementation(async (operation) => operation(db));
@@ -103,7 +107,7 @@ describe('perfil público HTTP', () => {
 
   it('retorna allowlist pública e estatísticas sem dados sensíveis', async () => {
     db.user.findFirst.mockResolvedValue({ ...viewer, id: creatorId });
-    db.intent.count.mockResolvedValueOnce(3).mockResolvedValueOnce(1);
+    db.intent.count.mockResolvedValueOnce(3).mockResolvedValueOnce(1).mockResolvedValue(0);
     db.support.count.mockResolvedValue(7);
     db.intentReaction.count.mockResolvedValue(4);
     db.intentComment.count.mockResolvedValue(2);
@@ -111,10 +115,20 @@ describe('perfil público HTTP', () => {
     expect(response.status).toBe(200);
     const { data } = await response.json();
     expect(Object.keys(data).sort()).toEqual(['id', 'username', 'displayName', 'bio', 'avatarUrl', 'createdAt', 'updatedAt', 'isMe', 'viewerIsFollowing', 'stats', 'intents'].sort());
-    expect(data.stats).toEqual({ intentsCreated: 3, intentsRealized: 1,
-      totalSupportReceived: 7, totalReactionsReceived: 4,
-      totalCommentsReceived: 2, publicIntentsCount: 3,
-      followersCount: 0, followingCount: 0 });
+    expect(data.stats).toEqual({
+      intentsCreated: 3,
+      intentsRealized: 1,
+      totalSupportReceived: 7,
+      totalReactionsReceived: 4,
+      totalCommentsReceived: 2,
+      publicIntentsCount: 3,
+      followersCount: 0,
+      followingCount: 0,
+      supportedIntentsCount: 7,
+      reactionsGivenCount: 4,
+      commentsGivenCount: 2,
+      realizedParticipationsCount: 0,
+    });
     expect(data.intents).toEqual([]);
     expect(db.user.findFirst.mock.calls[0]![0].select).toEqual({
       id: true, username: true, displayName: true, bio: true,

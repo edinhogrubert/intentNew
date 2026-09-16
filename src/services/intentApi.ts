@@ -483,6 +483,10 @@ export interface ApiPublicUserProfile {
     publicIntentsCount: number;
     followersCount?: number;
     followingCount?: number;
+    supportedIntentsCount: number;
+    reactionsGivenCount: number;
+    commentsGivenCount: number;
+    realizedParticipationsCount: number;
   };
   intents: Array<{ id: string; title: string; story: string; status: string;
     createdAt: string; supportCount: number }>;

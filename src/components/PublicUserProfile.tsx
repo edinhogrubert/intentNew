@@ -422,118 +422,220 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
             </div>
           </header>
 
-          {/* Parte 2 — Cards de Reputação Social */}
-          <section aria-labelledby="reputation-stats-heading" className="space-y-4">
+          {/* Parte 2 — Identidade Social: Conexões, Criador e Participante */}
+          <section aria-labelledby="social-identity-heading" className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 id="reputation-stats-heading" className="text-lg font-black text-[#1b1c1a]">
-                  Estatísticas Sociais
+                <h2 id="social-identity-heading" className="text-xl font-black text-[#1b1c1a]">
+                  Identidade Social
                 </h2>
                 <p className="text-xs text-[#666]">
-                  Histórico público de acontecimentos, rede e engajamento da comunidade
+                  Acontecimentos criados, participação ativa e conexões na rede
                 </p>
               </div>
             </div>
 
-            <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {/* Card 1: Seguidores */}
-              <div
-                onClick={() => handleOpenConnectionsModal('followers')}
-                className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between cursor-pointer group"
-              >
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Seguidores</span>
-                  <Users className="w-4 h-4 text-[#000666] group-hover:scale-110 transition-transform" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-[#000666]">{followersCount}</span>
-                  <p className="text-[11px] text-[#777] leading-tight">Pessoas que acompanham.</p>
-                </dd>
+            {/* Bloco 1: Conexões */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#000666]" />
+                <h3 className="text-xs font-black text-[#1b1c1a] uppercase tracking-wider">
+                  Conexões
+                </h3>
               </div>
+              <dl className="grid grid-cols-2 gap-3">
+                {/* Card 1: Seguidores */}
+                <div
+                  onClick={() => handleOpenConnectionsModal('followers')}
+                  className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between cursor-pointer group"
+                >
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Seguidores</span>
+                    <Users className="w-4 h-4 text-[#000666] group-hover:scale-110 transition-transform" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-[#000666]">{followersCount}</span>
+                    <p className="text-[11px] text-[#777] leading-tight">Pessoas que acompanham.</p>
+                  </dd>
+                </div>
 
-              {/* Card 2: Seguindo */}
-              <div
-                onClick={() => handleOpenConnectionsModal('following')}
-                className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between cursor-pointer group"
-              >
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Seguindo</span>
-                  <UserCheck className="w-4 h-4 text-[#000666] group-hover:scale-110 transition-transform" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-[#000666]">{followingCount}</span>
-                  <p className="text-[11px] text-[#777] leading-tight">Perfis acompanhados.</p>
-                </dd>
-              </div>
+                {/* Card 2: Seguindo */}
+                <div
+                  onClick={() => handleOpenConnectionsModal('following')}
+                  className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between cursor-pointer group"
+                >
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Seguindo</span>
+                    <UserCheck className="w-4 h-4 text-[#000666] group-hover:scale-110 transition-transform" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-[#000666]">{followingCount}</span>
+                    <p className="text-[11px] text-[#777] leading-tight">Perfis acompanhados.</p>
+                  </dd>
+                </div>
+              </dl>
+            </div>
 
-              {/* Card 3: Intents públicas */}
-              <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between">
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Intents públicas</span>
-                  <Globe2 className="w-4 h-4 text-[#000666]" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-[#000666]">
-                    {profile.stats.publicIntentsCount}
-                  </span>
-                  <p className="text-[11px] text-[#777] leading-tight">Acontecimentos públicos.</p>
-                </dd>
+            {/* Bloco 2: Como criador */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#000666]" />
+                <h3 className="text-xs font-black text-[#1b1c1a] uppercase tracking-wider">
+                  Como criador
+                </h3>
               </div>
+              <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                {/* Card 1: Intents públicas */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Intents públicas</span>
+                    <Globe2 className="w-4 h-4 text-[#000666]" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-[#000666]">
+                      {profile.stats.publicIntentsCount}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Acontecimentos públicos.</p>
+                  </dd>
+                </div>
 
-              {/* Card 4: Realizações */}
-              <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-emerald-500/30 transition-all flex flex-col justify-between">
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Realizações</span>
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-emerald-700">
-                    {profile.stats.intentsRealized}
-                  </span>
-                  <p className="text-[11px] text-[#777] leading-tight">Intents concluídas.</p>
-                </dd>
-              </div>
+                {/* Card 2: Realizações */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-emerald-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Realizações</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-emerald-700">
+                      {profile.stats.intentsRealized}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Intents concluídas.</p>
+                  </dd>
+                </div>
 
-              {/* Card 5: Apoios recebidos */}
-              <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-rose-500/30 transition-all flex flex-col justify-between">
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Apoios</span>
-                  <Heart className="w-4 h-4 text-rose-500" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-rose-600">
-                    {profile.stats.totalSupportReceived}
-                  </span>
-                  <p className="text-[11px] text-[#777] leading-tight">Pessoas mobilizadas.</p>
-                </dd>
-              </div>
+                {/* Card 3: Apoios recebidos */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-rose-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Apoios recebidos</span>
+                    <Heart className="w-4 h-4 text-rose-500" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-rose-600">
+                      {profile.stats.totalSupportReceived}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Pessoas mobilizadas.</p>
+                  </dd>
+                </div>
 
-              {/* Card 6: Reações */}
-              <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-amber-500/30 transition-all flex flex-col justify-between">
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Reações</span>
-                  <ThumbsUp className="w-4 h-4 text-amber-500" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-amber-600">
-                    {profile.stats.totalReactionsReceived}
-                  </span>
-                  <p className="text-[11px] text-[#777] leading-tight">Interações no histórico.</p>
-                </dd>
+                {/* Card 4: Reações recebidas */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-amber-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Reações recebidas</span>
+                    <ThumbsUp className="w-4 h-4 text-amber-500" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-amber-600">
+                      {profile.stats.totalReactionsReceived}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Interações no histórico.</p>
+                  </dd>
+                </div>
+
+                {/* Card 5: Comentários recebidos */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-indigo-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Comentários recebidos</span>
+                    <MessageSquare className="w-4 h-4 text-indigo-600" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-indigo-700">
+                      {profile.stats.totalCommentsReceived}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Comentários no histórico.</p>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Bloco 3: Como participante */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-[#000666]" />
+                <h3 className="text-xs font-black text-[#1b1c1a] uppercase tracking-wider">
+                  Como participante
+                </h3>
               </div>
-            </dl>
+              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* Card 1: Intents apoiadas */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-rose-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Intents apoiadas</span>
+                    <Heart className="w-4 h-4 text-rose-500" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-rose-600">
+                      {profile.stats.supportedIntentsCount ?? 0}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Apoios ativos mantidos.</p>
+                  </dd>
+                </div>
+
+                {/* Card 2: Reações dadas */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-amber-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Reações dadas</span>
+                    <ThumbsUp className="w-4 h-4 text-amber-500" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-amber-600">
+                      {profile.stats.reactionsGivenCount ?? 0}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Reações manifestadas.</p>
+                  </dd>
+                </div>
+
+                {/* Card 3: Comentários feitos */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-indigo-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Comentários feitos</span>
+                    <MessageSquare className="w-4 h-4 text-indigo-600" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-indigo-700">
+                      {profile.stats.commentsGivenCount ?? 0}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Participação em diálogos.</p>
+                  </dd>
+                </div>
+
+                {/* Card 4: Participações realizadas */}
+                <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-emerald-500/30 transition-all flex flex-col justify-between">
+                  <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                    <span>Participações realizadas</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  </dt>
+                  <dd className="space-y-1">
+                    <span className="text-2xl font-black text-emerald-700">
+                      {profile.stats.realizedParticipationsCount ?? 0}
+                    </span>
+                    <p className="text-[11px] text-[#777] leading-tight">Intents concluídas com você.</p>
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </section>
 
           {/* Parte 3 — Resumo Social do Perfil */}
           <section className="rounded-2xl border border-[#e4e2de] bg-gradient-to-br from-white to-[#f7f6fc] p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-[#000666]" />
-              <h2 className="font-extrabold text-base text-[#1b1c1a]">Resumo da Trajetória</h2>
+              <h2 className="font-extrabold text-base text-[#1b1c1a]">Identidade Social no Intent</h2>
             </div>
             <p className="text-sm text-[#444] leading-relaxed">
+              Este perfil cria acontecimentos e também participa da realização de Intents de outras pessoas.
               {profile.stats.publicIntentsCount > 0 ? (
                 <>
-                  Este perfil publicou{' '}
+                  {' '}Como criador, publicou{' '}
                   <strong className="font-extrabold text-[#000666]">
                     {profile.stats.publicIntentsCount}{' '}
                     {profile.stats.publicIntentsCount === 1 ? 'Intent pública' : 'Intents públicas'}
@@ -548,11 +650,23 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                     {profile.stats.totalSupportReceived}{' '}
                     {profile.stats.totalSupportReceived === 1 ? 'apoio' : 'apoios'}
                   </strong>{' '}
-                  da comunidade no Intent.
+                  de pessoas que acompanham.
                 </>
-              ) : (
-                'Este perfil está construindo seu histórico público no Intent e ainda não possui publicações públicas registradas.'
-              )}
+              ) : null}
+              {((profile.stats.supportedIntentsCount ?? 0) > 0 || (profile.stats.realizedParticipationsCount ?? 0) > 0) ? (
+                <>
+                  {' '}Como participante, apoia ativamente{' '}
+                  <strong className="font-extrabold text-rose-600">
+                    {profile.stats.supportedIntentsCount ?? 0}{' '}
+                    {(profile.stats.supportedIntentsCount ?? 0) === 1 ? 'acontecimento' : 'acontecimentos'}
+                  </strong>{' '}
+                  e esteve presente em{' '}
+                  <strong className="font-extrabold text-emerald-700">
+                    {profile.stats.realizedParticipationsCount ?? 0}{' '}
+                    {(profile.stats.realizedParticipationsCount ?? 0) === 1 ? 'realização concluída' : 'realizações concluídas'}
+                  </strong>.
+                </>
+              ) : null}
             </p>
 
             {/* Chips de Engajamento Calculados */}
@@ -565,7 +679,7 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                       {Math.round(
                         (profile.stats.intentsRealized / profile.stats.publicIntentsCount) * 100,
                       )}
-                      % de realizações
+                      % de realizações como criador
                     </span>
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#e0e0ff] text-[#000666] border border-[#c4c4ff]">
@@ -581,7 +695,7 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
               )}
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
                 <Users className="w-3.5 h-3.5" />
-                <span>Conexões sociais ativas</span>
+                <span>Participação ativa na rede</span>
               </span>
             </div>
           </section>
