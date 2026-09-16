@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Calendar,
+  Check,
   CheckCircle2,
   Clock,
   Globe2,
@@ -14,8 +15,22 @@ import {
   Sparkles,
   ThumbsUp,
   TrendingUp,
+  UserCheck,
+  UserMinus,
+  UserPlus,
+  Users,
+  X,
 } from 'lucide-react';
-import { getPublicUserProfile, IntentApiError, type ApiPublicUserProfile } from '../services/intentApi';
+import {
+  followUser,
+  getPublicUserProfile,
+  IntentApiError,
+  listProfileFollowers,
+  listProfileFollowing,
+  unfollowUser,
+  type ApiPublicUserProfile,
+  type ApiSocialConnection,
+} from '../services/intentApi';
 
 interface PublicUserProfileProps {
   userId: string;
@@ -52,6 +67,17 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Estados da ação de seguir / deixar de seguir
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followActionError, setFollowActionError] = useState('');
+  const [isHoveringFollowing, setIsHoveringFollowing] = useState(false);
+
+  // Estados do modal de seguidores / seguindo
+  const [activeModal, setActiveModal] = useState<'followers' | 'following' | null>(null);
+  const [modalItems, setModalItems] = useState<ApiSocialConnection[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState('');
+
   const loadProfile = () => {
     let active = true;
     setLoading(true);
@@ -82,6 +108,86 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
     const cancel = loadProfile();
     return cancel;
   }, [userId]);
+
+  const handleToggleFollow = async () => {
+    if (!profile || profile.isMe || followLoading) return;
+    setFollowLoading(true);
+    setFollowActionError('');
+
+    const isCurrentlyFollowing = Boolean(profile.viewerIsFollowing);
+    // Optimistic update
+    setProfile((prev) => {
+      if (!prev) return prev;
+      const currentFollowers = prev.stats.followersCount ?? 0;
+      const newFollowers = isCurrentlyFollowing
+        ? Math.max(0, currentFollowers - 1)
+        : currentFollowers + 1;
+      return {
+        ...prev,
+        viewerIsFollowing: !isCurrentlyFollowing,
+        stats: {
+          ...prev.stats,
+          followersCount: newFollowers,
+        },
+      };
+    });
+
+    try {
+      const updated = isCurrentlyFollowing
+        ? await unfollowUser(userId)
+        : await followUser(userId);
+      setProfile(updated);
+    } catch (caught) {
+      // Revert optimistic update on failure
+      setProfile((prev) => {
+        if (!prev) return prev;
+        const currentFollowers = prev.stats.followersCount ?? 0;
+        const revertedFollowers = isCurrentlyFollowing
+          ? currentFollowers + 1
+          : Math.max(0, currentFollowers - 1);
+        return {
+          ...prev,
+          viewerIsFollowing: isCurrentlyFollowing,
+          stats: {
+            ...prev.stats,
+            followersCount: revertedFollowers,
+          },
+        };
+      });
+      setFollowActionError(
+        caught instanceof IntentApiError
+          ? caught.message
+          : 'Não foi possível atualizar a conexão agora.',
+      );
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleOpenConnectionsModal = (kind: 'followers' | 'following') => {
+    setActiveModal(kind);
+    setModalLoading(true);
+    setModalError('');
+    setModalItems([]);
+    const fetcher = kind === 'followers' ? listProfileFollowers : listProfileFollowing;
+    fetcher(userId)
+      .then((res) => {
+        setModalItems(res.items);
+      })
+      .catch((err) => {
+        setModalError(
+          err instanceof IntentApiError
+            ? err.message
+            : 'Não foi possível carregar a lista de conexões.',
+        );
+      })
+      .finally(() => {
+        setModalLoading(false);
+      });
+  };
+
+  const followersCount = profile?.stats.followersCount ?? 0;
+  const followingCount = profile?.stats.followingCount ?? 0;
 
   return (
     <section className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
@@ -156,18 +262,43 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
       {/* Perfil Carregado com Sucesso */}
       {!loading && profile && (
         <div className="space-y-8">
+          {/* Alerta de erro de ação (Follow / Unfollow) */}
+          {followActionError && (
+            <div className="rounded-2xl border border-[#ffb4ab] bg-[#fff8f7] px-4 py-3 text-sm text-[#8c1d18] flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{followActionError}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setFollowActionError('')}
+                className="text-xs font-bold hover:underline"
+              >
+                Fechar
+              </button>
+            </div>
+          )}
+
           {/* Parte 1 — Cabeçalho do perfil */}
           <header className="rounded-3xl border border-[#e4e2de] bg-white overflow-hidden shadow-sm">
             {/* Faixa decorativa superior com identidade visual do Intent */}
-            <div className="h-24 sm:h-32 bg-gradient-to-r from-[#000666] via-[#1b237b] to-[#2d3596] relative px-6 py-4 flex items-start justify-end">
+            <div className="h-24 sm:h-32 bg-gradient-to-r from-[#000666] via-[#1b237b] to-[#2d3596] relative px-6 py-4 flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                {profile.viewerIsFollowing && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/90 backdrop-blur-md text-white border border-emerald-400/40">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>Você acompanha este perfil</span>
+                  </span>
+                )}
+              </div>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md text-white border border-white/30">
                 <Globe2 className="w-3.5 h-3.5" />
-                <span>Perfil Público</span>
+                <span>Perfil Social</span>
               </span>
             </div>
 
             <div className="px-6 pb-6 pt-0 sm:px-8 sm:pb-8 relative">
-              {/* Avatar e Informações Básicas */}
+              {/* Avatar, Informações Básicas e Botão Social de Seguir */}
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-4">
                 <div className="flex items-end gap-4">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#e0e0ff] border-4 border-white shadow-md overflow-hidden flex items-center justify-center text-3xl font-black text-[#000666] shrink-0">
@@ -189,7 +320,82 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#555] bg-[#f7f6fc] px-3.5 py-2 rounded-xl border border-[#e4e2de] self-start sm:self-auto">
+                {/* Ação Social de Seguir / Deixar de Seguir ou Badge "Seu Perfil" */}
+                <div className="flex items-center gap-3 self-start sm:self-auto">
+                  {profile.isMe ? (
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-[#f7f6fc] text-[#000666] border border-[#e4e2de]">
+                      <UserCheck className="w-4 h-4 text-[#000666]" />
+                      <span>Seu Perfil</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleToggleFollow}
+                      disabled={followLoading}
+                      onMouseEnter={() => setIsHoveringFollowing(true)}
+                      onMouseLeave={() => setIsHoveringFollowing(false)}
+                      className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold min-h-[44px] transition-all shadow-sm ${
+                        profile.viewerIsFollowing
+                          ? isHoveringFollowing
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
+                            : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-[#000666] text-white hover:bg-[#1b237b] border border-transparent'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {followLoading ? (
+                        <>
+                          <LoaderCircle className="w-4 h-4 animate-spin" />
+                          <span>Processando...</span>
+                        </>
+                      ) : profile.viewerIsFollowing ? (
+                        isHoveringFollowing ? (
+                          <>
+                            <UserMinus className="w-4 h-4 text-rose-600" />
+                            <span>Deixar de seguir</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4 text-emerald-600" />
+                            <span>Seguindo</span>
+                          </>
+                        )
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4" />
+                          <span>Seguir perfil</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Informações de Membro e Contadores de Rede Social */}
+              <div className="flex flex-wrap items-center gap-4 mt-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenConnectionsModal('followers')}
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-[#333] bg-[#f7f6fc] hover:bg-[#e0e0ff]/60 px-3.5 py-2 rounded-xl border border-[#e4e2de] transition-colors"
+                >
+                  <Users className="w-4 h-4 text-[#000666]" />
+                  <span>
+                    <strong className="font-black text-[#000666]">{followersCount}</strong>{' '}
+                    {followersCount === 1 ? 'Seguidor' : 'Seguidores'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenConnectionsModal('following')}
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-[#333] bg-[#f7f6fc] hover:bg-[#e0e0ff]/60 px-3.5 py-2 rounded-xl border border-[#e4e2de] transition-colors"
+                >
+                  <UserCheck className="w-4 h-4 text-[#000666]" />
+                  <span>
+                    <strong className="font-black text-[#000666]">{followingCount}</strong> Seguindo
+                  </span>
+                </button>
+
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#555] bg-[#f7f6fc] px-3.5 py-2 rounded-xl border border-[#e4e2de]">
                   <Calendar className="w-4 h-4 text-[#000666]" />
                   <span>Membro desde {formatMemberSince(profile.createdAt)}</span>
                 </div>
@@ -224,13 +430,43 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                   Estatísticas Sociais
                 </h2>
                 <p className="text-xs text-[#666]">
-                  Histórico público de acontecimentos e engajamento da comunidade
+                  Histórico público de acontecimentos, rede e engajamento da comunidade
                 </p>
               </div>
             </div>
 
-            <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-              {/* Card 1: Intents públicas */}
+            <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* Card 1: Seguidores */}
+              <div
+                onClick={() => handleOpenConnectionsModal('followers')}
+                className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between cursor-pointer group"
+              >
+                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                  <span>Seguidores</span>
+                  <Users className="w-4 h-4 text-[#000666] group-hover:scale-110 transition-transform" />
+                </dt>
+                <dd className="space-y-1">
+                  <span className="text-2xl font-black text-[#000666]">{followersCount}</span>
+                  <p className="text-[11px] text-[#777] leading-tight">Pessoas que acompanham.</p>
+                </dd>
+              </div>
+
+              {/* Card 2: Seguindo */}
+              <div
+                onClick={() => handleOpenConnectionsModal('following')}
+                className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between cursor-pointer group"
+              >
+                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
+                  <span>Seguindo</span>
+                  <UserCheck className="w-4 h-4 text-[#000666] group-hover:scale-110 transition-transform" />
+                </dt>
+                <dd className="space-y-1">
+                  <span className="text-2xl font-black text-[#000666]">{followingCount}</span>
+                  <p className="text-[11px] text-[#777] leading-tight">Perfis acompanhados.</p>
+                </dd>
+              </div>
+
+              {/* Card 3: Intents públicas */}
               <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-[#000666]/30 transition-all flex flex-col justify-between">
                 <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
                   <span>Intents públicas</span>
@@ -240,13 +476,11 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                   <span className="text-2xl font-black text-[#000666]">
                     {profile.stats.publicIntentsCount}
                   </span>
-                  <p className="text-[11px] text-[#777] leading-tight">
-                    Acontecimentos públicos deste perfil.
-                  </p>
+                  <p className="text-[11px] text-[#777] leading-tight">Acontecimentos públicos.</p>
                 </dd>
               </div>
 
-              {/* Card 2: Realizações */}
+              {/* Card 4: Realizações */}
               <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-emerald-500/30 transition-all flex flex-col justify-between">
                 <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
                   <span>Realizações</span>
@@ -256,29 +490,25 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                   <span className="text-2xl font-black text-emerald-700">
                     {profile.stats.intentsRealized}
                   </span>
-                  <p className="text-[11px] text-[#777] leading-tight">
-                    Intents que chegaram à realização.
-                  </p>
+                  <p className="text-[11px] text-[#777] leading-tight">Intents concluídas.</p>
                 </dd>
               </div>
 
-              {/* Card 3: Apoios recebidos */}
+              {/* Card 5: Apoios recebidos */}
               <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-rose-500/30 transition-all flex flex-col justify-between">
                 <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Apoios recebidos</span>
+                  <span>Apoios</span>
                   <Heart className="w-4 h-4 text-rose-500" />
                 </dt>
                 <dd className="space-y-1">
                   <span className="text-2xl font-black text-rose-600">
                     {profile.stats.totalSupportReceived}
                   </span>
-                  <p className="text-[11px] text-[#777] leading-tight">
-                    Pessoas que apoiaram este perfil.
-                  </p>
+                  <p className="text-[11px] text-[#777] leading-tight">Pessoas mobilizadas.</p>
                 </dd>
               </div>
 
-              {/* Card 4: Reações recebidas */}
+              {/* Card 6: Reações */}
               <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-amber-500/30 transition-all flex flex-col justify-between">
                 <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
                   <span>Reações</span>
@@ -288,25 +518,7 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                   <span className="text-2xl font-black text-amber-600">
                     {profile.stats.totalReactionsReceived}
                   </span>
-                  <p className="text-[11px] text-[#777] leading-tight">
-                    Interações recebidas no histórico.
-                  </p>
-                </dd>
-              </div>
-
-              {/* Card 5: Comentários */}
-              <div className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-sm hover:border-indigo-500/30 transition-all col-span-2 sm:col-span-1 flex flex-col justify-between">
-                <dt className="flex items-center justify-between text-xs font-bold text-[#666] mb-2">
-                  <span>Comentários</span>
-                  <MessageSquare className="w-4 h-4 text-indigo-600" />
-                </dt>
-                <dd className="space-y-1">
-                  <span className="text-2xl font-black text-indigo-700">
-                    {profile.stats.totalCommentsReceived}
-                  </span>
-                  <p className="text-[11px] text-[#777] leading-tight">
-                    Participações em conversas.
-                  </p>
+                  <p className="text-[11px] text-[#777] leading-tight">Interações no histórico.</p>
                 </dd>
               </div>
             </dl>
@@ -344,28 +556,34 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
             </p>
 
             {/* Chips de Engajamento Calculados */}
-            {profile.stats.publicIntentsCount > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-[#e4e2de]/60">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>
-                    {Math.round(
-                      (profile.stats.intentsRealized / profile.stats.publicIntentsCount) * 100,
-                    )}
-                    % de realizações
+            <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-[#e4e2de]/60">
+              {profile.stats.publicIntentsCount > 0 && (
+                <>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>
+                      {Math.round(
+                        (profile.stats.intentsRealized / profile.stats.publicIntentsCount) * 100,
+                      )}
+                      % de realizações
+                    </span>
                   </span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#e0e0ff] text-[#000666] border border-[#c4c4ff]">
-                  <Heart className="w-3.5 h-3.5" />
-                  <span>
-                    {(
-                      profile.stats.totalSupportReceived / profile.stats.publicIntentsCount
-                    ).toFixed(1)}{' '}
-                    apoios / Intent em média
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#e0e0ff] text-[#000666] border border-[#c4c4ff]">
+                    <Heart className="w-3.5 h-3.5" />
+                    <span>
+                      {(
+                        profile.stats.totalSupportReceived / profile.stats.publicIntentsCount
+                      ).toFixed(1)}{' '}
+                      apoios / Intent em média
+                    </span>
                   </span>
-                </span>
-              </div>
-            )}
+                </>
+              )}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <Users className="w-3.5 h-3.5" />
+                <span>Conexões sociais ativas</span>
+              </span>
+            </div>
           </section>
 
           {/* Parte 4 — Histórico Público de Intents */}
@@ -465,9 +683,118 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
               })}
             </div>
           </section>
+
+          {/* Modal de Conexões (Seguidores / Seguindo) */}
+          {activeModal && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="connections-modal-title"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+            >
+              <div className="bg-white rounded-3xl border border-[#e4e2de] max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
+                {/* Cabeçalho do Modal */}
+                <div className="px-6 py-4 border-b border-[#e4e2de] flex items-center justify-between bg-[#f7f6fc]">
+                  <div className="flex items-center gap-2">
+                    {activeModal === 'followers' ? (
+                      <Users className="w-5 h-5 text-[#000666]" />
+                    ) : (
+                      <UserCheck className="w-5 h-5 text-[#000666]" />
+                    )}
+                    <h3 id="connections-modal-title" className="font-extrabold text-lg text-[#1b1c1a]">
+                      {activeModal === 'followers' ? 'Seguidores' : 'Seguindo'}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    aria-label="Fechar modal"
+                    className="p-2 rounded-full hover:bg-slate-200 text-[#555] transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Conteúdo do Modal */}
+                <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                  {modalLoading && (
+                    <div className="py-8 text-center space-y-3">
+                      <LoaderCircle className="w-6 h-6 animate-spin text-[#000666] mx-auto" />
+                      <p className="text-sm font-medium text-[#666]">Carregando conexões...</p>
+                    </div>
+                  )}
+
+                  {modalError && !modalLoading && (
+                    <div className="p-4 rounded-2xl bg-[#fff8f7] border border-[#ffb4ab] text-center text-sm text-[#8c1d18]">
+                      {modalError}
+                    </div>
+                  )}
+
+                  {!modalLoading && !modalError && modalItems.length === 0 && (
+                    <div className="py-8 text-center space-y-2">
+                      <p className="font-bold text-[#333]">Nenhuma conexão encontrada</p>
+                      <p className="text-xs text-[#666]">
+                        {activeModal === 'followers'
+                          ? 'Este perfil ainda não possui seguidores registrados.'
+                          : 'Este perfil ainda não está seguindo outros usuários.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {!modalLoading &&
+                    !modalError &&
+                    modalItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-[#f0eee9] bg-white hover:border-[#000666]/30 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-[#e0e0ff] overflow-hidden flex items-center justify-center font-bold text-[#000666] shrink-0">
+                            {item.avatarUrl ? (
+                              <img
+                                src={item.avatarUrl}
+                                alt={item.displayName}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              item.displayName.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-extrabold text-sm text-[#1b1c1a]">{item.displayName}</p>
+                            <p className="text-xs text-[#666]">@{item.username}</p>
+                          </div>
+                        </div>
+
+                        {item.isMe ? (
+                          <span className="text-xs font-bold text-[#888] bg-slate-100 px-2.5 py-1 rounded-lg">
+                            Você
+                          </span>
+                        ) : item.isFollowing ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                            <Check className="w-3 h-3" />
+                            <span>Seguindo</span>
+                          </span>
+                        ) : null}
+                      </div>
+                    ))}
+                </div>
+
+                {/* Rodapé do Modal */}
+                <div className="px-6 py-3 border-t border-[#e4e2de] bg-[#f7f6fc] text-right">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    className="px-4 py-2 rounded-xl bg-[#000666] text-white text-xs font-bold hover:bg-[#1b237b] transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
   );
 }
-

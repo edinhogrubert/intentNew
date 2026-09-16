@@ -9,7 +9,7 @@ const { db, verifyIdToken } = vi.hoisted(() => ({
     intent: { count: vi.fn(), findMany: vi.fn(), findUnique: vi.fn(), create: vi.fn() },
     $transaction: vi.fn(),
     domainEvent: { create: vi.fn() },
-    follow: { findUnique: vi.fn() },
+    follow: { findUnique: vi.fn(), count: vi.fn().mockResolvedValue(0), createManyAndReturn: vi.fn().mockResolvedValue([]), deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
     support: { count: vi.fn(), findUnique: vi.fn() },
     notification: { count: vi.fn(), createMany: vi.fn(), findMany: vi.fn(), updateMany: vi.fn(), findFirst: vi.fn() },
     intentComment: { count: vi.fn(), findMany: vi.fn(), create: vi.fn() },
@@ -67,6 +67,7 @@ beforeEach(() => {
   db.user.update.mockResolvedValue(viewer);
   db.intent.findMany.mockResolvedValue([]);
   db.follow.findUnique.mockResolvedValue(null);
+  db.follow.count.mockResolvedValue(0);
   db.support.findUnique.mockResolvedValue(null);
   db.notification.findMany.mockResolvedValue([]);
   db.notification.count.mockResolvedValue(0);
@@ -109,10 +110,11 @@ describe('perfil público HTTP', () => {
     const response = await get(path, 'Bearer synthetic-test-token');
     expect(response.status).toBe(200);
     const { data } = await response.json();
-    expect(Object.keys(data).sort()).toEqual(['id', 'username', 'displayName', 'bio', 'avatarUrl', 'createdAt', 'updatedAt', 'stats', 'intents'].sort());
+    expect(Object.keys(data).sort()).toEqual(['id', 'username', 'displayName', 'bio', 'avatarUrl', 'createdAt', 'updatedAt', 'isMe', 'viewerIsFollowing', 'stats', 'intents'].sort());
     expect(data.stats).toEqual({ intentsCreated: 3, intentsRealized: 1,
       totalSupportReceived: 7, totalReactionsReceived: 4,
-      totalCommentsReceived: 2, publicIntentsCount: 3 });
+      totalCommentsReceived: 2, publicIntentsCount: 3,
+      followersCount: 0, followingCount: 0 });
     expect(data.intents).toEqual([]);
     expect(db.user.findFirst.mock.calls[0]![0].select).toEqual({
       id: true, username: true, displayName: true, bio: true,
@@ -150,6 +152,83 @@ describe('perfil público HTTP', () => {
     expect(db.intentComment.count).toHaveBeenCalledWith({ where: { intent: scope, author: { status: 'ACTIVE' } } });
     expect(db.domainEvent.create).not.toHaveBeenCalled();
     expect(db.intent.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('rotas HTTP de seguir e deixar de seguir', () => {
+  const followPath = `/v1/users/${creatorId}/follow`;
+
+  it('exige autenticação para seguir', async () => {
+    const response = await fetch(`${baseUrl}${followPath}`, { method: 'POST' });
+    expect(response.status).toBe(401);
+  });
+
+  it('impede um usuário de seguir a si mesmo (409)', async () => {
+    const selfFollowPath = `/v1/users/${viewer.id}/follow`;
+    const response = await fetch(`${baseUrl}${selfFollowPath}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer synthetic-test-token' },
+    });
+    expect(response.status).toBe(409);
+    const json = await response.json();
+    expect(json.error.code).toBe('SELF_FOLLOW_NOT_ALLOWED');
+  });
+
+  it('retorna 404 ao tentar seguir perfil inexistente ou inativo', async () => {
+    db.user.findUnique.mockImplementation(async (args: any) => {
+      if (args?.where?.firebaseUid) return viewer;
+      return null;
+    });
+    const response = await fetch(`${baseUrl}${followPath}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer synthetic-test-token' },
+    });
+    expect(response.status).toBe(404);
+  });
+
+  it('permite seguir com sucesso e retorna perfil atualizado com viewerIsFollowing', async () => {
+    db.user.findUnique.mockResolvedValue({ id: creatorId, status: 'ACTIVE' });
+    db.user.findFirst.mockResolvedValue({ ...viewer, id: creatorId });
+    db.follow.createManyAndReturn.mockResolvedValue([{ id: 'relation-1' }]);
+    db.follow.findUnique.mockResolvedValue({ id: 'relation-1' });
+
+    const response = await fetch(`${baseUrl}${followPath}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer synthetic-test-token' },
+    });
+    expect(response.status).toBe(201);
+    const { data } = await response.json();
+    expect(data).toHaveProperty('viewerIsFollowing', true);
+    expect(data).toHaveProperty('stats');
+    expect(data.stats).toHaveProperty('followersCount');
+    expect(data.stats).toHaveProperty('followingCount');
+  });
+
+  it('seguir duas vezes é idempotente', async () => {
+    db.user.findUnique.mockResolvedValue({ id: creatorId, status: 'ACTIVE' });
+    db.user.findFirst.mockResolvedValue({ ...viewer, id: creatorId });
+    db.follow.createManyAndReturn.mockResolvedValue([]);
+    db.follow.findUnique.mockResolvedValue({ id: 'relation-1' });
+
+    const response = await fetch(`${baseUrl}${followPath}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer synthetic-test-token' },
+    });
+    expect(response.status).toBe(201);
+  });
+
+  it('permite deixar de seguir com sucesso (DELETE)', async () => {
+    db.user.findFirst.mockResolvedValue({ ...viewer, id: creatorId });
+    db.follow.deleteMany.mockResolvedValue({ count: 1 });
+    db.follow.findUnique.mockResolvedValue(null);
+
+    const response = await fetch(`${baseUrl}${followPath}`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer synthetic-test-token' },
+    });
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(data).toHaveProperty('viewerIsFollowing', false);
   });
 });
 

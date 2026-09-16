@@ -472,6 +472,8 @@ export interface ApiPublicUserProfile {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  isMe?: boolean;
+  viewerIsFollowing?: boolean;
   stats: {
     intentsCreated: number;
     intentsRealized: number;
@@ -479,6 +481,8 @@ export interface ApiPublicUserProfile {
     totalReactionsReceived: number;
     totalCommentsReceived: number;
     publicIntentsCount: number;
+    followersCount?: number;
+    followingCount?: number;
   };
   intents: Array<{ id: string; title: string; story: string; status: string;
     createdAt: string; supportCount: number }>;
@@ -487,6 +491,22 @@ export interface ApiPublicUserProfile {
 export async function getPublicUserProfile(userId: string): Promise<ApiPublicUserProfile> {
   const result = await authenticatedRequest<ApiEnvelope<ApiPublicUserProfile>>(
     `/v1/users/${encodeURIComponent(userId)}/profile`,
+  );
+  return result.data;
+}
+
+export async function followUser(userId: string): Promise<ApiPublicUserProfile> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiPublicUserProfile>>(
+    `/v1/users/${encodeURIComponent(userId)}/follow`,
+    { method: 'POST' },
+  );
+  return result.data;
+}
+
+export async function unfollowUser(userId: string): Promise<ApiPublicUserProfile> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiPublicUserProfile>>(
+    `/v1/users/${encodeURIComponent(userId)}/follow`,
+    { method: 'DELETE' },
   );
   return result.data;
 }

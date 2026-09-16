@@ -113,6 +113,7 @@ export async function getSocialProfile(targetUserId: string, viewerUserId: strin
     createdAt: user.createdAt,
     isMe,
     isFollowing: Boolean(followingRelation),
+    viewerIsFollowing: Boolean(followingRelation),
     stats: {
       intentsCreated,
       intentsRealized,

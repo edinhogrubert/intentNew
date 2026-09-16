@@ -24,7 +24,7 @@ usersRouter.use(requireAuthenticatedUser);
 usersRouter.get('/:id/profile', async (request, response, next) => {
   try {
     const userId = userIdSchema.parse(request.params.id);
-    response.json({ data: await getPublicUserProfile(userId) });
+    response.json({ data: await getPublicUserProfile(userId, request.appUser?.id) });
   } catch (error) {
     next(error);
   }
