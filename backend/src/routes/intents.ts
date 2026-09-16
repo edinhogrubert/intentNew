@@ -23,7 +23,7 @@ export const intentsRouter = Router();
 
 const identifierSchema = z.string().uuid();
 const feedQuerySchema = z.object({
-  scope: z.enum(['public', 'following']).default('public'),
+  scope: z.enum(['public', 'following', 'all']).default('public'),
   cursor: z.string().uuid().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });

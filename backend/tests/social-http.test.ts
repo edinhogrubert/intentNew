@@ -247,12 +247,55 @@ describe('rotas HTTP de seguir e deixar de seguir', () => {
 });
 
 describe('regressão HTTP dos feeds e autenticação', () => {
-  it.each(['/v1/intents/feed', '/v1/intents/feed?scope=public'])('Para você permite leitura anônima (%s)', async (path) => {
+  it.each(['/v1/intents/feed', '/v1/intents/feed?scope=public', '/v1/intents/feed?scope=all'])('Todos permite leitura anônima e mantém comportamento (%s)', async (path) => {
     const response = await get(path);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ data: { items: [], nextCursor: null } });
     expect(db.intent.findMany.mock.calls[0]![0].where.visibility).toBe('PUBLIC');
     expect(verifyIdToken).not.toHaveBeenCalled();
+  });
+
+  it('Seguindo retorna Intents de usuários seguidos e respeita paginação', async () => {
+    const mockIntent = {
+      id: intentId,
+      type: 'SUPPORT_REVEAL',
+      conditionType: 'SUPPORT',
+      status: 'PUBLISHED',
+      visibility: 'PUBLIC',
+      category: 'TECHNOLOGY',
+      title: 'Acontecimento de quem eu sigo',
+      story: 'História do acontecimento',
+      supportGoal: 10,
+      supportCount: 3,
+      revealAt: null,
+      guardianApprovalGoal: null,
+      publishedAt: new Date().toISOString(),
+      realizedAt: null,
+      createdAt: new Date().toISOString(),
+      creator: {
+        id: creatorId,
+        username: 'criador',
+        displayName: 'Criador Seguido',
+        avatarUrl: null,
+        status: 'ACTIVE',
+      },
+    };
+    db.intent.findMany.mockResolvedValue([mockIntent, { ...mockIntent, id: '20000000-0000-4000-8000-000000000002' }]);
+
+    const response = await get('/v1/intents/feed?scope=following&limit=1', 'Bearer synthetic-test-token');
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(data.items).toHaveLength(1);
+    expect(data.items[0]).toMatchObject({
+      id: intentId,
+      title: 'Acontecimento de quem eu sigo',
+      creator: { id: creatorId, username: 'criador', displayName: 'Criador Seguido' },
+    });
+    expect(data.items[0].creator).not.toHaveProperty('email');
+    expect(data.items[0].creator).not.toHaveProperty('firebaseUid');
+    expect(data.items[0]).not.toHaveProperty('revealCiphertext');
+    expect(data.nextCursor).toBe(intentId);
+    expect(db.intent.findMany.mock.calls[0]![0].orderBy).toEqual([{ createdAt: 'desc' }, { id: 'desc' }]);
   });
 
   it('Seguindo exige autenticação mesmo sem dados no feed', async () => {

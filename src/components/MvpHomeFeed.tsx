@@ -254,7 +254,13 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
       setNextCursor(page.nextCursor);
     } catch (caught) {
       if (generation === loadGeneration.current) {
-        setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar o feed.');
+        if (caught instanceof IntentApiError) {
+          setError(caught.message);
+        } else if (scope === 'following') {
+          setError('Não foi possível carregar os acontecimentos da sua rede agora.');
+        } else {
+          setError('Não foi possível carregar os acontecimentos.');
+        }
       }
     } finally {
       if (generation === loadGeneration.current) {
@@ -508,7 +514,7 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                   scope === 'public' ? 'bg-[#000666] text-white' : 'text-[#666] hover:bg-[#f5f3ef]'
                 }`}
               >
-                Para você
+                Todos
               </button>
               <button
                 type="button"
@@ -565,11 +571,11 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
             <div className="rounded-2xl border-2 border-dashed border-[#c6c5d4] bg-white p-8 sm:p-12 text-center">
               <Users className="mx-auto h-8 w-8 text-[#777]"/>
               <h3 className="mt-3 text-base font-black text-[#1b1c1a]">
-                {isFollowingFeed ? 'Nenhum acontecimento das pessoas que você segue' : 'Nenhum acontecimento por aqui ainda'}
+                {isFollowingFeed ? 'Você ainda não tem acontecimentos de pessoas que segue.' : 'Nenhum acontecimento por aqui ainda'}
               </h3>
               <p className="mt-2 text-sm text-[#666] max-w-md mx-auto leading-relaxed">
                 {isFollowingFeed
-                  ? 'Explore o feed público ou busque novos perfis para acompanhar os acontecimentos deles por aqui.'
+                  ? 'Siga perfis para acompanhar o que eles estão fazendo acontecer.'
                   : 'Crie uma nova Intent para definir um acontecimento real com revelação protegida.'}
               </p>
               {isFollowingFeed ? (
@@ -578,7 +584,7 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                   onClick={() => setScope('public')}
                   className="mt-5 rounded-xl bg-[#000666] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#000444] transition-colors"
                 >
-                  Ver feed público
+                  Ver todos os acontecimentos
                 </button>
               ) : (
                 <button

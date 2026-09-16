@@ -388,13 +388,14 @@ export async function listGuardianRequests(): Promise<{ items: ApiIntent[]; next
   return result.data;
 }
 
-export type FeedScope = 'public' | 'following';
+export type FeedScope = 'public' | 'following' | 'all';
 
 export async function listPublicIntents(
   scope: FeedScope = 'public',
   cursor?: string,
 ): Promise<{ items: ApiIntent[]; nextCursor: string | null }> {
-  const query = new URLSearchParams({ scope, limit: '20' });
+  const normalizedScope = scope === 'all' ? 'public' : scope;
+  const query = new URLSearchParams({ scope: normalizedScope, limit: '20' });
   if (cursor) query.set('cursor', cursor);
   const result = await authenticatedRequest<ApiEnvelope<{ items: ApiIntent[]; nextCursor: string | null }>>(
     `/v1/intents/feed?${query.toString()}`,
