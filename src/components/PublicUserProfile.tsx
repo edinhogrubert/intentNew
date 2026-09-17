@@ -12,6 +12,7 @@ import {
   Heart,
   LoaderCircle,
   MessageSquare,
+  Pencil,
   RefreshCw,
   Share2,
   Sparkles,
@@ -23,6 +24,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import type { UserAccount } from '../types';
 import {
   followUser,
   getPublicUserProfile,
@@ -35,9 +37,12 @@ import {
 } from '../services/intentApi';
 import { copyToClipboard, getUserProfileShareUrl } from '../utils/shareLink';
 import { PublicUserActivity } from './PublicUserActivity';
+import { EditProfileModal } from './EditProfileModal';
 
 interface PublicUserProfileProps {
   userId: string;
+  currentUser?: UserAccount | null;
+  onCurrentUserUpdated?: (user: UserAccount) => void;
   onBack: () => void;
   onSelectIntent: (id: string) => void;
 }
@@ -66,10 +71,17 @@ function formatMemberSince(value: string) {
   }
 }
 
-export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUserProfileProps) {
+export function PublicUserProfile({
+  userId,
+  currentUser,
+  onCurrentUserUpdated,
+  onBack,
+  onSelectIntent,
+}: PublicUserProfileProps) {
   const [profile, setProfile] = useState<ApiPublicUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingProfile, setEditingProfile] = useState(false);
 
   // Estados da ação de seguir / deixar de seguir
   const [followLoading, setFollowLoading] = useState(false);
@@ -363,10 +375,21 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
                   </button>
 
                   {profile.isMe ? (
-                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-[#f7f6fc] text-[#000666] border border-[#e4e2de]">
-                      <UserCheck className="w-4 h-4 text-[#000666]" />
-                      <span>Seu Perfil</span>
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingProfile(true)}
+                        title="Editar seu perfil"
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] border border-[#c6c5d4] text-[#000666] bg-white hover:bg-[#f7f6fc] transition-all"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        <span>Editar perfil</span>
+                      </button>
+                      <span className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-extrabold bg-[#f7f6fc] text-[#000666] border border-[#e4e2de]">
+                        <UserCheck className="w-4 h-4 text-[#000666]" />
+                        <span>Seu Perfil</span>
+                      </span>
+                    </div>
                   ) : (
                     <button
                       type="button"
@@ -997,6 +1020,27 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
             </div>
           )}
         </div>
+      )}
+
+      {/* Modal de Edição de Perfil para o próprio usuário */}
+      {editingProfile && currentUser && (
+        <EditProfileModal
+          user={currentUser}
+          onClose={() => setEditingProfile(false)}
+          onSaved={(updated) => {
+            setProfile((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    displayName: updated.name,
+                    bio: updated.bio || null,
+                    avatarUrl: updated.avatarUrl || null,
+                  }
+                : null
+            );
+            onCurrentUserUpdated?.(updated);
+          }}
+        />
       )}
     </section>
   );

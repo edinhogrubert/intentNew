@@ -224,7 +224,15 @@ export default function App() {
 
     <main className="pb-24 sm:pb-8">
       {view === 'home' && <MvpHomeFeed currentUser={currentUser} onCreate={() => navigateToView('create')} onSelectIntent={selectIntent} onSelectProfile={selectPublicProfile}/>}
-      {view === 'public-profile' && selectedProfileId && <PublicUserProfile userId={selectedProfileId} onBack={() => navigateToView('home')} onSelectIntent={selectIntent}/>}
+      {view === 'public-profile' && selectedProfileId && (
+        <PublicUserProfile
+          userId={selectedProfileId}
+          currentUser={currentUser}
+          onCurrentUserUpdated={setCurrentUser}
+          onBack={() => navigateToView('home')}
+          onSelectIntent={selectIntent}
+        />
+      )}
       {view === 'create' && <CreationWizard currentUser={currentUser} onCancel={() => navigateToView('home')} onComplete={(created) => { setToast('Intent publicada com sucesso.'); selectIntent(created.id); }}/>} 
       {view === 'mine' && <MyIntentsDashboard currentUser={currentUser} onCreateNew={() => navigateToView('create')} onSelectIntent={selectIntent}/>} 
       {view === 'detail' && selectedIntentId && <MvpIntentDetail intentId={selectedIntentId} currentUser={currentUser} onBack={() => navigateToView('home')}/>} 
