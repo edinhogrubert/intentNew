@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, Globe, Heart, Info, LoaderCircle, Lock, MessageCircle, Sparkles, ThumbsUp, Users, Vote } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar, Check, CheckCircle2, Globe, Heart, Info, LoaderCircle, Lock, MessageCircle, Share2, Sparkles, ThumbsUp, Users, Vote } from 'lucide-react';
 import type { UserAccount } from '../types';
 import {
   approveGuardianIntent,
@@ -16,6 +16,7 @@ import {
   type IntentCategory,
   type ReactionType,
 } from '../services/intentApi';
+import { copyToClipboard, getIntentShareUrl } from '../utils/shareLink';
 
 interface MvpIntentDetailProps {
   intentId: string;
@@ -105,6 +106,16 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta
   const [reactionPending, setReactionPending] = useState(false);
   const [reactionError, setReactionError] = useState('');
   const [reactionNotice, setReactionNotice] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  async function handleCopyIntentLink() {
+    const url = getIntentShareUrl(intentId);
+    const ok = await copyToClipboard(url);
+    if (ok) {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 3000);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -260,7 +271,20 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-1.5 shrink-0">
+              <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => void handleCopyIntentLink()}
+                  title="Copiar link da Intent"
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
+                    copySuccess
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                      : 'bg-[#f7f6fc] text-[#454652] border-[#e4e2de] hover:bg-white hover:text-[#000666]'
+                  }`}
+                >
+                  {copySuccess ? <Check className="w-3 h-3 text-emerald-600"/> : <Share2 className="w-3 h-3"/>}
+                  <span>{copySuccess ? 'Link copiado!' : 'Compartilhar'}</span>
+                </button>
                 <span className="inline-block px-2 py-0.5 rounded-full bg-[#f0efff] text-[#000666] text-[11px] font-semibold">
                   {categoryLabels[intent.category] || 'Outros'}
                 </span>

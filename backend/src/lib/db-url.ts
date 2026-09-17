@@ -62,6 +62,21 @@ export function sanitizeDatabaseUrl(rawUrl: string): string {
   return url;
 }
 
+function appendPoolParams(url: string): string {
+  if (!url || !url.startsWith('postgres')) return url;
+  let result = url;
+  if (!result.includes('connection_limit=')) {
+    result += `${result.includes('?') ? '&' : '?'}connection_limit=5`;
+  }
+  if (!result.includes('pool_timeout=')) {
+    result += `${result.includes('?') ? '&' : '?'}pool_timeout=20`;
+  }
+  if (!result.includes('connect_timeout=')) {
+    result += `${result.includes('?') ? '&' : '?'}connect_timeout=15`;
+  }
+  return result;
+}
+
 export function resolveDatabaseUrl(): string {
   const user = process.env.SQL_USER || process.env.SQL_ADMIN_USER;
   const password = process.env.SQL_PASSWORD || process.env.SQL_ADMIN_PASSWORD;
@@ -76,15 +91,17 @@ export function resolveDatabaseUrl(): string {
     } else {
       url = `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:5432/${dbName}`;
     }
+    url = appendPoolParams(url);
     process.env.DATABASE_URL = url;
     return url;
   }
 
   if (process.env.DATABASE_URL) {
-    const sanitized = sanitizeDatabaseUrl(process.env.DATABASE_URL);
+    const sanitized = appendPoolParams(sanitizeDatabaseUrl(process.env.DATABASE_URL));
     process.env.DATABASE_URL = sanitized;
     return sanitized;
   }
 
-  return process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/intent';
+  const fallback = appendPoolParams(process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/intent');
+  return fallback;
 }

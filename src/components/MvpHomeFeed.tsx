@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowRight, Calendar, CheckCircle2, Globe2, Heart, LockKeyhole, Plus, RefreshCw, Search, Sparkles, Tag, ThumbsUp, TrendingUp, UserRound, Users, Vote, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar, Check, CheckCircle2, Globe2, Heart, LockKeyhole, Plus, RefreshCw, Search, Share2, Sparkles, Tag, ThumbsUp, TrendingUp, UserRound, Users, Vote, X } from 'lucide-react';
 import type { UserAccount } from '../types';
 import { getSocialProfile, IntentApiError, listPublicIntents, searchIntentsAndUsers, type ApiIntent, type ApiSearchResults, type ApiSocialProfile, type FeedScope, type IntentCategory } from '../services/intentApi';
+import { copyToClipboard, getIntentShareUrl } from '../utils/shareLink';
 import { APP_VERSION_CONTEXT, APP_VERSION_LABEL } from '../appVersion';
 
 interface MvpHomeFeedProps {
@@ -44,10 +45,21 @@ function conditionDetails(intent: ApiIntent) {
 }
 
 function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { intent: ApiIntent; currentUser: UserAccount; onSelectIntent: (id: string) => void; onSelectProfile: (id: string) => void }) {
+  const [copied, setCopied] = useState(false);
   const condition = conditionDetails(intent);
   const ConditionIcon = condition.icon;
   const isMine = intent.creator.id === currentUser.id;
   const isRealized = intent.status === 'REALIZED';
+
+  async function handleCopyLink(e: React.MouseEvent) {
+    e.stopPropagation();
+    const url = getIntentShareUrl(intent.id);
+    const success = await copyToClipboard(url);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }
 
   const visibility = intent.visibility === 'PUBLIC'
     ? { label: 'Pública', className: 'bg-[#e0e0ff] text-[#000666]', icon: Globe2 }
@@ -203,14 +215,30 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => onSelectIntent(intent.id)}
-          className="flex items-center gap-1.5 rounded-xl bg-[#000666] px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-[#000444]"
-        >
-          <span>Ver Intent</span>
-          <ArrowRight className="h-3.5 w-3.5"/>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            title="Copiar link direto para esta Intent"
+            className={`flex items-center gap-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+              copied
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                : 'border-[#e4e2de] bg-white text-[#555] hover:border-[#000666] hover:text-[#000666]'
+            }`}
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600"/> : <Share2 className="h-3.5 w-3.5"/>}
+            <span>{copied ? 'Copiado!' : 'Compartilhar'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSelectIntent(intent.id)}
+            className="flex items-center gap-1.5 rounded-xl bg-[#000666] px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-[#000444]"
+          >
+            <span>Ver Intent</span>
+            <ArrowRight className="h-3.5 w-3.5"/>
+          </button>
+        </div>
       </div>
     </article>
   );

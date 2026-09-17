@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, Pencil, RefreshCw, Target, UserMinus, UserPlus, Users } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, Pencil, RefreshCw, Share2, Target, UserMinus, UserPlus, Users } from 'lucide-react';
 import type { UserAccount } from '../types';
 import { followProfile, getSocialProfile, IntentApiError, unfollowProfile, type ApiSocialProfile } from '../services/intentApi';
+import { copyToClipboard, getUserProfileShareUrl } from '../utils/shareLink';
 import { MvpConnectionsList } from './MvpConnectionsList';
 import { EditProfileModal } from './EditProfileModal';
 
@@ -25,7 +26,17 @@ export function MvpSocialProfile({ userId, currentUser, onBack, onSelectIntent, 
   const [error, setError] = useState('');
   const [connectionsMode, setConnectionsMode] = useState<'followers' | 'following' | null>(null);
   const [editing, setEditing] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const loadGeneration = useRef(0);
+
+  async function handleCopyProfile() {
+    const url = getUserProfileShareUrl(profile?.id || userId);
+    const ok = await copyToClipboard(url);
+    if (ok) {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 3000);
+    }
+  }
 
   async function loadProfile() {
     const generation = ++loadGeneration.current;
@@ -96,9 +107,25 @@ export function MvpSocialProfile({ userId, currentUser, onBack, onSelectIntent, 
           <div className="w-20 h-20 rounded-full border-4 border-white bg-[#e0e0ff] text-[#000666] overflow-hidden flex items-center justify-center text-2xl font-black">
             {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover"/> : profile.displayName.charAt(0).toUpperCase()}
           </div>
-          {profile.isMe
-            ? <button type="button" onClick={() => setEditing(true)} className="mb-1 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border border-[#c6c5d4] text-[#000666] bg-white"><Pencil className="w-4 h-4"/>Editar perfil</button>
-            : <button onClick={() => void toggleFollow()} disabled={relationshipLoading} className={`mb-1 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-60 ${profile.isFollowing ? 'border border-[#c6c5d4] text-[#8c1d18] bg-white' : 'bg-[#000666] text-white'}`}>{profile.isFollowing ? <UserMinus className="w-4 h-4"/> : <UserPlus className="w-4 h-4"/>}{relationshipLoading ? 'Atualizando...' : profile.isFollowing ? 'Deixar de seguir' : 'Seguir'}</button>}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void handleCopyProfile()}
+              title="Copiar link do perfil público"
+              className={`mb-1 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border transition-all ${
+                copySuccess
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  : 'border-[#c6c5d4] text-[#454652] bg-white hover:bg-[#f7f6fc]'
+              }`}
+            >
+              {copySuccess ? <Check className="w-4 h-4 text-emerald-600"/> : <Share2 className="w-4 h-4"/>}
+              {copySuccess ? 'Copiado!' : 'Compartilhar'}
+            </button>
+
+            {profile.isMe
+              ? <button type="button" onClick={() => setEditing(true)} className="mb-1 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border border-[#c6c5d4] text-[#000666] bg-white"><Pencil className="w-4 h-4"/>Editar perfil</button>
+              : <button onClick={() => void toggleFollow()} disabled={relationshipLoading} className={`mb-1 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-60 ${profile.isFollowing ? 'border border-[#c6c5d4] text-[#8c1d18] bg-white' : 'bg-[#000666] text-white'}`}>{profile.isFollowing ? <UserMinus className="w-4 h-4"/> : <UserPlus className="w-4 h-4"/>}{relationshipLoading ? 'Atualizando...' : profile.isFollowing ? 'Deixar de seguir' : 'Seguir'}</button>}
+          </div>
         </div>
 
         <h1 className="text-2xl font-black mt-4">{profile.displayName}</h1>
