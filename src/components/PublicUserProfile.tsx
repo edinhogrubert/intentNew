@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  Activity,
   AlertCircle,
   ArrowLeft,
   ArrowRight,
@@ -31,6 +32,7 @@ import {
   type ApiPublicUserProfile,
   type ApiSocialConnection,
 } from '../services/intentApi';
+import { PublicUserActivity } from './PublicUserActivity';
 
 interface PublicUserProfileProps {
   userId: string;
@@ -77,6 +79,9 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
   const [modalItems, setModalItems] = useState<ApiSocialConnection[]>([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState('');
+
+  // Aba ativa: 'activity' (Atividade pública) ou 'intents' (Histórico de Intents)
+  const [activeTab, setActiveTab] = useState<'activity' | 'intents'>('activity');
 
   const loadProfile = () => {
     let active = true;
@@ -700,103 +705,152 @@ export function PublicUserProfile({ userId, onBack, onSelectIntent }: PublicUser
             </div>
           </section>
 
-          {/* Parte 4 — Histórico Público de Intents */}
-          <section aria-labelledby="public-intents-heading" className="space-y-4 pt-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 id="public-intents-heading" className="text-xl font-black text-[#1b1c1a] flex items-center gap-2">
-                  <span>Histórico Público</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#000666] text-white font-bold">
-                    {profile.intents.length}
-                  </span>
-                </h2>
-                <p className="text-xs text-[#666]">
-                  Acontecimentos e promessas públicas registradas por @{profile.username}
-                </p>
-              </div>
+          {/* Parte 4 — Navegação de Abas: Atividade Pública vs Histórico de Intents */}
+          <div className="space-y-6 pt-2">
+            {/* Seletor de Abas */}
+            <div className="flex items-center gap-2 border-b border-[#e4e2de] pb-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('activity')}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all min-h-[44px] ${
+                  activeTab === 'activity'
+                    ? 'bg-[#000666] text-white shadow-sm'
+                    : 'bg-[#f7f6fc] text-[#555] hover:bg-[#e0e0ff]/60 hover:text-[#000666]'
+                }`}
+              >
+                <Activity className="w-4 h-4" />
+                <span>Atividade pública</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('intents')}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all min-h-[44px] ${
+                  activeTab === 'intents'
+                    ? 'bg-[#000666] text-white shadow-sm'
+                    : 'bg-[#f7f6fc] text-[#555] hover:bg-[#e0e0ff]/60 hover:text-[#000666]'
+                }`}
+              >
+                <Globe2 className="w-4 h-4" />
+                <span>Histórico de Intents</span>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                    activeTab === 'intents'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-[#e0e0ff] text-[#000666]'
+                  }`}
+                >
+                  {profile.intents.length}
+                </span>
+              </button>
             </div>
 
-            {/* Estado Vazio de Intents */}
-            {profile.intents.length === 0 && (
-              <div className="rounded-3xl border border-[#e4e2de] bg-white p-8 sm:p-12 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-[#f7f6fc] text-[#000666] flex items-center justify-center mx-auto">
-                  <Sparkles className="w-6 h-6" />
+            {/* Conteúdo da Aba Ativa */}
+            {activeTab === 'activity' ? (
+              <PublicUserActivity
+                userId={userId}
+                displayName={profile.displayName}
+                onSelectIntent={onSelectIntent}
+              />
+            ) : (
+              <section aria-labelledby="public-intents-heading" className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 id="public-intents-heading" className="text-xl font-black text-[#1b1c1a] flex items-center gap-2">
+                      <span>Histórico de Intents Criadas</span>
+                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#000666] text-white font-bold">
+                        {profile.intents.length}
+                      </span>
+                    </h2>
+                    <p className="text-xs text-[#666]">
+                      Acontecimentos e promessas públicas registradas por @{profile.username}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-extrabold text-base text-[#1b1c1a]">
-                  Este perfil ainda não possui Intents públicas
-                </h3>
-                <p className="text-sm text-[#666] max-w-md mx-auto">
-                  Quando novas Intents forem publicadas no modo público, elas aparecerão listadas no seu histórico.
-                </p>
-              </div>
-            )}
 
-            {/* Lista de Cards de Intents */}
-            <div className="grid grid-cols-1 gap-4">
-              {profile.intents.map((intent) => {
-                const isRealized = intent.status === 'REALIZED';
-                return (
-                  <article
-                    key={intent.id}
-                    className="rounded-2xl border border-[#e4e2de] bg-white p-5 sm:p-6 shadow-sm hover:border-[#000666]/30 transition-all space-y-3"
-                  >
-                    {/* Cabeçalho do Card (Status e Meta) */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#f0eee9] pb-3">
-                      <div className="flex items-center gap-2">
-                        {isRealized ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Realizada</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Em andamento</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3 text-xs font-semibold text-[#666]">
-                        <span className="flex items-center gap-1 text-rose-600 font-bold bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100">
-                          <Heart className="w-3.5 h-3.5" />
-                          <span>
-                            {intent.supportCount}{' '}
-                            {intent.supportCount === 1 ? 'apoio' : 'apoios'}
-                          </span>
-                        </span>
-                        <span className="flex items-center gap-1 text-[#666]">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{formatDate(intent.createdAt)}</span>
-                        </span>
-                      </div>
+                {/* Estado Vazio de Intents */}
+                {profile.intents.length === 0 && (
+                  <div className="rounded-3xl border border-[#e4e2de] bg-white p-8 sm:p-12 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-[#f7f6fc] text-[#000666] flex items-center justify-center mx-auto">
+                      <Sparkles className="w-6 h-6" />
                     </div>
+                    <h3 className="font-extrabold text-base text-[#1b1c1a]">
+                      Este perfil ainda não possui Intents públicas
+                    </h3>
+                    <p className="text-sm text-[#666] max-w-md mx-auto">
+                      Quando novas Intents forem publicadas no modo público, elas aparecerão listadas no seu histórico.
+                    </p>
+                  </div>
+                )}
 
-                    {/* Conteúdo Principal */}
-                    <div>
-                      <h3 className="text-lg font-black text-[#1b1c1a] break-words">
-                        {intent.title}
-                      </h3>
-                      <p className="text-sm text-[#555] mt-2 whitespace-pre-wrap break-words line-clamp-3 leading-relaxed">
-                        {intent.story}
-                      </p>
-                    </div>
-
-                    {/* Ação de Abertura */}
-                    <div className="pt-2 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => onSelectIntent(intent.id)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#f7f6fc] text-[#000666] text-sm font-bold hover:bg-[#e0e0ff] transition-colors min-h-[44px]"
+                {/* Lista de Cards de Intents */}
+                <div className="grid grid-cols-1 gap-4">
+                  {profile.intents.map((intent) => {
+                    const isRealized = intent.status === 'REALIZED';
+                    return (
+                      <article
+                        key={intent.id}
+                        className="rounded-2xl border border-[#e4e2de] bg-white p-5 sm:p-6 shadow-sm hover:border-[#000666]/30 transition-all space-y-3"
                       >
-                        <span>Abrir Intent</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
+                        {/* Cabeçalho do Card (Status e Meta) */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#f0eee9] pb-3">
+                          <div className="flex items-center gap-2">
+                            {isRealized ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Realizada</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>Em andamento</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-3 text-xs font-semibold text-[#666]">
+                            <span className="flex items-center gap-1 text-rose-600 font-bold bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100">
+                              <Heart className="w-3.5 h-3.5" />
+                              <span>
+                                {intent.supportCount}{' '}
+                                {intent.supportCount === 1 ? 'apoio' : 'apoios'}
+                              </span>
+                            </span>
+                            <span className="flex items-center gap-1 text-[#666]">
+                              <Calendar className="w-3.5 h-3.5" />
+                              <span>{formatDate(intent.createdAt)}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Conteúdo Principal */}
+                        <div>
+                          <h3 className="text-lg font-black text-[#1b1c1a] break-words">
+                            {intent.title}
+                          </h3>
+                          <p className="text-sm text-[#555] mt-2 whitespace-pre-wrap break-words line-clamp-3 leading-relaxed">
+                            {intent.story}
+                          </p>
+                        </div>
+
+                        {/* Ação de Abertura */}
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => onSelectIntent(intent.id)}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#f7f6fc] text-[#000666] text-sm font-bold hover:bg-[#e0e0ff] transition-colors min-h-[44px]"
+                          >
+                            <span>Abrir Intent</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
 
           {/* Modal de Conexões (Seguidores / Seguindo) */}
           {activeModal && (

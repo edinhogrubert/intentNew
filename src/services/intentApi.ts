@@ -515,3 +515,55 @@ export async function unfollowUser(userId: string): Promise<ApiPublicUserProfile
   );
   return result.data;
 }
+
+export type ApiPublicActivityType =
+  | 'INTENT_CREATED'
+  | 'INTENT_SUPPORTED'
+  | 'INTENT_REACTED'
+  | 'INTENT_COMMENTED'
+  | 'INTENT_REALIZED_PARTICIPATION';
+
+export interface ApiPublicActivityItem {
+  id: string;
+  type: ApiPublicActivityType;
+  occurredAt: string;
+  metadata?: {
+    reactionType?: ReactionType;
+    commentSnippet?: string;
+    supportGoal?: number;
+    supportCount?: number;
+    realizedAt?: string | null;
+  };
+  intent: {
+    id: string;
+    title: string;
+    status: string;
+    category?: string;
+    creator?: {
+      id: string;
+      username: string;
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  };
+}
+
+export interface ApiPublicActivityResponse {
+  items: ApiPublicActivityItem[];
+  nextCursor: string | null;
+}
+
+export async function listUserPublicActivity(
+  userId: string,
+  cursor?: string,
+  limit = 20,
+): Promise<ApiPublicActivityResponse> {
+  const query = new URLSearchParams();
+  if (cursor) query.set('cursor', cursor);
+  if (limit) query.set('limit', String(limit));
+  const qs = query.toString();
+  const url = `/v1/users/${encodeURIComponent(userId)}/activity${qs ? `?${qs}` : ''}`;
+  const result = await authenticatedRequest<ApiEnvelope<ApiPublicActivityResponse>>(url);
+  return result.data;
+}
+

@@ -7,11 +7,16 @@ import { publicUserSelect, toPublicUser } from '../domain/public-user.js';
 import { prisma } from '../lib/prisma.js';
 import { followUser, getSocialProfile, listConnections, unfollowUser } from '../services/social-service.js';
 import { getPublicUserProfile } from '../services/public-profile-service.js';
+import { listUserPublicActivity } from '../services/public-activity-service.js';
 
 export const usersRouter = Router();
 const userIdSchema = z.string().uuid();
 const connectionQuerySchema = z.object({
   cursor: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+const activityQuerySchema = z.object({
+  cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 const userSearchQuerySchema = z.object({
@@ -25,6 +30,17 @@ usersRouter.get('/:id/profile', async (request, response, next) => {
   try {
     const userId = userIdSchema.parse(request.params.id);
     response.json({ data: await getPublicUserProfile(userId, request.appUser?.id) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.get('/:id/activity', async (request, response, next) => {
+  try {
+    const userId = userIdSchema.parse(request.params.id);
+    const query = activityQuerySchema.parse(request.query);
+    const result = await listUserPublicActivity(userId, query.cursor, query.limit);
+    response.json({ data: result });
   } catch (error) {
     next(error);
   }
