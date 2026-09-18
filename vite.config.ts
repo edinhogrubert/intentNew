@@ -21,8 +21,9 @@ export default defineConfig(() => {
             if (id.includes('node_modules/react')) return 'react';
             if (id.includes('node_modules/lucide-react')) return 'icons';
             if (id.includes('/src/components/')) {
-              const name = id.split('/src/components/')[1].split('/')[0].split('.')[0];
-              return `component-${name.toLowerCase()}`;
+              const name = id.split('/src/components/')[1].split('/')[0].split('.')[0].toLowerCase();
+              if (name === 'errorboundary') return 'ui-boundary';
+              return `component-${name}`;
             }
             return undefined;
           },

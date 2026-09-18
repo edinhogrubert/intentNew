@@ -304,4 +304,221 @@ describe('Bloco 24 — Atividade Pública do Perfil', () => {
     const decoded = decodeActivityCursor(body.data.nextCursor);
     expect(decoded?.id).toBe('intent_created:intent-page-2');
   });
+
+  describe('Bloco 25C — Filtros da Atividade Pública', () => {
+    const creatorUser = {
+      id: targetUser.id,
+      username: targetUser.username,
+      displayName: targetUser.displayName,
+      avatarUrl: null,
+    };
+
+    it('filters activity by INTENT_CREATED correctly', async () => {
+      db.intent.findMany.mockResolvedValueOnce([
+        {
+          id: 'intent-c1',
+          title: 'Intent Criada 1',
+          status: 'PUBLISHED',
+          category: 'COMMUNITY',
+          createdAt: new Date('2026-03-22T10:00:00.000Z'),
+          publishedAt: new Date('2026-03-22T10:00:00.000Z'),
+          realizedAt: null,
+          supportGoal: 5,
+          supportCount: 1,
+          creator: creatorUser,
+        },
+      ]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_CREATED`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(1);
+      expect(body.data.items[0].type).toBe('INTENT_CREATED');
+      expect(body.data.items[0].intent.title).toBe('Intent Criada 1');
+      // When filtering INTENT_CREATED, other tables must not be queried
+      expect(db.support.findMany).not.toHaveBeenCalled();
+      expect(db.intentReaction.findMany).not.toHaveBeenCalled();
+      expect(db.intentComment.findMany).not.toHaveBeenCalled();
+    });
+
+    it('filters activity by INTENT_SUPPORTED and INTENT_REALIZED_PARTICIPATION correctly', async () => {
+      db.support.findMany.mockResolvedValueOnce([
+        {
+          id: 'support-1',
+          createdAt: new Date('2026-03-21T10:00:00.000Z'),
+          intent: {
+            id: 'intent-s1',
+            title: 'Intent Apoiada',
+            status: 'PUBLISHED',
+            category: 'TECH',
+            realizedAt: null,
+            supportGoal: 10,
+            supportCount: 4,
+            creator: creatorUser,
+          },
+        },
+      ]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_SUPPORTED`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(1);
+      expect(body.data.items[0].type).toBe('INTENT_SUPPORTED');
+      expect(db.intent.findMany).not.toHaveBeenCalled();
+    });
+
+    it('filters activity by INTENT_REALIZED_PARTICIPATION correctly', async () => {
+      db.support.findMany.mockResolvedValueOnce([
+        {
+          id: 'support-realized',
+          createdAt: new Date('2026-03-20T10:00:00.000Z'),
+          intent: {
+            id: 'intent-r1',
+            title: 'Intent Realizada com Sucesso',
+            status: 'REALIZED',
+            category: 'CULTURE',
+            realizedAt: new Date('2026-03-20T12:00:00.000Z'),
+            supportGoal: 20,
+            supportCount: 20,
+            creator: creatorUser,
+          },
+        },
+      ]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_REALIZED_PARTICIPATION`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(1);
+      expect(body.data.items[0].type).toBe('INTENT_REALIZED_PARTICIPATION');
+      expect(body.data.items[0].metadata.realizedAt).toBe('2026-03-20T12:00:00.000Z');
+    });
+
+    it('filters activity by INTENT_REACTED correctly', async () => {
+      db.intentReaction.findMany.mockResolvedValueOnce([
+        {
+          id: 'reaction-1',
+          type: 'LOVE',
+          createdAt: new Date('2026-03-19T10:00:00.000Z'),
+          intent: {
+            id: 'intent-re1',
+            title: 'Intent com Reação',
+            status: 'PUBLISHED',
+            category: 'COMMUNITY',
+            realizedAt: null,
+            creator: creatorUser,
+          },
+        },
+      ]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_REACTED`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(1);
+      expect(body.data.items[0].type).toBe('INTENT_REACTED');
+      expect(body.data.items[0].metadata.reactionType).toBe('LOVE');
+    });
+
+    it('filters activity by INTENT_COMMENTED correctly', async () => {
+      db.intentComment.findMany.mockResolvedValueOnce([
+        {
+          id: 'comment-1',
+          body: 'Comentário público muito inspirador!',
+          createdAt: new Date('2026-03-18T10:00:00.000Z'),
+          intent: {
+            id: 'intent-c1',
+            title: 'Intent com Comentário',
+            status: 'PUBLISHED',
+            category: 'HEALTH',
+            realizedAt: null,
+            creator: creatorUser,
+          },
+        },
+      ]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_COMMENTED`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(1);
+      expect(body.data.items[0].type).toBe('INTENT_COMMENTED');
+      expect(body.data.items[0].metadata.commentSnippet).toBe('Comentário público muito inspirador!');
+    });
+
+    it('returns empty list for filter with no matching events', async () => {
+      db.intent.findMany.mockResolvedValueOnce([]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_CREATED`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(0);
+      expect(body.data.nextCursor).toBeNull();
+    });
+
+    it('paginates correctly within a filtered activity stream using cursor', async () => {
+      db.intent.findMany.mockResolvedValueOnce([
+        {
+          id: 'intent-f-1',
+          title: 'Intent F1',
+          status: 'PUBLISHED',
+          category: 'COMMUNITY',
+          createdAt: new Date('2026-03-25T10:00:00.000Z'),
+          publishedAt: new Date('2026-03-25T10:00:00.000Z'),
+          realizedAt: null,
+          supportGoal: 10,
+          supportCount: 2,
+          creator: creatorUser,
+        },
+        {
+          id: 'intent-f-2',
+          title: 'Intent F2',
+          status: 'PUBLISHED',
+          category: 'COMMUNITY',
+          createdAt: new Date('2026-03-24T10:00:00.000Z'),
+          publishedAt: new Date('2026-03-24T10:00:00.000Z'),
+          realizedAt: null,
+          supportGoal: 10,
+          supportCount: 2,
+          creator: creatorUser,
+        },
+      ]);
+
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INTENT_CREATED&limit=1`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.items).toHaveLength(1);
+      expect(body.data.items[0].id).toBe('intent_created:intent-f-1');
+      expect(body.data.nextCursor).toBeTruthy();
+
+      const decoded = decodeActivityCursor(body.data.nextCursor);
+      expect(decoded?.id).toBe('intent_created:intent-f-1');
+    });
+
+    it('rejects invalid activity filter with 400', async () => {
+      const response = await fetch(`${baseUrl}/v1/users/${targetUser.id}/activity?type=INVALID_FILTER`, {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(response.status).toBe(400);
+    });
+  });
 });

@@ -548,6 +548,10 @@ export interface ApiPublicActivityItem {
   };
 }
 
+export type PublicActivityFilter =
+  | 'ALL'
+  | ApiPublicActivityType;
+
 export interface ApiPublicActivityResponse {
   items: ApiPublicActivityItem[];
   nextCursor: string | null;
@@ -557,10 +561,12 @@ export async function listUserPublicActivity(
   userId: string,
   cursor?: string,
   limit = 20,
+  type?: PublicActivityFilter,
 ): Promise<ApiPublicActivityResponse> {
   const query = new URLSearchParams();
   if (cursor) query.set('cursor', cursor);
   if (limit) query.set('limit', String(limit));
+  if (type && type !== 'ALL') query.set('type', type);
   const qs = query.toString();
   const url = `/v1/users/${encodeURIComponent(userId)}/activity${qs ? `?${qs}` : ''}`;
   const result = await authenticatedRequest<ApiEnvelope<ApiPublicActivityResponse>>(url);

@@ -15,9 +15,19 @@ const connectionQuerySchema = z.object({
   cursor: z.string().uuid().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+const activityFilterSchema = z.enum([
+  'ALL',
+  'INTENT_CREATED',
+  'INTENT_SUPPORTED',
+  'INTENT_REACTED',
+  'INTENT_COMMENTED',
+  'INTENT_REALIZED_PARTICIPATION',
+]);
+
 const activityQuerySchema = z.object({
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
+  type: activityFilterSchema.optional().default('ALL'),
 });
 const userSearchQuerySchema = z.object({
   q: z.string().trim().min(2).max(40),
@@ -39,7 +49,7 @@ usersRouter.get('/:id/activity', async (request, response, next) => {
   try {
     const userId = userIdSchema.parse(request.params.id);
     const query = activityQuerySchema.parse(request.query);
-    const result = await listUserPublicActivity(userId, query.cursor, query.limit);
+    const result = await listUserPublicActivity(userId, query.cursor, query.limit, query.type);
     response.json({ data: result });
   } catch (error) {
     next(error);

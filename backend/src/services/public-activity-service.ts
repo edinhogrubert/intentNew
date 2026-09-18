@@ -34,6 +34,10 @@ export interface PublicActivityItem {
   };
 }
 
+export type PublicActivityFilter =
+  | 'ALL'
+  | PublicActivityType;
+
 export interface ListPublicActivityResult {
   items: PublicActivityItem[];
   nextCursor: string | null;
@@ -61,6 +65,7 @@ export async function listUserPublicActivity(
   userId: string,
   cursorString?: string,
   limit = 20,
+  filterType: PublicActivityFilter = 'ALL',
 ): Promise<ListPublicActivityResult> {
   const user = await prisma.user.findFirst({
     where: { id: userId, status: 'ACTIVE' },
@@ -78,213 +83,247 @@ export async function listUserPublicActivity(
   // Escopo de visibilidade pública rigoroso:
   // Intent deve ser PUBLIC, status PUBLISHED ou REALIZED, e criador com status ACTIVE
   const publicIntentScope = {
-    visibility: 'PUBLIC',
-    status: { in: ['PUBLISHED', 'REALIZED'] },
-    creator: { status: 'ACTIVE' },
+    visibility: 'PUBLIC' as const,
+    status: { in: ['PUBLISHED', 'REALIZED'] as ('PUBLISHED' | 'REALIZED')[] },
+    creator: { status: 'ACTIVE' as const },
   };
+
+  const shouldFetchIntents = filterType === 'ALL' || filterType === 'INTENT_CREATED';
+  const shouldFetchSupports = filterType === 'ALL' || filterType === 'INTENT_SUPPORTED' || filterType === 'INTENT_REALIZED_PARTICIPATION';
+  const shouldFetchReactions = filterType === 'ALL' || filterType === 'INTENT_REACTED';
+  const shouldFetchComments = filterType === 'ALL' || filterType === 'INTENT_COMMENTED';
 
   // Buscar itens de cada fonte relevante com take: safeLimit + 1
   const [createdIntents, supports, reactions, comments] = await Promise.all([
     // 1. Intents criadas pelo usuário
-    prisma.intent.findMany({
-      where: {
-        creatorId: userId,
-        ...publicIntentScope,
-        ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
-      },
-      take: safeLimit + 1,
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        category: true,
-        createdAt: true,
-        publishedAt: true,
-        realizedAt: true,
-        supportGoal: true,
-        supportCount: true,
-        creator: { select: publicUserSelect },
-      },
-    }),
-
-    // 2. Apoios dados pelo usuário
-    prisma.support.findMany({
-      where: {
-        userId,
-        intent: publicIntentScope,
-        ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
-      },
-      take: safeLimit + 1,
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      select: {
-        id: true,
-        createdAt: true,
-        intent: {
+    shouldFetchIntents
+      ? prisma.intent.findMany({
+          where: {
+            creatorId: userId,
+            ...publicIntentScope,
+            ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
+          },
+          take: safeLimit + 1,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           select: {
             id: true,
             title: true,
             status: true,
             category: true,
+            createdAt: true,
+            publishedAt: true,
             realizedAt: true,
             supportGoal: true,
             supportCount: true,
             creator: { select: publicUserSelect },
           },
-        },
-      },
-    }),
+        })
+      : Promise.resolve([]),
+
+    // 2. Apoios dados pelo usuário
+    shouldFetchSupports
+      ? prisma.support.findMany({
+          where: {
+            userId,
+            intent: {
+              ...publicIntentScope,
+              ...(filterType === 'INTENT_REALIZED_PARTICIPATION'
+                ? { status: 'REALIZED' }
+                : filterType === 'INTENT_SUPPORTED'
+                  ? { status: 'PUBLISHED' }
+                  : {}),
+            },
+            ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
+          },
+          take: safeLimit + 1,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          select: {
+            id: true,
+            createdAt: true,
+            intent: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                category: true,
+                realizedAt: true,
+                supportGoal: true,
+                supportCount: true,
+                creator: { select: publicUserSelect },
+              },
+            },
+          },
+        })
+      : Promise.resolve([]),
 
     // 3. Reações dadas pelo usuário
-    prisma.intentReaction.findMany({
-      where: {
-        userId,
-        intent: publicIntentScope,
-        ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
-      },
-      take: safeLimit + 1,
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      select: {
-        id: true,
-        type: true,
-        createdAt: true,
-        intent: {
+    shouldFetchReactions
+      ? prisma.intentReaction.findMany({
+          where: {
+            userId,
+            intent: publicIntentScope,
+            ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
+          },
+          take: safeLimit + 1,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           select: {
             id: true,
-            title: true,
-            status: true,
-            category: true,
-            realizedAt: true,
-            creator: { select: publicUserSelect },
+            type: true,
+            createdAt: true,
+            intent: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                category: true,
+                realizedAt: true,
+                creator: { select: publicUserSelect },
+              },
+            },
           },
-        },
-      },
-    }),
+        })
+      : Promise.resolve([]),
 
     // 4. Comentários feitos pelo usuário
-    prisma.intentComment.findMany({
-      where: {
-        authorId: userId,
-        intent: publicIntentScope,
-        ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
-      },
-      take: safeLimit + 1,
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      select: {
-        id: true,
-        body: true,
-        createdAt: true,
-        intent: {
+    shouldFetchComments
+      ? prisma.intentComment.findMany({
+          where: {
+            authorId: userId,
+            intent: publicIntentScope,
+            ...(cursorDate ? { createdAt: { lte: cursorDate } } : {}),
+          },
+          take: safeLimit + 1,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           select: {
             id: true,
-            title: true,
-            status: true,
-            category: true,
-            realizedAt: true,
-            creator: { select: publicUserSelect },
+            body: true,
+            createdAt: true,
+            intent: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                category: true,
+                realizedAt: true,
+                creator: { select: publicUserSelect },
+              },
+            },
           },
-        },
-      },
-    }),
+        })
+      : Promise.resolve([]),
   ]);
 
   const rawEvents: PublicActivityItem[] = [];
 
   // Mapear Intents criadas
-  for (const intent of createdIntents) {
-    const rawId = `intent_created:${intent.id}`;
-    const occurredAt = (intent.publishedAt || intent.createdAt).toISOString();
-    rawEvents.push({
-      id: rawId,
-      type: 'INTENT_CREATED',
-      occurredAt,
-      metadata: {
-        supportGoal: intent.supportGoal,
-        supportCount: intent.supportCount,
-        realizedAt: intent.realizedAt ? intent.realizedAt.toISOString() : null,
-      },
-      intent: {
-        id: intent.id,
-        title: intent.title,
-        status: intent.status,
-        category: intent.category,
-        creator: toPublicUser(intent.creator),
-      },
-    });
+  if (shouldFetchIntents) {
+    for (const intent of createdIntents) {
+      if (filterType !== 'ALL' && filterType !== 'INTENT_CREATED') continue;
+      const rawId = `intent_created:${intent.id}`;
+      const occurredAt = (intent.publishedAt || intent.createdAt).toISOString();
+      rawEvents.push({
+        id: rawId,
+        type: 'INTENT_CREATED',
+        occurredAt,
+        metadata: {
+          supportGoal: intent.supportGoal,
+          supportCount: intent.supportCount,
+          realizedAt: intent.realizedAt ? intent.realizedAt.toISOString() : null,
+        },
+        intent: {
+          id: intent.id,
+          title: intent.title,
+          status: intent.status,
+          category: intent.category,
+          creator: toPublicUser(intent.creator),
+        },
+      });
+    }
   }
 
   // Mapear Apoios e Participações em Realizações
-  for (const support of supports) {
-    const isRealized = support.intent.status === 'REALIZED';
-    const type: PublicActivityType = isRealized
-      ? 'INTENT_REALIZED_PARTICIPATION'
-      : 'INTENT_SUPPORTED';
-    const rawId = isRealized
-      ? `intent_realized_participation:${support.id}`
-      : `intent_supported:${support.id}`;
-    const occurredAt = support.createdAt.toISOString();
+  if (shouldFetchSupports) {
+    for (const support of supports) {
+      const isRealized = support.intent.status === 'REALIZED';
+      const type: PublicActivityType = isRealized
+        ? 'INTENT_REALIZED_PARTICIPATION'
+        : 'INTENT_SUPPORTED';
 
-    rawEvents.push({
-      id: rawId,
-      type,
-      occurredAt,
-      metadata: {
-        supportGoal: support.intent.supportGoal,
-        supportCount: support.intent.supportCount,
-        realizedAt: support.intent.realizedAt ? support.intent.realizedAt.toISOString() : null,
-      },
-      intent: {
-        id: support.intent.id,
-        title: support.intent.title,
-        status: support.intent.status,
-        category: support.intent.category,
-        creator: toPublicUser(support.intent.creator),
-      },
-    });
+      if (filterType !== 'ALL' && filterType !== type) continue;
+
+      const rawId = isRealized
+        ? `intent_realized_participation:${support.id}`
+        : `intent_supported:${support.id}`;
+      const occurredAt = support.createdAt.toISOString();
+
+      rawEvents.push({
+        id: rawId,
+        type,
+        occurredAt,
+        metadata: {
+          supportGoal: support.intent.supportGoal,
+          supportCount: support.intent.supportCount,
+          realizedAt: support.intent.realizedAt ? support.intent.realizedAt.toISOString() : null,
+        },
+        intent: {
+          id: support.intent.id,
+          title: support.intent.title,
+          status: support.intent.status,
+          category: support.intent.category,
+          creator: toPublicUser(support.intent.creator),
+        },
+      });
+    }
   }
 
   // Mapear Reações
-  for (const reaction of reactions) {
-    const rawId = `intent_reacted:${reaction.id}`;
-    const occurredAt = reaction.createdAt.toISOString();
-    rawEvents.push({
-      id: rawId,
-      type: 'INTENT_REACTED',
-      occurredAt,
-      metadata: {
-        reactionType: reaction.type,
-      },
-      intent: {
-        id: reaction.intent.id,
-        title: reaction.intent.title,
-        status: reaction.intent.status,
-        category: reaction.intent.category,
-        creator: toPublicUser(reaction.intent.creator),
-      },
-    });
+  if (shouldFetchReactions) {
+    for (const reaction of reactions) {
+      if (filterType !== 'ALL' && filterType !== 'INTENT_REACTED') continue;
+      const rawId = `intent_reacted:${reaction.id}`;
+      const occurredAt = reaction.createdAt.toISOString();
+      rawEvents.push({
+        id: rawId,
+        type: 'INTENT_REACTED',
+        occurredAt,
+        metadata: {
+          reactionType: reaction.type,
+        },
+        intent: {
+          id: reaction.intent.id,
+          title: reaction.intent.title,
+          status: reaction.intent.status,
+          category: reaction.intent.category,
+          creator: toPublicUser(reaction.intent.creator),
+        },
+      });
+    }
   }
 
   // Mapear Comentários
-  for (const comment of comments) {
-    const rawId = `intent_commented:${comment.id}`;
-    const occurredAt = comment.createdAt.toISOString();
-    // Trecho seguro e truncado do comentário (máximo 120 caracteres)
-    const snippet = comment.body.length > 120 ? `${comment.body.slice(0, 117)}...` : comment.body;
-    rawEvents.push({
-      id: rawId,
-      type: 'INTENT_COMMENTED',
-      occurredAt,
-      metadata: {
-        commentSnippet: snippet,
-      },
-      intent: {
-        id: comment.intent.id,
-        title: comment.intent.title,
-        status: comment.intent.status,
-        category: comment.intent.category,
-        creator: toPublicUser(comment.intent.creator),
-      },
-    });
+  if (shouldFetchComments) {
+    for (const comment of comments) {
+      if (filterType !== 'ALL' && filterType !== 'INTENT_COMMENTED') continue;
+      const rawId = `intent_commented:${comment.id}`;
+      const occurredAt = comment.createdAt.toISOString();
+      // Trecho seguro e truncado do comentário (máximo 120 caracteres)
+      const snippet = comment.body.length > 120 ? `${comment.body.slice(0, 117)}...` : comment.body;
+      rawEvents.push({
+        id: rawId,
+        type: 'INTENT_COMMENTED',
+        occurredAt,
+        metadata: {
+          commentSnippet: snippet,
+        },
+        intent: {
+          id: comment.intent.id,
+          title: comment.intent.title,
+          status: comment.intent.status,
+          category: comment.intent.category,
+          creator: toPublicUser(comment.intent.creator),
+        },
+      });
+    }
   }
 
   // Ordenação global cronológica: occurredAt DESC, id DESC
