@@ -21,36 +21,78 @@ interface SeedIntentDef {
 }
 
 async function main() {
-  console.log('Iniciando povoamento de dados reais para os usuários existentes...');
+  console.log('Iniciando povoamento de dados reais...');
 
-  const users = await prisma.user.findMany();
-  const userMap = new Map(users.map((u) => [u.username, u]));
-
-  console.log(`Encontrados ${users.length} usuários:`, Array.from(userMap.keys()));
-
-  // 1. Atualizar Bios / Perfis se vazios
-  const profileUpdates: Record<string, { bio: string; displayName: string }> = {
-    miranha: { bio: 'Amigo da vizinhança. Defendendo causas justas e compartilhando arte independente.', displayName: 'Miranha' },
-    batima: { bio: 'Vigilante da transparência e inovação. A noite é apenas o começo.', displayName: 'Batima' },
-    snoop: { bio: 'Música, vibe positiva, culinária e lifestyle sustentável.', displayName: 'Snoop' },
-    will: { bio: 'Engenheiro de software, corredor amador e mentor de tecnologia.', displayName: 'Will' },
-    henry: { bio: 'Arquiteto de soluções distribuídas e autor técnico.', displayName: 'Henry' },
-    willian_santos: { bio: 'Empreendedor social, maker e entusiasta de robótica.', displayName: 'Willian Santos' },
-    edinho_grubert: { bio: 'Criador de acontecimentos e entusiasta do Intent OS.', displayName: 'Edinho Grubert' },
+  // 1. Garantir que os usuários base existam (Upsert com dados de perfil completos)
+  const defaultUsers: Record<string, { bio: string; displayName: string; avatarUrl: string }> = {
+    edinho_grubert: {
+      displayName: 'Edinho Grubert',
+      bio: 'Criador de acontecimentos e entusiasta do Intent OS.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=edinho_grubert',
+    },
+    miranha: {
+      displayName: 'Miranha',
+      bio: 'Amigo da vizinhança. Defendendo causas justas e compartilhando arte independente.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=miranha',
+    },
+    batima: {
+      displayName: 'Batima',
+      bio: 'Vigilante da transparência e inovação. A noite é apenas o começo.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=batima',
+    },
+    snoop: {
+      displayName: 'Snoop',
+      bio: 'Música, vibe positiva, culinária e lifestyle sustentável.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=snoop',
+    },
+    will: {
+      displayName: 'Will',
+      bio: 'Engenheiro de software, corredor amador e mentor de tecnologia.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=will',
+    },
+    henry: {
+      displayName: 'Henry',
+      bio: 'Arquiteto de soluções distribuídas e autor técnico.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=henry',
+    },
+    willian_santos: {
+      displayName: 'Willian Santos',
+      bio: 'Empreendedor social, maker e entusiasta de robótica.',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=willian_santos',
+    },
   };
 
-  for (const [username, info] of Object.entries(profileUpdates)) {
-    const u = userMap.get(username);
-    if (u) {
-      await prisma.user.update({
-        where: { id: u.id },
-        data: {
-          displayName: info.displayName,
-          bio: u.bio || info.bio,
-        },
-      });
-    }
+  const userMap = new Map<string, any>();
+
+  for (const [username, info] of Object.entries(defaultUsers)) {
+    const user = await prisma.user.upsert({
+      where: { username },
+      create: {
+        firebaseUid: `mock-${username}`,
+        email: `${username}@intent.internal`,
+        username,
+        displayName: info.displayName,
+        bio: info.bio,
+        avatarUrl: info.avatarUrl,
+        status: 'ACTIVE',
+      },
+      update: {
+        displayName: info.displayName,
+        bio: info.bio,
+        avatarUrl: info.avatarUrl,
+        status: 'ACTIVE',
+      },
+    });
+    userMap.set(username, user);
   }
+
+  // Carregar todos os demais usuários existentes no banco
+  const existingUsers = await prisma.user.findMany();
+  for (const u of existingUsers) {
+    userMap.set(u.username, u);
+  }
+
+  console.log(`Total de ${userMap.size} usuários prontos:`, Array.from(userMap.keys()));
 
   // 2. Conectar Seguidores (Follows mútuos para o feed "Seguindo" ficar rico)
   console.log('Criando conexões de seguidores...');
@@ -87,6 +129,18 @@ async function main() {
         create: {
           followerId: follower.id,
           followingId: following.id,
+        },
+        update: {},
+      });
+
+      // Notificação de Seguidor Recebido
+      await prisma.notification.upsert({
+        where: { deduplicationKey: `follow:${follower.id}:${following.id}` },
+        create: {
+          userId: following.id,
+          actorId: follower.id,
+          type: 'FOLLOW_RECEIVED',
+          deduplicationKey: `follow:${follower.id}:${following.id}`,
         },
         update: {},
       });
@@ -290,6 +344,21 @@ async function main() {
           },
           update: {},
         });
+
+        // Notificação de Apoio Recebido para o criador
+        if (supporter.id !== creator.id) {
+          await prisma.notification.upsert({
+            where: { deduplicationKey: `support:${intentId}:${supporter.id}` },
+            create: {
+              userId: creator.id,
+              actorId: supporter.id,
+              intentId,
+              type: 'SUPPORT_RECEIVED',
+              deduplicationKey: `support:${intentId}:${supporter.id}`,
+            },
+            update: {},
+          });
+        }
       }
     }
 
@@ -308,7 +377,7 @@ async function main() {
     for (const comment of item.comments) {
       const author = userMap.get(comment.authorUsername);
       if (author) {
-        const commentExists = await prisma.intentComment.findFirst({
+        let commentRecord = await prisma.intentComment.findFirst({
           where: {
             intentId,
             authorId: author.id,
@@ -316,13 +385,28 @@ async function main() {
           },
         });
 
-        if (!commentExists) {
-          await prisma.intentComment.create({
+        if (!commentRecord) {
+          commentRecord = await prisma.intentComment.create({
             data: {
               intentId,
               authorId: author.id,
               body: comment.text,
             },
+          });
+        }
+
+        // Notificação de Comentário para o criador
+        if (author.id !== creator.id && commentRecord) {
+          await prisma.notification.upsert({
+            where: { deduplicationKey: `comment:${commentRecord.id}` },
+            create: {
+              userId: creator.id,
+              actorId: author.id,
+              intentId,
+              type: 'INTENT_COMMENT_RECEIVED',
+              deduplicationKey: `comment:${commentRecord.id}`,
+            },
+            update: {},
           });
         }
       }
@@ -348,6 +432,21 @@ async function main() {
             type: reaction.type,
           },
         });
+
+        // Notificação de Reação para o criador
+        if (reactor.id !== creator.id) {
+          await prisma.notification.upsert({
+            where: { deduplicationKey: `reaction:${intentId}:${reactor.id}` },
+            create: {
+              userId: creator.id,
+              actorId: reactor.id,
+              intentId,
+              type: 'INTENT_REACTION_RECEIVED',
+              deduplicationKey: `reaction:${intentId}:${reactor.id}`,
+            },
+            update: {},
+          });
+        }
       }
     }
   }
