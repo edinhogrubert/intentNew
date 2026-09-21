@@ -1,14 +1,25 @@
 @import "tailwindcss";
 
 @layer utilities {
+  .font-display {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  }
+  .shadow-whisper {
+    box-shadow: 0 8px 32px -4px rgba(17, 85, 208, 0.06), 0 4px 12px -2px rgba(17, 85, 208, 0.04);
+  }
+  .shadow-soft {
+    box-shadow: 0 2px 14px -2px rgba(0, 59, 154, 0.05), 0 1px 4px -1px rgba(0, 59, 154, 0.03);
+  }
   .tap-highlight-none {
     -webkit-tap-highlight-color: transparent;
   }
   
-  .no-scrollbar::-webkit-scrollbar {
+  .no-scrollbar::-webkit-scrollbar,
+  .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  .no-scrollbar {
+  .no-scrollbar,
+  .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }

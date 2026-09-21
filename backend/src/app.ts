@@ -125,6 +125,33 @@ export function createApp() {
       return;
     }
 
+    // Erros transientes de conexão com o banco de dados (ex: E57P01 restart/scaling do Postgres, P1001, P1017, P2024)
+    if (
+      error instanceof Prisma.PrismaClientInitializationError ||
+      error instanceof Prisma.PrismaClientRustPanicError ||
+      (error instanceof Prisma.PrismaClientKnownRequestError && ['P1001', 'P1017', 'P2024'].includes(error.code)) ||
+      (error instanceof Prisma.PrismaClientUnknownRequestError && error.message.includes('E57P01')) ||
+      (error instanceof Error && (
+        error.message.includes('E57P01') ||
+        error.message.includes('terminating connection') ||
+        error.message.includes('Can\'t reach database server') ||
+        error.message.includes('Connection closed') ||
+        error.message.includes('server closed the connection unexpectedly')
+      ))
+    ) {
+      // Força reconexão em caso de conexão terminada pelo servidor
+      prisma.$disconnect().catch(() => {});
+      request.log.warn({ err: error }, 'Erro transitório de conexão com o banco de dados');
+      response.status(503).json({
+        error: {
+          code: 'DATABASE_UNAVAILABLE',
+          message: 'O serviço de banco de dados está temporariamente reconectando. Tente novamente em alguns instantes.',
+          requestId: request.id,
+        },
+      });
+      return;
+    }
+
     request.log.error({ err: error }, 'Erro não tratado');
     response.status(500).json({
       error: {

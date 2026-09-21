@@ -66,13 +66,13 @@ function appendPoolParams(url: string): string {
   if (!url || !url.startsWith('postgres')) return url;
   let result = url;
   if (!result.includes('connection_limit=')) {
-    result += `${result.includes('?') ? '&' : '?'}connection_limit=5`;
+    result += `${result.includes('?') ? '&' : '?'}connection_limit=3`;
   }
   if (!result.includes('pool_timeout=')) {
-    result += `${result.includes('?') ? '&' : '?'}pool_timeout=20`;
+    result += `${result.includes('?') ? '&' : '?'}pool_timeout=15`;
   }
   if (!result.includes('connect_timeout=')) {
-    result += `${result.includes('?') ? '&' : '?'}connect_timeout=15`;
+    result += `${result.includes('?') ? '&' : '?'}connect_timeout=10`;
   }
   return result;
 }

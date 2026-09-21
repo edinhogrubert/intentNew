@@ -182,71 +182,173 @@ export default function App() {
 
   const items: Array<{ id: View; label: string; icon: typeof Home }> = [
     { id: 'home', label: 'Início', icon: Home },
-    { id: 'create', label: 'Criar', icon: PlusCircle },
     { id: 'mine', label: 'Minhas Intents', icon: Target },
+    { id: 'create', label: 'Criar', icon: PlusCircle },
     { id: 'profile', label: 'Perfil', icon: UserRound },
   ];
 
-  return <div className="min-h-screen bg-[#f7f6fc] text-[#1b1c1a]">
-    <header className="sticky top-0 z-30 bg-white border-b border-[#e4e2de]">
-      <div className="max-w-5xl mx-auto h-16 px-4 flex items-center justify-between">
-        <button onClick={() => navigateToView('home')} className="text-xl font-black tracking-tight text-[#000666]">INTENT</button>
-        <nav className="hidden sm:flex items-center gap-1">
-          {items.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => {
-                if (id === 'profile') {
-                  navigateToView('profile', currentUser.id);
-                } else {
-                  navigateToView(id);
-                }
-              }}
-              className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 ${view === id ? 'bg-[#e0e0ff] text-[#000666]' : 'text-[#666] hover:bg-[#f5f3ef]'}`}
-            >
-              <Icon className="w-4 h-4"/>{label}
-            </button>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => void openNotifications()} className="relative p-2 rounded-full hover:bg-[#f5f3ef] text-[#666]" aria-label={unreadCount && unreadCount > 0 ? `Abrir notificações: ${unreadCount} não lidas` : 'Abrir notificações'}>
-            <Bell className="w-5 h-5"/>
-            {unreadCount !== null && unreadCount > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-[#ba1a1a] text-white text-[10px] font-black flex items-center justify-center border-2 border-white">{unreadCount > 9 ? '9+' : unreadCount}</span>}
-          </button>
-          <button onClick={() => navigateToView('profile', currentUser.id)} className="hidden md:block text-right">
-            <p className="text-xs font-bold">{currentUser.name}</p>
-            <p className="text-[11px] text-[#666]">@{currentUser.username.replace(/^@+/, '')}</p>
-          </button>
-          <button onClick={() => void handleLogout()} className="p-2 rounded-full hover:bg-[#f5f3ef] text-[#666]" aria-label="Sair"><LogOut className="w-5 h-5"/></button>
+  return <div className="min-h-screen bg-[#faf8ff] text-[#191b23] flex flex-col md:flex-row antialiased">
+    {/* Barra Lateral Fixa Minimalista (Estilo do Mockup - w-18 md:w-20) */}
+    <nav className="hidden md:flex flex-col w-[76px] shrink-0 border-r border-[#e1e2ec] bg-white h-screen fixed left-0 top-0 z-40 items-center justify-between py-6">
+      {/* Logo */}
+      <div className="flex flex-col items-center gap-6 w-full">
+        <button
+          onClick={() => navigateToView('home')}
+          className="font-display text-3xl font-extrabold text-[#003b9a] hover:scale-105 transition-transform"
+          title="Intent OS"
+        >
+          I
+        </button>
+
+        {/* Links de Navegação */}
+        <div className="flex flex-col items-center gap-3 w-full px-2">
+          {items.map(({ id, label, icon: Icon }) => {
+            const isActive = view === id;
+            return (
+              <button
+                key={id}
+                onClick={() => {
+                  if (id === 'profile') {
+                    navigateToView('profile', currentUser.id);
+                  } else {
+                    navigateToView(id);
+                  }
+                }}
+                title={label}
+                className={`relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                  isActive
+                    ? 'bg-[#dae1ff] text-[#003b9a] font-bold shadow-xs'
+                    : 'text-[#434654] hover:bg-[#f3f3fd] hover:text-[#003b9a]'
+                }`}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                {isActive && (
+                  <span className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full bg-[#003b9a]" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
-    </header>
 
-    <main className="pb-24 sm:pb-8">
-      {view === 'home' && <MvpHomeFeed currentUser={currentUser} onCreate={() => navigateToView('create')} onSelectIntent={selectIntent} onSelectProfile={selectPublicProfile}/>}
-      {view === 'public-profile' && selectedProfileId && (
-        <PublicUserProfile
-          userId={selectedProfileId}
+      {/* Ações Inferiores (Criar Rápido, Notificações, Perfil, Logout) */}
+      <div className="flex flex-col items-center gap-3 w-full px-2">
+        <button
+          onClick={() => navigateToView('create')}
+          title="Postar Intent"
+          className="w-12 h-12 rounded-full bg-[#003b9a] text-white flex items-center justify-center shadow-md hover:bg-[#002f7d] hover:scale-105 transition-all"
+        >
+          <PlusCircle className="w-6 h-6" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => void openNotifications()}
+          className="relative w-11 h-11 rounded-2xl flex items-center justify-center text-[#434654] hover:bg-[#f3f3fd] transition-colors"
+          title="Notificações"
+        >
+          <Bell className="w-5 h-5" />
+          {unreadCount !== null && unreadCount > 0 && (
+            <span className="absolute 2 right-2 min-w-4 h-4 px-1 rounded-full bg-[#ba1a1a] text-white text-[9px] font-bold flex items-center justify-center border border-white">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => navigateToView('profile', currentUser.id)}
+          className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#dae1ff] hover:ring-2 hover:ring-[#003b9a] transition-all"
+          title={`Perfil de ${currentUser.name}`}
+        >
+          {currentUser.avatarUrl ? (
+            <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-[#dae1ff] text-[#003b9a] font-bold flex items-center justify-center text-xs">
+              {currentUser.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </button>
+
+        <button
+          onClick={() => void handleLogout()}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-[#737685] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/40 transition-colors"
+          title="Sair"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    </nav>
+
+    {/* Área de Conteúdo Principal (Deslocada apenas pela largura da barra lateral no desktop) */}
+    <div className="flex-1 md:ml-[76px] flex flex-col min-h-screen">
+      {/* Top Bar Mobile & Tablet */}
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#e1e2ec] px-4 py-3 flex items-center justify-between md:hidden">
+        <button onClick={() => navigateToView('home')} className="font-display text-xl font-black text-[#003b9a]">
+          INTENT
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void openNotifications()}
+            className="relative p-2 rounded-full text-[#434654] hover:bg-[#f3f3fd]"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadCount !== null && unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-[#ba1a1a] text-white text-[9px] font-bold flex items-center justify-center border border-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => navigateToView('profile', currentUser.id)}
+            className="w-8 h-8 rounded-full overflow-hidden border border-[#c3c6d6]"
+          >
+            {currentUser.avatarUrl ? (
+              <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-[#dae1ff] text-[#003b9a] font-bold flex items-center justify-center text-xs">
+                {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </button>
+        </div>
+      </header>
+
+      <main className="flex-1 pb-24 md:pb-8">
+        {view === 'home' && <MvpHomeFeed currentUser={currentUser} onCreate={() => navigateToView('create')} onSelectIntent={selectIntent} onSelectProfile={selectPublicProfile}/>}
+        {view === 'public-profile' && selectedProfileId && (
+          <PublicUserProfile
+            userId={selectedProfileId}
+            currentUser={currentUser}
+            onCurrentUserUpdated={setCurrentUser}
+            onBack={() => navigateToView('home')}
+            onSelectIntent={selectIntent}
+          />
+        )}
+        {view === 'create' && <CreationWizard currentUser={currentUser} onCancel={() => navigateToView('home')} onComplete={(created) => { setToast('Intent publicada com sucesso.'); selectIntent(created.id); }}/>} 
+        {view === 'mine' && <MyIntentsDashboard currentUser={currentUser} onCreateNew={() => navigateToView('create')} onSelectIntent={selectIntent}/>} 
+        {view === 'detail' && selectedIntentId && (
+          <MvpIntentDetail
+            intentId={selectedIntentId}
+            currentUser={currentUser}
+            onBack={() => navigateToView('home')}
+            onSelectProfile={selectPublicProfile}
+            onSelectIntent={selectIntent}
+          />
+        )} 
+        {view === 'profile' && <MvpSocialProfile
+          userId={selectedProfileId || currentUser.id}
           currentUser={currentUser}
-          onCurrentUserUpdated={setCurrentUser}
           onBack={() => navigateToView('home')}
           onSelectIntent={selectIntent}
-        />
-      )}
-      {view === 'create' && <CreationWizard currentUser={currentUser} onCancel={() => navigateToView('home')} onComplete={(created) => { setToast('Intent publicada com sucesso.'); selectIntent(created.id); }}/>} 
-      {view === 'mine' && <MyIntentsDashboard currentUser={currentUser} onCreateNew={() => navigateToView('create')} onSelectIntent={selectIntent}/>} 
-      {view === 'detail' && selectedIntentId && <MvpIntentDetail intentId={selectedIntentId} currentUser={currentUser} onBack={() => navigateToView('home')}/>} 
-      {view === 'profile' && <MvpSocialProfile
-        userId={selectedProfileId || currentUser.id}
-        currentUser={currentUser}
-        onBack={() => navigateToView('home')}
-        onSelectIntent={selectIntent}
-        onSelectProfile={selectProfile}
-        onCurrentUserUpdated={setCurrentUser}
-      />}
-    </main>
+          onSelectProfile={selectProfile}
+          onCurrentUserUpdated={setCurrentUser}
+        />}
+      </main>
+    </div>
 
-    <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-[#e4e2de] px-2 py-2 flex justify-around">
+    {/* Bottom Bar Mobile */}
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#e1e2ec] px-4 py-2 flex justify-around items-center">
       {items.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
@@ -257,11 +359,21 @@ export default function App() {
               navigateToView(id);
             }
           }}
-          className={`min-w-16 py-1 flex flex-col items-center gap-1 text-[10px] font-bold ${view === id ? 'text-[#000666]' : 'text-[#777]'}`}
+          className={`flex flex-col items-center gap-1 text-[11px] font-semibold py-1 px-3 rounded-xl transition-colors ${
+            view === id ? 'text-[#003b9a] font-bold' : 'text-[#737685]'
+          }`}
         >
-          <Icon className="w-5 h-5"/>{label}
+          <Icon className="w-5 h-5" />
+          <span>{label}</span>
         </button>
       ))}
+      <button
+        onClick={() => navigateToView('create')}
+        className="-mt-5 bg-[#003b9a] text-white p-3 rounded-full shadow-lg hover:scale-105 transition-transform"
+        title="Criar Intent"
+      >
+        <PlusCircle className="w-6 h-6" />
+      </button>
     </nav>
     {toast && <div role="status" className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1b1c1a] text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold">{toast}</div>}
     {notificationsOpen && <NotificationsModal

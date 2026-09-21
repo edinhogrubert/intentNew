@@ -62,10 +62,10 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
   }
 
   const visibility = intent.visibility === 'PUBLIC'
-    ? { label: 'Pública', className: 'bg-[#e0e0ff] text-[#000666]', icon: Globe2 }
+    ? { label: 'Pública', className: 'bg-[#dae1ff] text-[#003b9a]', icon: Globe2 }
     : intent.visibility === 'FOLLOWERS'
-      ? { label: 'Seguidores', className: 'bg-[#e8f5e9] text-[#28642f]', icon: Users }
-      : { label: 'Privada', className: 'bg-[#fff3e0] text-[#8a4b08]', icon: LockKeyhole };
+      ? { label: 'Seguidores', className: 'bg-[#b4c8ff]/40 text-[#003b9a]', icon: Users }
+      : { label: 'Privada', className: 'bg-[#ffdad6] text-[#93000a]', icon: LockKeyhole };
   const VisibilityIcon = visibility.icon;
 
   const totalReactions = intent.reactionCounts?.total ?? (
@@ -74,26 +74,27 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
     (intent.reactionCounts?.CELEBRATE ?? 0)
   );
 
-  const viewerReactionLabel = intent.viewerReaction === 'LIKE'
-    ? '👍 Você curtiu'
-    : intent.viewerReaction === 'LOVE'
-      ? '❤️ Você amou'
-      : intent.viewerReaction === 'CELEBRATE'
-        ? '🎉 Você celebrou'
-        : null;
+  // Determina o tema da linha superior: Ambar (imminente/suporte), Roxo (revelado) ou Azul (protegido)
+  const isImminent = intent.conditionType === 'SUPPORT' && condition.progress >= 70 && !isRealized;
+  const topBarGradient = isRealized
+    ? 'bg-gradient-to-r from-[#10b981] to-[#34d399]'
+    : isImminent
+      ? 'bg-gradient-to-r from-[#f59e0b] to-[#f59e0b]/30'
+      : 'bg-gradient-to-r from-[#003b9a] to-[#dae1ff]';
 
   return (
-    <article className="relative overflow-hidden rounded-2xl border border-[#e4e2de] bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-[#c6c5d4]">
-      <div className={`absolute inset-x-0 top-0 h-1 ${isRealized ? 'bg-[#2e7d32]' : 'bg-[#000666]'}`}/>
+    <article className="relative overflow-hidden rounded-2xl border border-[#e1e2ec]/60 bg-white p-5 shadow-whisper transition-all duration-300 hover:shadow-lg hover:border-[#c3c6d6]">
+      {/* Linha Fina Superior com Gradiente Semântico */}
+      <div className={`absolute top-0 right-0 left-0 h-1.5 ${topBarGradient}`} />
 
       {/* Cabeçalho do Card */}
       <div className="flex items-start justify-between gap-3">
         <button
           type="button"
           onClick={() => onSelectProfile(intent.creator.id)}
-          className="flex min-w-0 items-center gap-3 rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-[#000666]"
+          className="flex min-w-0 items-center gap-3 rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-[#003b9a]"
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#c6c5d4] bg-[#e0e0ff] font-black text-[#000666]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#dae1ff] bg-[#faf8ff] font-extrabold text-[#003b9a]">
             {intent.creator.avatarUrl ? (
               <img src={intent.creator.avatarUrl} alt="" className="h-full w-full object-cover"/>
             ) : (
@@ -101,11 +102,17 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-[#1b1c1a]">
-              {intent.creator.displayName}
-              {isMine && <span className="ml-2 rounded-full bg-[#e0e0ff] px-2 py-0.5 text-[10px] text-[#000666]">Você</span>}
-            </p>
-            <p className="truncate text-xs text-[#666]">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-[15px] font-bold text-[#191b23]">
+                {intent.creator.displayName}
+              </span>
+              {isMine ? (
+                <span className="rounded-full bg-[#dae1ff] px-2 py-0.5 text-[10px] font-bold text-[#003b9a]">Você</span>
+              ) : (
+                <span className="rounded-full bg-[#e7e7f2] px-2 py-0.5 text-[10px] font-semibold text-[#434654]">Seguindo</span>
+              )}
+            </div>
+            <p className="truncate text-xs text-[#737685]">
               @{intent.creator.username.replace(/^@+/, '')} · {formatDate(intent.createdAt)}
             </p>
           </div>
@@ -113,15 +120,15 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
 
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
           {isRealized ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2.5 py-1 text-[11px] font-bold text-[#2e7d32]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2.5 py-1 text-[11px] font-bold text-[#10b981]">
               <CheckCircle2 className="h-3 w-3"/>Realizada
             </span>
           ) : (
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#f5f3ef] px-2.5 py-1 text-[11px] font-bold text-[#666]">
-              <LockKeyhole className="h-3 w-3 text-[#000666]"/>Em andamento
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#f3f3fd] px-2.5 py-1 text-[11px] font-bold text-[#003b9a]">
+              <LockKeyhole className="h-3 w-3 text-[#003b9a]"/>Em andamento
             </span>
           )}
-          <span className="rounded-full bg-[#f0efff] px-2.5 py-1 text-[11px] font-bold text-[#000666]">
+          <span className="rounded-full bg-[#dae1ff]/70 px-2.5 py-1 text-[11px] font-bold text-[#003b9a]">
             {categoryLabels[intent.category]}
           </span>
           <span className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${visibility.className}`}>
@@ -134,82 +141,90 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
       <button
         type="button"
         onClick={() => onSelectIntent(intent.id)}
-        className="group mt-4 block w-full text-left focus:outline-none"
+        className="group mt-3.5 block w-full text-left focus:outline-none"
       >
-        <h3 className="text-lg font-black text-[#1b1c1a] transition-colors group-hover:text-[#000666]">
+        <h3 className="font-display text-[17px] font-bold text-[#191b23] leading-snug transition-colors group-hover:text-[#003b9a]">
           {intent.title}
         </h3>
-        <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-[#454652]">
+        <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap text-[14px] leading-relaxed text-[#434654]">
           {intent.story}
         </p>
       </button>
 
-      {/* Caixa de Condição e Progresso */}
-      <div className="mt-4 rounded-xl border border-[#e8e6e2] bg-[#fbf9f5] p-4">
+      {/* Caixa de Condição e Progresso Estilizada */}
+      <div className="mt-4 rounded-xl border border-[#e1e2ec] bg-[#f8faff] p-3.5 relative overflow-hidden">
+        {isImminent && (
+          <div className="absolute right-0 bottom-0 w-24 h-24 bg-[#f59e0b]/10 blur-xl rounded-full pointer-events-none" />
+        )}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex gap-2">
-            <ConditionIcon className={`mt-0.5 h-4 w-4 shrink-0 ${isRealized ? 'text-[#2e7d32]' : 'text-[#000666]'}`}/>
+          <div className="flex items-center gap-2.5">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isRealized ? 'bg-[#10b981]/15 text-[#10b981]' : isImminent ? 'bg-[#f59e0b]/20 text-[#d97706]' : 'bg-[#dae1ff] text-[#003b9a]'}`}>
+              <ConditionIcon className="h-4 w-4"/>
+            </div>
             <div>
-              <p className="text-xs font-black text-[#1b1c1a]">{condition.label}</p>
-              <p className="mt-0.5 text-xs text-[#666]">{condition.detail}</p>
+              <p className="text-xs font-bold text-[#191b23]">{condition.label}</p>
+              <p className="text-[11px] text-[#737685]">{condition.detail}</p>
             </div>
           </div>
-          <span className={`text-xs font-black ${isRealized ? 'text-[#2e7d32]' : 'text-[#000666]'}`}>
+          <span className={`text-xs font-bold ${isRealized ? 'text-[#10b981]' : isImminent ? 'text-[#d97706]' : 'text-[#003b9a]'}`}>
             {condition.progress}%
           </span>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e4e2de]">
+
+        <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#e1e2ec]">
           <div
-            className={`h-full transition-all duration-300 ${isRealized ? 'bg-[#2e7d32]' : 'bg-[#006a62]'}`}
+            className={`h-full transition-all duration-500 rounded-full ${
+              isRealized
+                ? 'bg-[#10b981]'
+                : isImminent
+                  ? 'bg-[#f59e0b]'
+                  : 'bg-[#003b9a]'
+            }`}
             style={{ width: `${condition.progress}%` }}
           />
         </div>
+
         {!isRealized && (
-          <p className="mt-3 flex items-center gap-1.5 text-[11px] text-[#666]">
-            <LockKeyhole className="h-3.5 w-3.5 text-[#777]"/>Conteúdo protegido no cofre até a condição ser cumprida.
+          <p className="mt-2.5 flex items-center gap-1.5 text-[11px] text-[#737685]">
+            <LockKeyhole className="h-3 w-3 text-[#003b9a]"/>
+            <span>Conteúdo protegido no cofre até a condição ser atingida.</span>
           </p>
         )}
       </div>
 
       {/* Sinais Sociais e Rodapé de Ação */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#f0efec] pt-3.5">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#e1e2ec]/60 pt-3">
         <div className="flex flex-wrap items-center gap-2">
           {totalReactions > 0 ? (
-            <div className="flex items-center gap-1.5 rounded-lg bg-[#f5f3ef] px-2.5 py-1 text-xs font-bold text-[#454652]">
+            <div className="flex items-center gap-1.5 rounded-full bg-[#f3f3fd] px-3 py-1 text-xs font-bold text-[#434654]">
               <div className="flex items-center gap-1.5">
                 {(intent.reactionCounts?.LIKE ?? 0) > 0 && (
-                  <span className="flex items-center gap-0.5 text-[#000666]" title={`${intent.reactionCounts?.LIKE} curtidas`}>
+                  <span className="flex items-center gap-0.5 text-[#003b9a]">
                     <ThumbsUp className="h-3 w-3"/>
                     <span>{intent.reactionCounts?.LIKE}</span>
                   </span>
                 )}
                 {(intent.reactionCounts?.LOVE ?? 0) > 0 && (
-                  <span className="flex items-center gap-0.5 text-[#c62828]" title={`${intent.reactionCounts?.LOVE} corações`}>
-                    <Heart className="h-3 w-3 fill-[#c62828]"/>
+                  <span className="flex items-center gap-0.5 text-[#ba1a1a]">
+                    <Heart className="h-3 w-3 fill-[#ba1a1a]"/>
                     <span>{intent.reactionCounts?.LOVE}</span>
                   </span>
                 )}
                 {(intent.reactionCounts?.CELEBRATE ?? 0) > 0 && (
-                  <span className="flex items-center gap-0.5 text-[#e65100]" title={`${intent.reactionCounts?.CELEBRATE} celebrações`}>
+                  <span className="flex items-center gap-0.5 text-[#f59e0b]">
                     <Sparkles className="h-3 w-3"/>
                     <span>{intent.reactionCounts?.CELEBRATE}</span>
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-[#777]">({totalReactions})</span>
+              <span className="text-[10px] text-[#737685]">({totalReactions})</span>
             </div>
           ) : (
-            <span className="text-xs text-[#777]">Sem reações ainda</span>
-          )}
-
-          {viewerReactionLabel && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#e0e0ff] px-2 py-0.5 text-[10px] font-bold text-[#000666]">
-              {viewerReactionLabel}
-            </span>
+            <span className="text-xs text-[#737685]">Sem reações ainda</span>
           )}
 
           {intent.viewerHasSupported && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2.5 py-0.5 text-[10px] font-bold text-[#10b981]">
               <CheckCircle2 className="h-2.5 w-2.5"/>Você apoiou
             </span>
           )}
@@ -219,11 +234,11 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
           <button
             type="button"
             onClick={handleCopyLink}
-            title="Copiar link direto para esta Intent"
-            className={`flex items-center gap-1 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+            title="Copiar link direto"
+            className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
               copied
                 ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                : 'border-[#e4e2de] bg-white text-[#555] hover:border-[#000666] hover:text-[#000666]'
+                : 'border-[#c3c6d6] bg-white text-[#434654] hover:border-[#003b9a] hover:text-[#003b9a]'
             }`}
           >
             {copied ? <Check className="h-3.5 w-3.5 text-emerald-600"/> : <Share2 className="h-3.5 w-3.5"/>}
@@ -233,9 +248,9 @@ function IntentCard({ intent, currentUser, onSelectIntent, onSelectProfile }: { 
           <button
             type="button"
             onClick={() => onSelectIntent(intent.id)}
-            className="flex items-center gap-1.5 rounded-xl bg-[#000666] px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-[#000444]"
+            className="flex items-center gap-1.5 rounded-full bg-[#003b9a] px-4 py-1.5 text-xs font-bold text-white transition-all hover:bg-[#002f7d] shadow-xs"
           >
-            <span>Ver Intent</span>
+            <span>Acompanhar</span>
             <ArrowRight className="h-3.5 w-3.5"/>
           </button>
         </div>
@@ -336,17 +351,17 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
   const profileValue = (value: number | undefined) => profileLoading ? '…' : value ?? '—';
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+    <div className="w-full px-4 sm:px-6 lg:px-10 py-5">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 xl:gap-8">
         {/* Sidebar Esquerda (Perfil Resumido & CTA) */}
-        <aside className="hidden space-y-4 lg:sticky lg:top-20 lg:col-span-3 lg:block">
-          <section className="overflow-hidden rounded-2xl border border-[#e4e2de] bg-white shadow-xs">
-            <div className="h-20 bg-gradient-to-r from-[#000666] via-[#3434a5] to-[#8787e8]"/>
+        <aside className="hidden space-y-4 lg:sticky lg:top-6 lg:col-span-3 lg:block xl:col-span-3">
+          <section className="overflow-hidden rounded-2xl border border-[#e1e2ec]/70 bg-white shadow-whisper">
+            <div className="h-20 bg-gradient-to-r from-[#003b9a] via-[#1155d0] to-[#80a4ff]"/>
             <div className="relative px-5 pb-5 pt-10">
               <button
                 type="button"
                 onClick={() => onSelectProfile(currentUser.id)}
-                className="absolute -top-9 left-5 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-full border-4 border-white bg-[#e0e0ff] text-xl font-black text-[#000666]"
+                className="absolute -top-9 left-5 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-full border-4 border-white bg-[#faf8ff] text-xl font-extrabold text-[#003b9a] shadow-xs"
                 aria-label="Abrir meu perfil"
               >
                 {currentUser.avatarUrl ? (
@@ -355,59 +370,59 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                   currentUser.name.charAt(0).toUpperCase()
                 )}
               </button>
-              <h2 className="truncate font-black text-[#1b1c1a]">{currentUser.name}</h2>
-              <p className="truncate text-xs text-[#666]">@{currentUser.username.replace(/^@+/, '')}</p>
+              <h2 className="truncate font-display text-[17px] font-bold text-[#191b23]">{currentUser.name}</h2>
+              <p className="truncate text-xs font-medium text-[#737685]">@{currentUser.username.replace(/^@+/, '')}</p>
               {currentUser.bio ? (
-                <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-[#555]">{currentUser.bio}</p>
+                <p className="mt-2.5 line-clamp-3 text-xs leading-relaxed text-[#434654]">{currentUser.bio}</p>
               ) : (
-                <p className="mt-3 text-xs text-[#777]">Perfil sem biografia.</p>
+                <p className="mt-2.5 text-xs text-[#737685]">Perfil sem biografia.</p>
               )}
-              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[#f0efec] pt-4 text-center">
+              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[#e1e2ec]/60 pt-3.5 text-center">
                 <div>
-                  <strong className="block text-sm text-[#000666]">{profileValue(profile?.stats.intentsCreated)}</strong>
-                  <span className="text-[10px] text-[#666]">Intents</span>
+                  <strong className="block font-display text-sm font-bold text-[#003b9a]">{profileValue(profile?.stats.intentsCreated)}</strong>
+                  <span className="text-[10px] font-medium text-[#737685]">Intents</span>
                 </div>
                 <div>
-                  <strong className="block text-sm text-[#000666]">{profileValue(profile?.stats.followersCount)}</strong>
-                  <span className="text-[10px] text-[#666]">Seguidores</span>
+                  <strong className="block font-display text-sm font-bold text-[#003b9a]">{profileValue(profile?.stats.followersCount)}</strong>
+                  <span className="text-[10px] font-medium text-[#737685]">Seguidores</span>
                 </div>
                 <div>
-                  <strong className="block text-sm text-[#000666]">{profileValue(profile?.stats.followingCount)}</strong>
-                  <span className="text-[10px] text-[#666]">Seguindo</span>
+                  <strong className="block font-display text-sm font-bold text-[#003b9a]">{profileValue(profile?.stats.followingCount)}</strong>
+                  <span className="text-[10px] font-medium text-[#737685]">Seguindo</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => onSelectProfile(currentUser.id)}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#f5f3ef] py-2.5 text-xs font-bold text-[#000666] hover:bg-[#e0e0ff] transition-colors"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#f3f3fd] py-2 text-xs font-bold text-[#003b9a] hover:bg-[#dae1ff] transition-colors"
               >
                 <UserRound className="h-4 w-4"/>Ver perfil completo
               </button>
             </div>
           </section>
 
-          <section className="rounded-2xl bg-[#000666] p-4 text-white shadow-xs">
-            <Sparkles className="h-4 w-4 text-[#c1cfff]"/>
-            <h2 className="mt-2 text-sm font-black">Transforme uma intenção em compromisso</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#d8dcff]">
-              Defina uma condição real e proteja o conteúdo até ela ser cumprida.
+          <section className="rounded-2xl bg-gradient-to-br from-[#003b9a] to-[#002f7d] p-5 text-white shadow-whisper">
+            <Sparkles className="h-5 w-5 text-[#b4c8ff]"/>
+            <h2 className="mt-2 font-display text-base font-bold">Faça acontecer com a comunidade</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#dae1ff]">
+              Defina sua meta e lacre o resultado até o momento da revelação.
             </p>
             <button
               type="button"
               onClick={onCreate}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-xs font-black text-[#000666] hover:bg-[#f0efff] transition-colors"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-xs font-bold text-[#003b9a] hover:bg-[#f3f3fd] transition-colors shadow-xs"
             >
-              <Plus className="h-4 w-4"/>Criar Intent
+              <Plus className="h-4 w-4 stroke-[2.5]"/>Nova Intent
             </button>
           </section>
         </aside>
 
         {/* Coluna Central do Feed */}
-        <main className="space-y-4 lg:col-span-6">
+        <main className="space-y-4 lg:col-span-6 xl:col-span-6">
           {/* Caixa de Criação Rápida */}
-          <section className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-xs">
+          <section className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-4 shadow-whisper">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#c6c5d4] bg-[#e0e0ff] font-black text-[#000666]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#dae1ff] bg-[#faf8ff] font-extrabold text-[#003b9a]">
                 {currentUser.avatarUrl ? (
                   <img src={currentUser.avatarUrl} alt="" className="h-full w-full object-cover"/>
                 ) : (
@@ -417,22 +432,22 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
               <button
                 type="button"
                 onClick={onCreate}
-                className="flex flex-1 items-center justify-between rounded-full border border-[#d8d6d2] bg-[#fbf9f5] px-4 py-3 text-left text-sm text-[#666] hover:border-[#000666] hover:bg-white transition-colors"
+                className="flex flex-1 items-center justify-between rounded-full border border-[#c3c6d6]/60 bg-[#f8faff] px-4 py-2.5 text-left text-sm text-[#737685] hover:border-[#003b9a] hover:bg-white transition-all shadow-xs"
               >
                 <span>O que você quer fazer acontecer?</span>
-                <span className="hidden items-center gap-1 rounded-full bg-[#000666] px-3 py-1 text-xs font-bold text-white sm:flex">
-                  <Plus className="h-3.5 w-3.5"/>Criar
+                <span className="hidden items-center gap-1 rounded-full bg-[#003b9a] px-3.5 py-1 text-xs font-bold text-white sm:flex hover:bg-[#002f7d]">
+                  <Plus className="h-3.5 w-3.5 stroke-[2.5]"/>Criar
                 </span>
               </button>
             </div>
           </section>
 
           {/* Busca de Intents e Pessoas */}
-          <section className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-xs">
+          <section className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-3.5 shadow-whisper">
             <form onSubmit={(event) => void submitSearch(event)} className="flex gap-2" role="search">
               <label htmlFor="home-search" className="sr-only">Buscar acontecimentos e pessoas</label>
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#777]"/>
+                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#737685]"/>
                 <input
                   id="home-search"
                   type="search"
@@ -440,14 +455,14 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Buscar acontecimentos e pessoas..."
                   maxLength={80}
-                  className="w-full rounded-xl border border-[#c6c5d4] bg-[#fbf9f5] py-3 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#000666] focus:bg-white"
+                  className="w-full rounded-xl border border-[#c3c6d6]/60 bg-[#f8faff] py-2.5 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#003b9a] focus:bg-white transition-colors"
                 />
                 {(searchQuery || searchResults) && (
                   <button
                     type="button"
                     onClick={clearSearch}
                     aria-label="Limpar busca"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#666] hover:text-[#1b1c1a]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#737685] hover:text-[#191b23]"
                   >
                     <X className="h-4 w-4"/>
                   </button>
@@ -456,44 +471,44 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
               <button
                 type="submit"
                 disabled={searching}
-                className="rounded-xl bg-[#000666] px-4 py-3 text-sm font-bold text-white disabled:opacity-60 hover:bg-[#000444] transition-colors"
+                className="rounded-xl bg-[#003b9a] px-4 py-2.5 text-xs font-bold text-white disabled:opacity-60 hover:bg-[#002f7d] transition-colors"
               >
                 {searching ? 'Buscando...' : 'Buscar'}
               </button>
             </form>
 
             {searchError && (
-              <div role="alert" className="mt-3 flex gap-2 rounded-xl bg-[#ffdad6] p-3 text-sm text-[#8c1d18]">
+              <div role="alert" className="mt-3 flex gap-2 rounded-xl bg-[#ffdad6] p-3 text-xs text-[#93000a]">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0"/>
                 <span>{searchError}</span>
               </div>
             )}
             {searching && (
-              <p className="mt-4 text-center text-sm text-[#666]">Buscando acontecimentos e pessoas...</p>
+              <p className="mt-3 text-center text-xs text-[#737685]">Buscando acontecimentos e pessoas...</p>
             )}
             {!searching && searchResults && (
-              <div className="mt-4 space-y-5 border-t border-[#e4e2de] pt-4">
+              <div className="mt-4 space-y-4 border-t border-[#e1e2ec]/60 pt-3">
                 {searchResults.intents.length === 0 && searchResults.users.length === 0 && (
-                  <p className="py-4 text-center text-sm font-bold text-[#666]">Nenhum resultado encontrado.</p>
+                  <p className="py-3 text-center text-xs font-bold text-[#737685]">Nenhum resultado encontrado.</p>
                 )}
                 {searchResults.intents.length > 0 && (
                   <div>
-                    <h2 className="mb-2 text-sm font-black text-[#1b1c1a]">Acontecimentos</h2>
+                    <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#434654]">Acontecimentos</h2>
                     <div className="space-y-2">
                       {searchResults.intents.map((intent) => (
                         <button
                           type="button"
                           key={intent.id}
                           onClick={() => onSelectIntent(intent.id)}
-                          className="flex w-full items-center justify-between gap-3 rounded-xl border border-[#e4e2de] p-3 text-left hover:border-[#000666] transition-colors"
+                          className="flex w-full items-center justify-between gap-3 rounded-xl border border-[#e1e2ec] p-3 text-left hover:border-[#003b9a] hover:bg-[#f8faff] transition-colors"
                         >
                           <div className="min-w-0">
-                            <p className="truncate font-bold text-[#1b1c1a]">{intent.title}</p>
-                            <p className="mt-1 truncate text-xs text-[#666]">
+                            <p className="truncate font-bold text-[#191b23] text-sm">{intent.title}</p>
+                            <p className="mt-0.5 truncate text-xs text-[#737685]">
                               {intent.creator.displayName} · @{intent.creator.username.replace(/^@+/, '')}
                             </p>
                           </div>
-                          <ArrowRight className="h-4 w-4 shrink-0 text-[#000666]"/>
+                          <ArrowRight className="h-4 w-4 shrink-0 text-[#003b9a]"/>
                         </button>
                       ))}
                     </div>
@@ -501,16 +516,16 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                 )}
                 {searchResults.users.length > 0 && (
                   <div>
-                    <h2 className="mb-2 text-sm font-black text-[#1b1c1a]">Pessoas</h2>
+                    <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#434654]">Pessoas</h2>
                     <div className="space-y-2">
                       {searchResults.users.map((user) => (
                         <button
                           type="button"
                           key={user.id}
                           onClick={() => onSelectProfile(user.id)}
-                          className="flex w-full items-center gap-3 rounded-xl border border-[#e4e2de] p-3 text-left hover:border-[#000666] transition-colors"
+                          className="flex w-full items-center gap-3 rounded-xl border border-[#e1e2ec] p-2.5 text-left hover:border-[#003b9a] hover:bg-[#f8faff] transition-colors"
                         >
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e0e0ff] font-black text-[#000666]">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dae1ff] font-extrabold text-[#003b9a]">
                             {user.avatarUrl ? (
                               <img src={user.avatarUrl} alt="" className="h-full w-full object-cover"/>
                             ) : (
@@ -518,8 +533,8 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-bold text-[#1b1c1a]">{user.displayName}</p>
-                            <p className="truncate text-xs text-[#666]">@{user.username.replace(/^@+/, '')}</p>
+                            <p className="truncate font-bold text-sm text-[#191b23]">{user.displayName}</p>
+                            <p className="truncate text-xs text-[#737685]">@{user.username.replace(/^@+/, '')}</p>
                           </div>
                         </button>
                       ))}
@@ -530,16 +545,16 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
             )}
           </section>
 
-          {/* Abas de Navegação do Feed */}
-          <section className="flex items-center gap-2 rounded-2xl border border-[#e4e2de] bg-white p-1.5 shadow-xs">
-            <div className="grid flex-1 grid-cols-2 gap-1" role="tablist" aria-label="Escolher feed">
+          {/* Abas de Navegação do Feed Estilizadas */}
+          <section className="flex items-center gap-2 rounded-2xl border border-[#e1e2ec]/70 bg-white p-1.5 shadow-whisper">
+            <div className="grid flex-1 grid-cols-2 gap-1.5" role="tablist" aria-label="Escolher feed">
               <button
                 type="button"
                 role="tab"
                 aria-selected={scope === 'public'}
                 onClick={() => setScope('public')}
-                className={`rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${
-                  scope === 'public' ? 'bg-[#000666] text-white' : 'text-[#666] hover:bg-[#f5f3ef]'
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                  scope === 'public' ? 'bg-[#003b9a] text-white shadow-xs' : 'text-[#434654] hover:bg-[#f3f3fd]'
                 }`}
               >
                 Todos
@@ -549,8 +564,8 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                 role="tab"
                 aria-selected={scope === 'following'}
                 onClick={() => setScope('following')}
-                className={`rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${
-                  scope === 'following' ? 'bg-[#000666] text-white' : 'text-[#666] hover:bg-[#f5f3ef]'
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                  scope === 'following' ? 'bg-[#003b9a] text-white shadow-xs' : 'text-[#434654] hover:bg-[#f3f3fd]'
                 }`}
               >
                 Seguindo
@@ -560,30 +575,30 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
               type="button"
               onClick={() => void loadFeed()}
               disabled={loading}
-              className="rounded-xl border border-[#e4e2de] p-2.5 text-[#666] hover:bg-[#f5f3ef] transition-colors"
+              className="rounded-xl border border-[#e1e2ec] p-2 text-[#434654] hover:bg-[#f3f3fd] hover:text-[#003b9a] transition-colors"
               aria-label="Atualizar feed"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-[#003b9a]' : ''}`}/>
             </button>
           </section>
 
           {selectedCategory && (
-            <div className="flex items-center justify-between rounded-xl bg-[#e0e0ff] px-4 py-2.5 text-xs font-bold text-[#000666]">
+            <div className="flex items-center justify-between rounded-xl bg-[#dae1ff] px-4 py-2 text-xs font-bold text-[#003b9a]">
               <span>Filtrando por {categoryLabels[selectedCategory]}</span>
-              <button type="button" onClick={() => setSelectedCategory(null)} className="underline hover:text-[#000444]">
+              <button type="button" onClick={() => setSelectedCategory(null)} className="underline hover:text-[#002f7d]">
                 Limpar filtro
               </button>
             </div>
           )}
 
           {loading && (
-            <div className="rounded-2xl border border-[#e4e2de] bg-white p-10 text-center text-sm text-[#666]">
+            <div className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-10 text-center text-sm font-medium text-[#737685] shadow-whisper">
               Carregando acontecimentos...
             </div>
           )}
 
           {!loading && error && (
-            <div className="flex gap-3 rounded-2xl bg-[#ffdad6] p-5 text-[#8c1d18]">
+            <div className="flex gap-3 rounded-2xl bg-[#ffdad6] p-5 text-[#93000a]">
               <AlertCircle className="h-5 w-5 shrink-0"/>
               <div>
                 <p className="font-bold">O feed não pôde ser carregado</p>
@@ -596,12 +611,12 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
           )}
 
           {!loading && !error && intents.length === 0 && (
-            <div className="rounded-2xl border-2 border-dashed border-[#c6c5d4] bg-white p-8 sm:p-12 text-center">
-              <Users className="mx-auto h-8 w-8 text-[#777]"/>
-              <h3 className="mt-3 text-base font-black text-[#1b1c1a]">
+            <div className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-10 text-center shadow-whisper">
+              <Users className="mx-auto h-8 w-8 text-[#737685]"/>
+              <h3 className="mt-3 font-display text-base font-bold text-[#191b23]">
                 {isFollowingFeed ? 'Você ainda não tem acontecimentos de pessoas que segue.' : 'Nenhum acontecimento por aqui ainda'}
               </h3>
-              <p className="mt-2 text-sm text-[#666] max-w-md mx-auto leading-relaxed">
+              <p className="mt-2 text-xs text-[#737685] max-w-md mx-auto leading-relaxed">
                 {isFollowingFeed
                   ? 'Siga perfis para acompanhar o que eles estão fazendo acontecer.'
                   : 'Crie uma nova Intent para definir um acontecimento real com revelação protegida.'}
@@ -610,7 +625,7 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                 <button
                   type="button"
                   onClick={() => setScope('public')}
-                  className="mt-5 rounded-xl bg-[#000666] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#000444] transition-colors"
+                  className="mt-5 rounded-full bg-[#003b9a] px-5 py-2 text-xs font-bold text-white hover:bg-[#002f7d] transition-colors"
                 >
                   Ver todos os acontecimentos
                 </button>
@@ -618,7 +633,7 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                 <button
                   type="button"
                   onClick={onCreate}
-                  className="mt-5 rounded-xl bg-[#000666] px-5 py-3 text-sm font-bold text-white hover:bg-[#000444] transition-colors"
+                  className="mt-5 rounded-full bg-[#003b9a] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#002f7d] transition-colors"
                 >
                   Criar primeira Intent
                 </button>
@@ -627,10 +642,10 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
           )}
 
           {!loading && !error && intents.length > 0 && visibleIntents.length === 0 && (
-            <div className="rounded-2xl border border-[#e4e2de] bg-white p-8 text-center">
-              <Tag className="mx-auto h-6 w-6 text-[#777]"/>
-              <p className="mt-2 text-sm font-bold text-[#1b1c1a]">Nenhum acontecimento desta categoria no feed carregado.</p>
-              <button type="button" onClick={() => setSelectedCategory(null)} className="mt-3 text-xs font-bold text-[#000666] underline">
+            <div className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-8 text-center shadow-whisper">
+              <Tag className="mx-auto h-6 w-6 text-[#737685]"/>
+              <p className="mt-2 text-sm font-bold text-[#191b23]">Nenhum acontecimento desta categoria no feed carregado.</p>
+              <button type="button" onClick={() => setSelectedCategory(null)} className="mt-3 text-xs font-bold text-[#003b9a] underline">
                 Limpar filtro de categoria
               </button>
             </div>
@@ -653,7 +668,7 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
               type="button"
               onClick={() => void loadFeed(nextCursor)}
               disabled={loadingMore}
-              className="w-full rounded-xl border border-[#c6c5d4] bg-white py-3 text-sm font-bold text-[#000666] disabled:opacity-60 hover:bg-[#f5f3ef] transition-colors"
+              className="w-full rounded-2xl border border-[#c3c6d6] bg-white py-3 text-xs font-bold text-[#003b9a] disabled:opacity-60 hover:bg-[#f8faff] transition-colors shadow-xs"
             >
               {loadingMore ? 'Carregando mais...' : 'Carregar mais acontecimentos'}
             </button>
@@ -661,38 +676,38 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
         </main>
 
         {/* Sidebar Direita (Destaques & Filtros) */}
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:col-span-3">
-          <section className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-xs">
+        <aside className="space-y-4 lg:sticky lg:top-6 lg:col-span-3 xl:col-span-3">
+          <section className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-4 shadow-whisper">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-[#000666]"/>
-              <h2 className="text-xs font-black uppercase tracking-wider text-[#1b1c1a]">Mais apoiadas no feed</h2>
+              <TrendingUp className="h-4 w-4 text-[#003b9a]"/>
+              <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#191b23]">Mais apoiadas no feed</h2>
             </div>
             {highlightedIntents.length > 0 ? (
-              <div className="mt-3 divide-y divide-[#f0efec]">
+              <div className="mt-3 divide-y divide-[#e1e2ec]/50">
                 {highlightedIntents.map((intent) => (
                   <button
                     type="button"
                     key={intent.id}
                     onClick={() => onSelectIntent(intent.id)}
-                    className="block w-full py-3 text-left transition-colors group"
+                    className="block w-full py-2.5 text-left transition-colors group"
                   >
-                    <span className="text-[10px] font-bold uppercase text-[#777]">{categoryLabels[intent.category]}</span>
-                    <p className="mt-0.5 line-clamp-2 text-xs font-bold text-[#1b1c1a] group-hover:text-[#000666]">{intent.title}</p>
-                    <span className="mt-1 block text-[11px] text-[#666]">
+                    <span className="text-[10px] font-bold uppercase text-[#737685]">{categoryLabels[intent.category]}</span>
+                    <p className="mt-0.5 line-clamp-2 text-xs font-bold text-[#191b23] group-hover:text-[#003b9a] transition-colors">{intent.title}</p>
+                    <span className="mt-1 block text-[11px] font-semibold text-[#003b9a]">
                       {intent.supportCount} {intent.supportCount === 1 ? 'apoio' : 'apoios'}
                     </span>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="mt-3 text-xs text-[#777]">Nenhum destaque no feed carregado.</p>
+              <p className="mt-3 text-xs text-[#737685]">Nenhum destaque no feed carregado.</p>
             )}
           </section>
 
-          <section className="rounded-2xl border border-[#e4e2de] bg-white p-4 shadow-xs">
+          <section className="rounded-2xl border border-[#e1e2ec]/70 bg-white p-4 shadow-whisper">
             <div className="flex items-center gap-2">
-              <Tag className="h-4 w-4 text-[#000666]"/>
-              <h2 className="text-xs font-black uppercase tracking-wider text-[#1b1c1a]">Categorias do MVP</h2>
+              <Tag className="h-4 w-4 text-[#003b9a]"/>
+              <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#191b23]">Categorias</h2>
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {categoryEntries.map(([category, label]) => (
@@ -701,29 +716,29 @@ export function MvpHomeFeed({ currentUser, onCreate, onSelectIntent, onSelectPro
                   key={category}
                   onClick={() => setSelectedCategory((current) => current === category ? null : category)}
                   aria-pressed={selectedCategory === category}
-                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors ${
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all ${
                     selectedCategory === category
-                      ? 'bg-[#000666] text-white'
-                      : 'bg-[#f5f3ef] text-[#555] hover:bg-[#e0e0ff] hover:text-[#000666]'
+                      ? 'bg-[#003b9a] text-white shadow-xs'
+                      : 'bg-[#f3f3fd] text-[#434654] hover:bg-[#dae1ff] hover:text-[#003b9a]'
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-[#777]">
+            <p className="mt-3 text-[11px] leading-relaxed text-[#737685]">
               O filtro usa apenas as Intents reais já carregadas neste feed.
             </p>
           </section>
 
-          <section className="rounded-2xl border border-[#e4e2de] bg-[#fbf9f5] p-4">
-            <p className="flex items-center gap-2 text-xs font-black text-[#000666]">
+          <section className="rounded-2xl border border-[#e1e2ec]/60 bg-[#f8faff] p-4">
+            <p className="flex items-center gap-2 text-xs font-bold text-[#003b9a]">
               <LockKeyhole className="h-4 w-4"/>Revelação protegida
             </p>
-            <p className="mt-2 text-[11px] leading-relaxed text-[#666]">
+            <p className="mt-2 text-[11px] leading-relaxed text-[#737685]">
               O conteúdo permanece lacrado até o backend confirmar a condição da Intent.
             </p>
-            <span className="mt-3 inline-flex rounded-full bg-[#f0efff] px-2.5 py-1 text-[10px] font-bold text-[#000666]">
+            <span className="mt-3 inline-flex rounded-full bg-[#dae1ff] px-2.5 py-0.5 text-[10px] font-bold text-[#003b9a]">
               Versão {APP_VERSION_LABEL} · {APP_VERSION_CONTEXT}
             </span>
           </section>

@@ -10,6 +10,7 @@ import {
   createIntent,
   getIntent,
   listGuardianRequests,
+  listIntentSupporters,
   listUserIntents,
   listFollowingFeed,
   listPublicFeed,
@@ -108,6 +109,16 @@ intentsRouter.post('/', requireAuthenticatedUser, async (request, response, next
     const command = createIntentSchema.parse(request.body);
     const intent = await createIntent(request.appUser!.id, command, request.get('Idempotency-Key'));
     response.status(201).json({ data: intent });
+  } catch (error) {
+    next(error);
+  }
+});
+
+intentsRouter.get('/:id/supports', optionalAuthenticatedUser, async (request, response, next) => {
+  try {
+    const intentId = identifierSchema.parse(request.params.id);
+    const supporters = await listIntentSupporters(intentId, request.appUser?.id);
+    response.json({ data: supporters });
   } catch (error) {
     next(error);
   }

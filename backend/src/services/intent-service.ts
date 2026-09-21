@@ -56,8 +56,8 @@ interface IntentViewAccessRecord {
   creatorId: string;
   visibility: string;
   status: string;
-  guardianIds: Prisma.JsonValue | unknown;
-  creator: { status: string };
+  guardianIds?: Prisma.JsonValue | unknown;
+  creator?: { status: string } | null;
 }
 
 async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
@@ -65,7 +65,7 @@ async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
   viewerId: string | undefined,
   client: IntentAccessClient,
 ): Promise<T> {
-  if (!intent || (intent.creator.status !== 'ACTIVE' && intent.creatorId !== viewerId)) {
+  if (!intent || (intent.creator && intent.creator.status !== 'ACTIVE' && intent.creatorId !== viewerId)) {
     throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
   }
 
@@ -95,7 +95,7 @@ async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
 
 export async function requireIntentViewAccess(
   intentId: string,
-  viewerId: string,
+  viewerId?: string,
   client: IntentAccessClient = prisma,
 ): Promise<void> {
   const intent = await client.intent.findUnique({
@@ -684,4 +684,32 @@ export async function removeSupport(intentId: string, supporterId: string, idemp
       realizedNow: false,
     };
   });
+}
+
+export async function listIntentSupporters(intentId: string, viewerId?: string, limit = 12) {
+  intentId = intentId.toLowerCase();
+  await requireIntentViewAccess(intentId, viewerId, prisma);
+
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const supports = await prisma.support.findMany({
+    where: { intentId },
+    orderBy: { createdAt: 'desc' },
+    take: safeLimit,
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  });
+
+  return supports.map((s) => ({
+    id: s.id,
+    createdAt: s.createdAt.toISOString(),
+    user: s.user,
+  }));
 }

@@ -169,6 +169,17 @@ export interface ApiSearchResults {
   users: Array<ApiUserSearchResult & { bio: string | null }>;
 }
 
+export interface ApiIntentSupporter {
+  id: string;
+  createdAt: string;
+  user: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+}
+
 export interface SupportIntentResult {
   intentId: string;
   supportCount: number;
@@ -419,6 +430,13 @@ export async function createIntentComment(intentId: string, body: string): Promi
   const result = await authenticatedRequest<ApiEnvelope<ApiIntentComment>>(
     `/v1/intents/${encodeURIComponent(intentId)}/comments`,
     { method: 'POST', body: JSON.stringify({ body }) },
+  );
+  return result.data;
+}
+
+export async function listIntentSupporters(intentId: string): Promise<ApiIntentSupporter[]> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiIntentSupporter[]>>(
+    `/v1/intents/${encodeURIComponent(intentId)}/supports`,
   );
   return result.data;
 }

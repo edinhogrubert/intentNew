@@ -97,14 +97,14 @@ export function MvpSocialProfile({ userId, currentUser, onBack, onSelectIntent, 
     { label: 'Participação', value: profile.stats.supportsGiven },
   ];
 
-  return <div className="max-w-3xl mx-auto w-full px-4 py-6 sm:py-8">
-    <button onClick={onBack} className="mb-4 text-sm font-bold text-[#000666] flex items-center gap-2"><ArrowLeft className="w-4 h-4"/>Voltar</button>
+  return <div className="max-w-5xl mx-auto w-full px-4 py-6 sm:py-8">
+    <button onClick={onBack} className="mb-4 text-sm font-bold text-[#003b9a] flex items-center gap-2 hover:underline"><ArrowLeft className="w-4 h-4"/>Voltar</button>
 
-    <section className="bg-white border border-[#e4e2de] rounded-3xl shadow-sm overflow-hidden">
-      <div className="h-24 bg-gradient-to-r from-[#000666] via-[#3434a5] to-[#8787e8]"/>
-      <div className="px-5 sm:px-7 pb-7">
-        <div className="flex items-end justify-between gap-4 -mt-10">
-          <div className="w-20 h-20 rounded-full border-4 border-white bg-[#e0e0ff] text-[#000666] overflow-hidden flex items-center justify-center text-2xl font-black">
+    <section className="bg-white border border-[#e1e2ec]/70 rounded-3xl shadow-whisper overflow-hidden">
+      <div className="h-28 bg-gradient-to-r from-[#003b9a] via-[#1155d0] to-[#80a4ff]"/>
+      <div className="px-5 sm:px-8 pb-8">
+        <div className="flex items-end justify-between gap-4 -mt-12">
+          <div className="w-24 h-24 rounded-full border-4 border-white bg-[#faf8ff] text-[#003b9a] shadow-xs overflow-hidden flex items-center justify-center text-3xl font-extrabold">
             {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover"/> : profile.displayName.charAt(0).toUpperCase()}
           </div>
           <div className="flex items-center gap-2">
@@ -112,10 +112,10 @@ export function MvpSocialProfile({ userId, currentUser, onBack, onSelectIntent, 
               type="button"
               onClick={() => void handleCopyProfile()}
               title="Copiar link do perfil público"
-              className={`mb-1 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border transition-all ${
+              className={`mb-1 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all ${
                 copySuccess
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                  : 'border-[#c6c5d4] text-[#454652] bg-white hover:bg-[#f7f6fc]'
+                  : 'border-[#c3c6d6] text-[#434654] bg-white hover:bg-[#f8faff]'
               }`}
             >
               {copySuccess ? <Check className="w-4 h-4 text-emerald-600"/> : <Share2 className="w-4 h-4"/>}
@@ -123,32 +123,32 @@ export function MvpSocialProfile({ userId, currentUser, onBack, onSelectIntent, 
             </button>
 
             {profile.isMe
-              ? <button type="button" onClick={() => setEditing(true)} className="mb-1 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border border-[#c6c5d4] text-[#000666] bg-white"><Pencil className="w-4 h-4"/>Editar perfil</button>
-              : <button onClick={() => void toggleFollow()} disabled={relationshipLoading} className={`mb-1 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-60 ${profile.isFollowing ? 'border border-[#c6c5d4] text-[#8c1d18] bg-white' : 'bg-[#000666] text-white'}`}>{profile.isFollowing ? <UserMinus className="w-4 h-4"/> : <UserPlus className="w-4 h-4"/>}{relationshipLoading ? 'Atualizando...' : profile.isFollowing ? 'Deixar de seguir' : 'Seguir'}</button>}
+              ? <button type="button" onClick={() => setEditing(true)} className="mb-1 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border border-[#c3c6d6] text-[#003b9a] bg-white hover:bg-[#f3f3fd] transition-colors"><Pencil className="w-4 h-4"/>Editar perfil</button>
+              : <button onClick={() => void toggleFollow()} disabled={relationshipLoading} className={`mb-1 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-60 transition-colors ${profile.isFollowing ? 'border border-[#c3c6d6] text-[#ba1a1a] bg-white hover:bg-[#ffdad6]/30' : 'bg-[#003b9a] text-white hover:bg-[#002f7d]'}`}>{profile.isFollowing ? <UserMinus className="w-4 h-4"/> : <UserPlus className="w-4 h-4"/>}{relationshipLoading ? 'Atualizando...' : profile.isFollowing ? 'Deixar de seguir' : 'Seguir'}</button>}
           </div>
         </div>
 
-        <h1 className="text-2xl font-black mt-4">{profile.displayName}</h1>
-        <p className="text-sm text-[#666]">@{profile.username.replace(/^@+/, '')}</p>
-        {profile.bio && <p className="text-sm mt-4 whitespace-pre-wrap">{profile.bio}</p>}
-        <p className="text-xs text-[#666] mt-4 flex items-center gap-2"><CalendarDays className="w-4 h-4"/>Membro desde {memberSince(profile.createdAt)}</p>
+        <h1 className="font-display text-2xl font-bold mt-4 text-[#191b23]">{profile.displayName}</h1>
+        <p className="text-sm font-medium text-[#737685]">@{profile.username.replace(/^@+/, '')}</p>
+        {profile.bio && <p className="text-sm mt-3 text-[#434654] leading-relaxed whitespace-pre-wrap">{profile.bio}</p>}
+        <p className="text-xs text-[#737685] mt-3 flex items-center gap-2"><CalendarDays className="w-4 h-4"/>Membro desde {memberSince(profile.createdAt)}</p>
 
-        {error && <div role="alert" className="mt-4 p-3 bg-[#ffdad6] text-[#8c1d18] rounded-xl text-sm">{error}</div>}
+        {error && <div role="alert" className="mt-4 p-3 bg-[#ffdad6] text-[#93000a] rounded-xl text-xs">{error}</div>}
 
-        <div className="grid grid-cols-3 gap-px bg-[#e4e2de] border border-[#e4e2de] rounded-2xl overflow-hidden mt-6">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 bg-[#f8faff] border border-[#e1e2ec] rounded-2xl p-2 mt-6">
           {metrics.map((metric) => metric.connection
-            ? <button type="button" key={metric.label} onClick={() => setConnectionsMode(metric.connection!)} className="bg-[#fbf9f5] px-2 py-4 text-center hover:bg-[#f0efff] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#000666]" aria-label={`Abrir ${metric.label.toLowerCase()}`}><p className="text-lg font-black text-[#000666]">{metric.value}</p><p className="text-[11px] text-[#000666] font-bold mt-1 underline">{metric.label}</p></button>
-            : <div key={metric.label} className="bg-[#fbf9f5] px-2 py-4 text-center"><p className="text-lg font-black text-[#000666]">{metric.value}</p><p className="text-[11px] text-[#666] mt-1">{metric.label}</p></div>)}
+            ? <button type="button" key={metric.label} onClick={() => setConnectionsMode(metric.connection!)} className="bg-white rounded-xl px-2 py-3.5 text-center hover:bg-[#f3f3fd] transition-colors shadow-2xs" aria-label={`Abrir ${metric.label.toLowerCase()}`}><p className="font-display text-lg font-bold text-[#003b9a]">{metric.value}</p><p className="text-[11px] text-[#003b9a] font-bold mt-1 underline">{metric.label}</p></button>
+            : <div key={metric.label} className="bg-white rounded-xl px-2 py-3.5 text-center shadow-2xs"><p className="font-display text-lg font-bold text-[#191b23]">{metric.value}</p><p className="text-[11px] text-[#737685] font-medium mt-1">{metric.label}</p></div>)}
         </div>
 
-        <div className="mt-5 p-4 rounded-2xl bg-[#e8f5e9] flex items-center justify-between gap-4"><div><p className="text-xs font-bold text-[#28642f] flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4"/>Taxa de realização</p><p className="text-xs text-[#47664b] mt-1">Percentual real das Intents concluídas</p></div><strong className="text-2xl text-[#28642f]">{profile.stats.realizationRate}%</strong></div>
+        <div className="mt-5 p-4 rounded-2xl bg-[#e8f5e9] flex items-center justify-between gap-4"><div><p className="text-xs font-bold text-[#10b981] flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4"/>Taxa de realização</p><p className="text-xs text-[#2e7d32] mt-1">Percentual real das Intents concluídas</p></div><strong className="font-display text-2xl text-[#10b981]">{profile.stats.realizationRate}%</strong></div>
       </div>
     </section>
 
     <section className="mt-7">
-      <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-[#000666]"/><div><h2 className="font-black">Intents públicas recentes</h2><p className="text-xs text-[#666]">Atividade real deste perfil</p></div></div>
-      {profile.recentIntents.length === 0 && <div className="bg-white border-2 border-dashed border-[#c6c5d4] rounded-2xl p-7 text-center text-sm text-[#666]">Este perfil ainda não publicou Intents públicas.</div>}
-      <div className="space-y-3">{profile.recentIntents.map((intent) => <button key={intent.id} onClick={() => onSelectIntent(intent.id)} className="w-full bg-white border border-[#e4e2de] rounded-2xl p-4 text-left flex items-center justify-between gap-4 hover:border-[#000666]"><div className="min-w-0"><p className="font-bold truncate">{intent.title}</p><p className="text-xs text-[#666] mt-1 flex items-center gap-1.5">{intent.status === 'REALIZED' ? <CheckCircle2 className="w-3.5 h-3.5 text-[#28642f]"/> : <Users className="w-3.5 h-3.5"/>}{intent.supportCount} de {intent.supportGoal} apoios · {intent.status === 'REALIZED' ? 'Realizada' : 'Em andamento'}</p></div><ArrowRight className="w-5 h-5 text-[#000666] shrink-0"/></button>)}</div>
+      <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-[#003b9a]"/><div><h2 className="font-display text-base font-bold text-[#191b23]">Intents públicas recentes</h2><p className="text-xs text-[#737685]">Atividade real deste perfil</p></div></div>
+      {profile.recentIntents.length === 0 && <div className="bg-white border border-[#e1e2ec] rounded-2xl p-7 text-center text-sm text-[#737685] shadow-whisper">Este perfil ainda não publicou Intents públicas.</div>}
+      <div className="space-y-3">{profile.recentIntents.map((intent) => <button key={intent.id} onClick={() => onSelectIntent(intent.id)} className="w-full bg-white border border-[#e1e2ec]/70 rounded-2xl p-4 text-left flex items-center justify-between gap-4 hover:border-[#003b9a] hover:bg-[#f8faff] transition-colors shadow-whisper"><div className="min-w-0"><p className="font-bold text-[#191b23] truncate">{intent.title}</p><p className="text-xs text-[#737685] mt-1 flex items-center gap-1.5">{intent.status === 'REALIZED' ? <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]"/> : <Users className="w-3.5 h-3.5"/>}{intent.supportCount} de {intent.supportGoal} apoios · {intent.status === 'REALIZED' ? 'Realizada' : 'Em andamento'}</p></div><ArrowRight className="w-5 h-5 text-[#003b9a] shrink-0"/></button>)}</div>
     </section>
     {editing && <EditProfileModal
       user={currentUser}
