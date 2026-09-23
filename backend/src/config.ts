@@ -46,11 +46,36 @@ try {
   encryptionKey = Buffer.alloc(32, 1);
 }
 
+const envCors = parsed.data.CORS_ORIGINS.split(',')
+  .map((value) => value.trim().replace(/\/+$/, ''))
+  .filter((origin) => origin.length > 0 && origin !== '*');
+
+const allowedOriginsSet = new Set<string>([
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  ...envCors,
+]);
+
+if (process.env.APP_URL) {
+  const appUrl = process.env.APP_URL.trim().replace(/\/+$/, '');
+  if (appUrl) {
+    allowedOriginsSet.add(appUrl);
+  }
+}
+
+// URL do ambiente compartilhado (Shared App Preview) via variável de ambiente opcional
+if (process.env.SHARED_APP_URL) {
+  const sharedUrl = process.env.SHARED_APP_URL.trim().replace(/\/+$/, '');
+  if (sharedUrl) {
+    allowedOriginsSet.add(sharedUrl);
+  }
+}
+
 export const config = {
   nodeEnv: parsed.data.NODE_ENV,
   port: parsed.data.PORT,
   logLevel: parsed.data.LOG_LEVEL,
-  corsOrigins: parsed.data.CORS_ORIGINS.split(',').map((value) => value.trim()).filter(Boolean),
+  corsOrigins: Array.from(allowedOriginsSet),
   databaseUrl: parsed.data.DATABASE_URL,
   firebaseProjectId: parsed.data.FIREBASE_PROJECT_ID,
   revealEncryptionKey: encryptionKey,

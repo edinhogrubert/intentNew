@@ -165,7 +165,18 @@ export function PublicUserProfile({
       const updated = isCurrentlyFollowing
         ? await unfollowUser(userId)
         : await followUser(userId);
-      setProfile(updated);
+      setProfile((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          viewerIsFollowing: updated.isFollowing,
+          stats: {
+            ...prev.stats,
+            followersCount: updated.stats.followersCount,
+            followingCount: updated.stats.followingCount,
+          },
+        };
+      });
     } catch (caught) {
       // Revert optimistic update on failure
       setProfile((prev) => {

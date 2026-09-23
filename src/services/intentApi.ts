@@ -60,6 +60,7 @@ export interface ApiIntent {
   guardianIds?: string[];
   guardianApprovals?: string[];
   guardianApprovalGoal: number | null;
+  guardianApprovalCount?: number;
   publishedAt: string;
   realizedAt: string | null;
   createdAt: string;
@@ -68,8 +69,11 @@ export interface ApiIntent {
   viewerHasSupported?: boolean;
   viewerIsGuardian?: boolean;
   viewerHasApprovedAsGuardian?: boolean;
+  viewerSupported?: boolean;
+  viewerWatching?: boolean;
   reactionCounts?: ReactionCounts;
   viewerReaction?: ReactionType | null;
+  recentComments?: ApiIntentComment[];
 }
 
 export type ReactionType = 'LIKE' | 'LOVE' | 'CELEBRATE';
@@ -126,6 +130,7 @@ export type NotificationType =
   | 'INTENT_REACTION_RECEIVED'
   | 'INTENT_COMMENT_RECEIVED'
   | 'INTENT_REALIZED'
+  | 'INTENT_WATCHED_REALIZED'
   | 'USER_FOLLOWED'
   | 'GUARDIAN_ACTION';
 
@@ -141,6 +146,19 @@ export interface ApiNotification {
     avatarUrl: string | null;
   };
   intent: { id: string; title: string } | null;
+}
+
+export type IntentHistoryEventType =
+  | 'INTENT_CREATED'
+  | 'SUPPORT_RECEIVED'
+  | 'SUPPORT_REMOVED'
+  | 'GUARDIAN_APPROVED'
+  | 'INTENT_REALIZED';
+
+export interface ApiIntentHistoryEvent {
+  id: string;
+  type: IntentHistoryEventType;
+  occurredAt: string;
 }
 
 export interface ApiIntentComment {
@@ -164,10 +182,24 @@ export interface ApiUserSearchResult {
   avatarUrl: string | null;
 }
 
+export interface ApiPersonalContactList {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  members: ApiUserSearchResult[];
+}
+
 export interface ApiSearchResults {
   intents: ApiIntent[];
   users: Array<ApiUserSearchResult & { bio: string | null }>;
+  nextCursor: string | null;
 }
+
+export type SearchKind = 'all' | 'intents' | 'users';
+export type SearchStatus = 'PUBLISHED' | 'REALIZED';
+export type SearchPeriod = 'all' | 'week' | 'month';
+export interface SearchOptions { kind?: SearchKind; status?: SearchStatus; period?: SearchPeriod; cursor?: string; limit?: number; }
 
 export interface ApiIntentSupporter {
   id: string;
@@ -188,6 +220,11 @@ export interface SupportIntentResult {
   removed?: boolean;
   realized: boolean;
   realizedNow: boolean;
+}
+
+export interface IntentWatchResult {
+  intentId: string;
+  watching: boolean;
 }
 
 export interface CreateSupportIntentInput {
@@ -314,6 +351,9 @@ export async function unfollowProfile(userId: string): Promise<ApiSocialProfile>
   return result.data;
 }
 
+export const followUser = followProfile;
+export const unfollowUser = unfollowProfile;
+
 export async function listNotifications(): Promise<ApiNotification[]> {
   const result = await authenticatedRequest<ApiEnvelope<{ items: ApiNotification[] }>>('/v1/notifications');
   return result.data.items;
@@ -370,8 +410,39 @@ export async function searchUsers(query: string): Promise<ApiUserSearchResult[]>
   return result.data.items;
 }
 
-export async function searchIntentsAndUsers(query: string): Promise<ApiSearchResults> {
-  const search = new URLSearchParams({ q: query, limit: '10' });
+export async function listPersonalContactLists(): Promise<ApiPersonalContactList[]> {
+  const result = await authenticatedRequest<ApiEnvelope<{ items: ApiPersonalContactList[] }>>('/v1/personal-lists');
+  return result.data.items;
+}
+
+export async function createPersonalContactList(name: string): Promise<ApiPersonalContactList> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiPersonalContactList>>('/v1/personal-lists', { method: 'POST', body: JSON.stringify({ name }) });
+  return result.data;
+}
+
+export async function renamePersonalContactList(id: string, name: string): Promise<ApiPersonalContactList> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiPersonalContactList>>(`/v1/personal-lists/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ name }) });
+  return result.data;
+}
+
+export async function deletePersonalContactList(id: string): Promise<void> {
+  await authenticatedRequest<ApiEnvelope<{ deleted: boolean }>>(`/v1/personal-lists/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function addPersonalContactListMember(listId: string, userId: string): Promise<ApiPersonalContactList> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiPersonalContactList>>(`/v1/personal-lists/${encodeURIComponent(listId)}/members`, { method: 'POST', body: JSON.stringify({ userId }) });
+  return result.data;
+}
+
+export async function removePersonalContactListMember(listId: string, userId: string): Promise<ApiPersonalContactList> {
+  const result = await authenticatedRequest<ApiEnvelope<ApiPersonalContactList>>(`/v1/personal-lists/${encodeURIComponent(listId)}/members/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+  return result.data;
+}
+
+export async function searchIntentsAndUsers(query: string, options: SearchOptions = {}): Promise<ApiSearchResults> {
+  const search = new URLSearchParams({ q: query, limit: String(options.limit ?? 10), kind: options.kind ?? 'all', period: options.period ?? 'all' });
+  if (options.status) search.set('status', options.status);
+  if (options.cursor) search.set('cursor', options.cursor);
   const result = await authenticatedRequest<ApiEnvelope<ApiSearchResults>>(
     `/v1/search?${search.toString()}`,
   );
@@ -400,6 +471,7 @@ export async function listGuardianRequests(): Promise<{ items: ApiIntent[]; next
 }
 
 export type FeedScope = 'public' | 'following' | 'all';
+export type SocialFeedFilter = 'recent' | 'realized' | 'supported' | 'mine' | 'popular';
 
 export async function listPublicIntents(
   scope: FeedScope = 'public',
@@ -414,8 +486,23 @@ export async function listPublicIntents(
   return result.data;
 }
 
+export async function listSocialFeed(filter: SocialFeedFilter = 'recent', cursor?: string): Promise<{ items: ApiIntent[]; nextCursor: string | null }> {
+  const query = new URLSearchParams({ filter, limit: '20' }); if (cursor) query.set('cursor', cursor);
+  const result = await authenticatedRequest<ApiEnvelope<{ items: ApiIntent[]; nextCursor: string | null }>>(`/v1/intents/social-feed?${query.toString()}`);
+  return result.data;
+}
+
 export async function getIntent(intentId: string): Promise<ApiIntent> {
   const result = await authenticatedRequest<ApiEnvelope<ApiIntent>>(`/v1/intents/${encodeURIComponent(intentId)}`);
+  return result.data;
+}
+
+export async function listIntentHistory(intentId: string, cursor?: string): Promise<{ items: ApiIntentHistoryEvent[]; nextCursor: string | null }> {
+  const query = new URLSearchParams({ limit: '20' });
+  if (cursor) query.set('cursor', cursor);
+  const result = await authenticatedRequest<ApiEnvelope<{ items: ApiIntentHistoryEvent[]; nextCursor: string | null }>>(
+    `/v1/intents/${encodeURIComponent(intentId)}/history?${query.toString()}`,
+  );
   return result.data;
 }
 
@@ -435,10 +522,10 @@ export async function createIntentComment(intentId: string, body: string): Promi
 }
 
 export async function listIntentSupporters(intentId: string): Promise<ApiIntentSupporter[]> {
-  const result = await authenticatedRequest<ApiEnvelope<ApiIntentSupporter[]>>(
+  const result = await authenticatedRequest<ApiEnvelope<{ items: ApiIntentSupporter[] }>>(
     `/v1/intents/${encodeURIComponent(intentId)}/supports`,
   );
-  return result.data;
+  return result.data.items;
 }
 
 export async function supportIntent(intentId: string): Promise<SupportIntentResult> {
@@ -454,6 +541,30 @@ export async function removeIntentSupport(intentId: string): Promise<SupportInte
     `/v1/intents/${encodeURIComponent(intentId)}/supports`,
     { method: 'DELETE' },
   );
+  return result.data;
+}
+
+export async function watchIntent(intentId: string): Promise<IntentWatchResult> {
+  const result = await authenticatedRequest<ApiEnvelope<IntentWatchResult>>(
+    `/v1/intents/${encodeURIComponent(intentId)}/watch`,
+    { method: 'POST' },
+  );
+  return result.data;
+}
+
+export async function unwatchIntent(intentId: string): Promise<IntentWatchResult> {
+  const result = await authenticatedRequest<ApiEnvelope<IntentWatchResult>>(
+    `/v1/intents/${encodeURIComponent(intentId)}/watch`,
+    { method: 'DELETE' },
+  );
+  return result.data;
+}
+
+export async function listWatchedIntents(cursor?: string): Promise<{ items: ApiIntent[]; nextCursor: string | null }> {
+  const params = new URLSearchParams();
+  if (cursor) params.set('cursor', cursor);
+  const suffix = params.size ? `?${params.toString()}` : '';
+  const result = await authenticatedRequest<ApiEnvelope<{ items: ApiIntent[]; nextCursor: string | null }>>(`/v1/intents/watched${suffix}`);
   return result.data;
 }
 
@@ -491,8 +602,8 @@ export interface ApiPublicUserProfile {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
-  isMe?: boolean;
-  viewerIsFollowing?: boolean;
+  isMe: boolean;
+  viewerIsFollowing: boolean;
   stats: {
     intentsCreated: number;
     intentsRealized: number;
@@ -500,8 +611,8 @@ export interface ApiPublicUserProfile {
     totalReactionsReceived: number;
     totalCommentsReceived: number;
     publicIntentsCount: number;
-    followersCount?: number;
-    followingCount?: number;
+    followersCount: number;
+    followingCount: number;
     supportedIntentsCount: number;
     reactionsGivenCount: number;
     commentsGivenCount: number;
@@ -518,28 +629,14 @@ export async function getPublicUserProfile(userId: string): Promise<ApiPublicUse
   return result.data;
 }
 
-export async function followUser(userId: string): Promise<ApiPublicUserProfile> {
-  const result = await authenticatedRequest<ApiEnvelope<ApiPublicUserProfile>>(
-    `/v1/users/${encodeURIComponent(userId)}/follow`,
-    { method: 'POST' },
-  );
-  return result.data;
-}
-
-export async function unfollowUser(userId: string): Promise<ApiPublicUserProfile> {
-  const result = await authenticatedRequest<ApiEnvelope<ApiPublicUserProfile>>(
-    `/v1/users/${encodeURIComponent(userId)}/follow`,
-    { method: 'DELETE' },
-  );
-  return result.data;
-}
-
 export type ApiPublicActivityType =
   | 'INTENT_CREATED'
   | 'INTENT_SUPPORTED'
   | 'INTENT_REACTED'
   | 'INTENT_COMMENTED'
   | 'INTENT_REALIZED_PARTICIPATION';
+
+export type PublicActivityFilter = 'ALL' | ApiPublicActivityType;
 
 export interface ApiPublicActivityItem {
   id: string;
@@ -566,10 +663,6 @@ export interface ApiPublicActivityItem {
   };
 }
 
-export type PublicActivityFilter =
-  | 'ALL'
-  | ApiPublicActivityType;
-
 export interface ApiPublicActivityResponse {
   items: ApiPublicActivityItem[];
   nextCursor: string | null;
@@ -579,7 +672,7 @@ export async function listUserPublicActivity(
   userId: string,
   cursor?: string,
   limit = 20,
-  type?: PublicActivityFilter,
+  type: PublicActivityFilter = 'ALL',
 ): Promise<ApiPublicActivityResponse> {
   const query = new URLSearchParams();
   if (cursor) query.set('cursor', cursor);
@@ -590,4 +683,3 @@ export async function listUserPublicActivity(
   const result = await authenticatedRequest<ApiEnvelope<ApiPublicActivityResponse>>(url);
   return result.data;
 }
-

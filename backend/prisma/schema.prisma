@@ -28,6 +28,9 @@ model User {
   notificationActions Notification[] @relation("NotificationActor")
   authoredComments IntentComment[]
   reactions      IntentReaction[]
+  intentWatches  IntentWatch[]
+  personalContactListsOwned PersonalContactList[] @relation("PersonalContactListOwner")
+  personalContactListMemberships PersonalContactListMember[] @relation("PersonalContactListMember")
 
   @@map("users")
 }
@@ -76,6 +79,7 @@ model Intent {
   notifications      Notification[]
   comments           IntentComment[]
   reactions          IntentReaction[]
+  watches            IntentWatch[]
 
   @@index([status, visibility, createdAt(sort: Desc)])
   @@index([conditionType, revealAt])
@@ -134,6 +138,7 @@ enum NotificationType {
   INTENT_REACTION_RECEIVED
   INTENT_COMMENT_RECEIVED
   INTENT_REALIZED
+  INTENT_WATCHED_REALIZED
   USER_FOLLOWED
   GUARDIAN_ACTION
 }
@@ -190,4 +195,46 @@ model IntentReaction {
   @@index([intentId, type])
   @@index([userId, createdAt(sort: Desc)])
   @@map("intent_reactions")
+}
+
+model IntentWatch {
+  id        String   @id @default(uuid()) @db.Uuid
+  intentId  String   @map("intent_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  intent    Intent   @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([intentId, userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("intent_watches")
+}
+
+model PersonalContactList {
+  id        String   @id @default(uuid()) @db.Uuid
+  ownerId   String   @map("owner_id") @db.Uuid
+  name      String   @db.VarChar(80)
+  nameKey   String   @map("name_key") @db.VarChar(80)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  owner     User     @relation("PersonalContactListOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members   PersonalContactListMember[]
+
+  @@unique([ownerId, nameKey])
+  @@index([ownerId, updatedAt(sort: Desc)])
+  @@map("personal_contact_lists")
+}
+
+model PersonalContactListMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  listId    String   @map("list_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  list      PersonalContactList @relation(fields: [listId], references: [id], onDelete: Restrict)
+  user      User @relation("PersonalContactListMember", fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([listId, userId])
+  @@index([listId, createdAt])
+  @@index([userId, createdAt])
+  @@map("personal_contact_list_members")
 }

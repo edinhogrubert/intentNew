@@ -13,27 +13,31 @@ import { intentsRouter } from './routes/intents.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { searchRouter } from './routes/search.js';
 import { usersRouter } from './routes/users.js';
+import { personalContactListsRouter } from './routes/personal-contact-lists.js';
 
 export function createApp() {
   const app = express();
 
   app.disable('x-powered-by');
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    crossOriginResourcePolicy: { policy: 'same-origin' },
+    frameguard: { action: 'deny' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+  }));
   app.use(cors({
     origin(origin, callback) {
       if (!origin) {
         callback(null, true);
         return;
       }
-      // Permitir localhost, domínios do Google Cloud Run (ais-dev / ais-pre) e origens configuradas
-      if (
-        config.corsOrigins.includes('*') ||
-        config.corsOrigins.includes(origin) ||
-        origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.endsWith('.run.app') ||
-        origin.endsWith('.google.com')
-      ) {
+      const cleanOrigin = origin.replace(/\/+$/, '');
+      if (config.corsOrigins.includes(cleanOrigin)) {
         callback(null, true);
         return;
       }
@@ -61,6 +65,7 @@ export function createApp() {
   });
   app.use('/health', healthRouter);
   app.use('/v1/users', usersRouter);
+  app.use('/v1/personal-lists', personalContactListsRouter);
   app.use('/v1/intents', intentsRouter);
   app.use('/v1/notifications', notificationsRouter);
   app.use('/v1/search', searchRouter);
@@ -119,33 +124,6 @@ export function createApp() {
         error: {
           code: 'RESOURCE_CONFLICT',
           message: 'Já existe um registro com esses dados.',
-          requestId: request.id,
-        },
-      });
-      return;
-    }
-
-    // Erros transientes de conexão com o banco de dados (ex: E57P01 restart/scaling do Postgres, P1001, P1017, P2024)
-    if (
-      error instanceof Prisma.PrismaClientInitializationError ||
-      error instanceof Prisma.PrismaClientRustPanicError ||
-      (error instanceof Prisma.PrismaClientKnownRequestError && ['P1001', 'P1017', 'P2024'].includes(error.code)) ||
-      (error instanceof Prisma.PrismaClientUnknownRequestError && error.message.includes('E57P01')) ||
-      (error instanceof Error && (
-        error.message.includes('E57P01') ||
-        error.message.includes('terminating connection') ||
-        error.message.includes('Can\'t reach database server') ||
-        error.message.includes('Connection closed') ||
-        error.message.includes('server closed the connection unexpectedly')
-      ))
-    ) {
-      // Força reconexão em caso de conexão terminada pelo servidor
-      prisma.$disconnect().catch(() => {});
-      request.log.warn({ err: error }, 'Erro transitório de conexão com o banco de dados');
-      response.status(503).json({
-        error: {
-          code: 'DATABASE_UNAVAILABLE',
-          message: 'O serviço de banco de dados está temporariamente reconectando. Tente novamente em alguns instantes.',
           requestId: request.id,
         },
       });

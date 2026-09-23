@@ -7,7 +7,7 @@ import { openReveal, revealAssociatedData, sealReveal } from '../domain/reveal-c
 import { isSupportConditionSatisfied } from '../domain/support-condition.js';
 import { createIntentSchema } from '../domain/intent-schemas.js';
 import { runIntentMutation } from './intent-mutation.js';
-import { createNotification } from './notification-service.js';
+import { createNotification, notifyIntentWatchersOfRealization } from './notification-service.js';
 import { getIntentReactionSummary } from './reaction-service.js';
 
 const publicIntentSelection = {
@@ -38,6 +38,22 @@ const publicIntentSelection = {
   },
 } as Prisma.IntentSelect;
 
+export type SocialFeedFilter = 'recent' | 'realized' | 'supported' | 'mine' | 'popular';
+const socialFeedCommentSelection = {
+  id: true, intentId: true, body: true, createdAt: true, updatedAt: true,
+  author: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+} satisfies Prisma.IntentCommentSelect;
+
+// Feed summaries never expose guardian membership or approvals. Those remain
+// available only through the detail projection and its access rules.
+const socialFeedIntentSelection = {
+  id: true, type: true, conditionType: true, status: true, visibility: true,
+  category: true, title: true, story: true, supportGoal: true, supportCount: true,
+  revealAt: true, guardianApprovalGoal: true, publishedAt: true, realizedAt: true,
+  createdAt: true,
+  creator: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+} satisfies Prisma.IntentSelect;
+
 function assertPublishedState(intent: { supportCount: number; supportGoal: number; realizedAt: Date | null }) {
   if (!Number.isInteger(intent.supportCount) || intent.supportCount < 0
     || !Number.isInteger(intent.supportGoal) || intent.supportGoal < 1
@@ -56,8 +72,8 @@ interface IntentViewAccessRecord {
   creatorId: string;
   visibility: string;
   status: string;
-  guardianIds?: Prisma.JsonValue | unknown;
-  creator?: { status: string } | null;
+  guardianIds: Prisma.JsonValue | unknown;
+  creator: { status: string };
 }
 
 async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
@@ -65,7 +81,7 @@ async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
   viewerId: string | undefined,
   client: IntentAccessClient,
 ): Promise<T> {
-  if (!intent || (intent.creator && intent.creator.status !== 'ACTIVE' && intent.creatorId !== viewerId)) {
+  if (!intent || (intent.creator.status !== 'ACTIVE' && intent.creatorId !== viewerId)) {
     throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
   }
 
@@ -95,7 +111,7 @@ async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
 
 export async function requireIntentViewAccess(
   intentId: string,
-  viewerId?: string,
+  viewerId: string,
   client: IntentAccessClient = prisma,
 ): Promise<void> {
   const intent = await client.intent.findUnique({
@@ -156,6 +172,16 @@ export async function createIntent(creatorId: string, input: unknown, idempotenc
   );
 
   return runIntentMutation(creatorId, 'CREATE_INTENT', idempotencyKey, command, async (transaction) => {
+    if (command.conditionType === 'GUARDIANS') {
+      const guardianIds = command.guardianIds ?? [];
+      const activeGuardians = await transaction.user.findMany({
+        where: { id: { in: guardianIds }, status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (activeGuardians.length !== guardianIds.length) {
+        throw new AppError(400, 'INVALID_GUARDIANS', 'Todos os guardiões precisam ser usuários ativos.');
+      }
+    }
     const intent = await transaction.intent.create({
       data: {
         id: intentId,
@@ -277,7 +303,7 @@ export async function listFollowingFeed(viewerId: string, cursor?: string, limit
   const safeLimit = Math.min(Math.max(limit, 1), 50);
   const items = await prisma.intent.findMany({
     where: {
-      visibility: { in: ['PUBLIC', 'FOLLOWERS'] },
+      visibility: 'PUBLIC',
       status: { in: ['PUBLISHED', 'REALIZED'] },
       creator: {
         status: 'ACTIVE',
@@ -293,9 +319,89 @@ export async function listFollowingFeed(viewerId: string, cursor?: string, limit
   const hasMore = items.length > safeLimit;
   const page = hasMore ? items.slice(0, safeLimit) : items;
 
+  const ids = page.map((intent) => intent.id);
+  const [groups, viewerReactions, viewerSupports] = ids.length ? await Promise.all([
+    prisma.intentReaction.groupBy({ by: ['intentId', 'type'],
+      where: { intentId: { in: ids } }, _count: { _all: true } }),
+    prisma.intentReaction.findMany({ where: { userId: viewerId, intentId: { in: ids } },
+      select: { intentId: true, type: true } }),
+    prisma.support.findMany({ where: { userId: viewerId, intentId: { in: ids } },
+      select: { intentId: true } }),
+  ]) : [[], [], []];
+  const counts = new Map<string, { LIKE: number; LOVE: number; CELEBRATE: number; total: number }>();
+  for (const group of groups) {
+    const count = counts.get(group.intentId) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 };
+    count[group.type] = group._count._all;
+    count.total += group._count._all;
+    counts.set(group.intentId, count);
+  }
+  const reactions = new Map(viewerReactions.map((reaction) => [reaction.intentId, reaction.type]));
+  const supported = new Set(viewerSupports.map((support) => support.intentId));
+
   return {
-    items: page,
+    items: page.map((intent) => ({ ...intent,
+      reactionCounts: counts.get(intent.id) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 },
+      viewerReaction: reactions.get(intent.id) ?? null,
+      viewerHasSupported: supported.has(intent.id),
+    })),
     nextCursor: hasMore ? page.at(-1)?.id ?? null : null,
+  };
+}
+
+/** Public, viewer-authorized projection; encrypted reveal fields are never selected. */
+export async function listSocialFeed(viewerId: string, filter: SocialFeedFilter = 'recent', cursor?: string, limit = 20) {
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const where: Prisma.IntentWhereInput = {
+    OR: [
+      { visibility: 'PUBLIC' }, { creatorId: viewerId },
+      { visibility: 'FOLLOWERS', creator: { followers: { some: { followerId: viewerId } } } },
+      { visibility: 'PRIVATE', guardianIds: { array_contains: [viewerId] } },
+    ],
+    creator: { status: 'ACTIVE' },
+    status: filter === 'realized' ? 'REALIZED' : { in: ['PUBLISHED', 'REALIZED'] },
+    ...(filter === 'supported' ? { supports: { some: { userId: viewerId } } } : {}),
+    ...(filter === 'mine' ? { creatorId: viewerId } : {}),
+  };
+  const orderBy = filter === 'popular'
+    ? [{ supportCount: 'desc' as const }, { createdAt: 'desc' as const }, { id: 'desc' as const }]
+    : [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
+  const rows = await prisma.intent.findMany({ where, orderBy, take: safeLimit + 1, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), select: socialFeedIntentSelection });
+  const page = rows.slice(0, safeLimit);
+  const ids = page.map((intent) => intent.id);
+  const [groups, reactions, supports, comments, watches] = ids.length ? await Promise.all([
+    prisma.intentReaction.groupBy({ by: ['intentId', 'type'], where: { intentId: { in: ids } }, _count: { _all: true } }),
+    prisma.intentReaction.findMany({ where: { userId: viewerId, intentId: { in: ids } }, select: { intentId: true, type: true } }),
+    prisma.support.findMany({ where: { userId: viewerId, intentId: { in: ids } }, select: { intentId: true } }),
+    prisma.intentComment.findMany({ where: { intentId: { in: ids }, author: { status: 'ACTIVE' } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: safeLimit * 3, select: socialFeedCommentSelection }),
+    prisma.intentWatch?.findMany({ where: { userId: viewerId, intentId: { in: ids } }, select: { intentId: true } }) ?? Promise.resolve([]),
+  ]) : [[], [], [], [], []];
+  const counts = new Map<string, { LIKE: number; LOVE: number; CELEBRATE: number; total: number }>();
+  for (const group of groups) { const count = counts.get(group.intentId) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 }; count[group.type] = group._count._all; count.total += group._count._all; counts.set(group.intentId, count); }
+  const reactionByIntent = new Map(reactions.map((item) => [item.intentId, item.type]));
+  const supportedIds = new Set(supports.map((item) => item.intentId));
+  const watchedIds = new Set(watches.map((item) => item.intentId));
+  const commentsByIntent = new Map<string, typeof comments>();
+  for (const comment of comments) { const items = commentsByIntent.get(comment.intentId) ?? []; if (items.length < 2) items.push(comment); commentsByIntent.set(comment.intentId, items); }
+  return {
+    items: page.map((intent) => {
+      // Prisma's select already excludes these. Dropping them defensively keeps
+      // the feed safe if a future repository implementation widens a row.
+      const { guardianIds: _guardianIds, guardianApprovals: _guardianApprovals,
+        revealCiphertext: _revealCiphertext, revealIv: _revealIv,
+        revealAuthTag: _revealAuthTag, revealContent: _revealContent,
+        ...summary } = intent as typeof intent & Record<string, unknown>;
+      return {
+        ...summary,
+        reactionCounts: counts.get(intent.id) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 },
+        viewerReaction: reactionByIntent.get(intent.id) ?? null,
+        viewerSupported: supportedIds.has(intent.id),
+        viewerHasSupported: supportedIds.has(intent.id),
+        viewerWatching: watchedIds.has(intent.id),
+        recentComments: (commentsByIntent.get(intent.id) ?? [])
+          .map(({ id, body, createdAt, updatedAt, author }) => ({ id, body, createdAt, updatedAt, author })),
+      };
+    }),
+    nextCursor: rows.length > safeLimit ? page.at(-1)?.id ?? null : null,
   };
 }
 
@@ -312,9 +418,17 @@ export async function getIntent(intentId: string, viewerId?: string) {
   intent = await assertIntentViewAccess(intent, viewerId, prisma);
 
   const viewerIsGuardian = Boolean(viewerId && asStringArray(intent.guardianIds).includes(viewerId));
+  const guardianApprovalCount = asStringArray(intent!.guardianApprovals)
+    .filter((id) => asStringArray(intent!.guardianIds).includes(id)).length;
 
   const viewerSupport = viewerId
     ? await prisma.support.findUnique({
+        where: { intentId_userId: { intentId, userId: viewerId } },
+        select: { id: true },
+      })
+    : null;
+  const viewerWatch = viewerId
+    ? await prisma.intentWatch?.findUnique({
         where: { intentId_userId: { intentId, userId: viewerId } },
         select: { id: true },
       })
@@ -330,9 +444,31 @@ export async function getIntent(intentId: string, viewerId?: string) {
   } = intent;
 
   if (intent.status === 'PUBLISHED' && isRevealConditionSatisfied(intent)) {
-    const result = await prisma.intent.updateMany({
-      where: { id: intentId, status: 'PUBLISHED' },
-      data: { status: 'REALIZED', realizedAt: new Date() },
+    const realizedIntent = intent;
+    const result = await prisma.$transaction(async (transaction) => {
+      const update = await transaction.intent.updateMany({
+        where: { id: intentId, status: 'PUBLISHED' },
+        data: { status: 'REALIZED', realizedAt: new Date() },
+      });
+      if (update.count === 1) {
+        await transaction.domainEvent.create({
+          data: {
+            intentId,
+            actorId: realizedIntent.creatorId,
+            type: 'INTENT_REALIZED',
+            idempotencyKey: `intent-realized:${intentId}:v${realizedIntent.revealVersion}`,
+            payload: { conditionType: realizedIntent.conditionType, revealVersion: realizedIntent.revealVersion },
+          },
+        });
+        await notifyIntentWatchersOfRealization(transaction, {
+          intentId,
+          actorId: realizedIntent.creatorId,
+          creatorId: realizedIntent.creatorId,
+          visibility: realizedIntent.visibility,
+          guardianIds: realizedIntent.guardianIds,
+        });
+      }
+      return update;
     });
     if (result.count === 1) {
       intent = await prisma.intent.findUniqueOrThrow({
@@ -353,12 +489,14 @@ export async function getIntent(intentId: string, viewerId?: string) {
       ...publicIntent,
       guardianIds: publicGuardianIds(intent, viewerId),
       guardianApprovals: publicGuardianApprovals(intent, viewerId),
+      guardianApprovalCount,
       viewerIsGuardian,
       viewerHasApprovedAsGuardian: Boolean(viewerId && asStringArray(intent.guardianApprovals).includes(viewerId)),
       revealContent: null,
       viewerHasSupported: Boolean(viewerSupport),
       reactionCounts,
       viewerReaction,
+      viewerWatching: Boolean(viewerWatch),
     };
   }
 
@@ -381,10 +519,12 @@ export async function getIntent(intentId: string, viewerId?: string) {
     ...realizedPublicIntent,
     guardianIds: publicGuardianIds(intent, viewerId),
     guardianApprovals: publicGuardianApprovals(intent, viewerId),
+    guardianApprovalCount,
     viewerIsGuardian,
     viewerHasApprovedAsGuardian: Boolean(viewerId && asStringArray(intent.guardianApprovals).includes(viewerId)),
     revealContent,
     viewerHasSupported: Boolean(viewerSupport),
+    viewerWatching: Boolean(viewerWatch),
     reactionCounts,
     viewerReaction,
   };
@@ -508,6 +648,13 @@ export async function supportIntent(intentId: string, supporterId: string, idemp
             },
           },
         });
+        await notifyIntentWatchersOfRealization(transaction, {
+          intentId,
+          actorId: supporterId,
+          creatorId: existing.creatorId,
+          visibility: updated.visibility,
+          guardianIds: updated.guardianIds,
+        });
       }
     }
 
@@ -568,13 +715,15 @@ export async function approveGuardianIntent(intentId: string, guardianId: string
           },
         },
       });
-      await createNotification(transaction, {
-        userId: intent.creatorId,
-        actorId: guardianId,
-        type: 'GUARDIAN_APPROVAL_RECEIVED',
-        intentId,
-        deduplicationKey: `guardian-approval:${intentId}:${guardianId}`,
-      });
+      if (guardianId !== intent.creatorId) {
+        await createNotification(transaction, {
+          userId: intent.creatorId,
+          actorId: guardianId,
+          type: 'GUARDIAN_APPROVAL_RECEIVED',
+          intentId,
+          deduplicationKey: `guardian-approval:${intentId}:${guardianId}`,
+        });
+      }
     }
 
     let realizedNow = false;
@@ -598,6 +747,13 @@ export async function approveGuardianIntent(intentId: string, guardianId: string
               revealVersion: updated.revealVersion,
             },
           },
+        });
+        await notifyIntentWatchersOfRealization(transaction, {
+          intentId,
+          actorId: guardianId,
+          creatorId: intent.creatorId,
+          visibility: updated.visibility,
+          guardianIds: updated.guardianIds,
         });
       }
     }
@@ -686,16 +842,27 @@ export async function removeSupport(intentId: string, supporterId: string, idemp
   });
 }
 
-export async function listIntentSupporters(intentId: string, viewerId?: string, limit = 12) {
+export async function listIntentSupporters(intentId: string, viewerId?: string) {
   intentId = intentId.toLowerCase();
-  await requireIntentViewAccess(intentId, viewerId, prisma);
+  const intent = await prisma.intent.findUnique({
+    where: { id: intentId },
+    select: {
+      creatorId: true,
+      visibility: true,
+      status: true,
+      guardianIds: true,
+      creator: { select: { status: true } },
+    },
+  });
 
-  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  await assertIntentViewAccess(intent, viewerId, prisma);
+
   const supports = await prisma.support.findMany({
     where: { intentId },
     orderBy: { createdAt: 'desc' },
-    take: safeLimit,
-    include: {
+    select: {
+      id: true,
+      createdAt: true,
       user: {
         select: {
           id: true,
@@ -707,9 +874,11 @@ export async function listIntentSupporters(intentId: string, viewerId?: string, 
     },
   });
 
-  return supports.map((s) => ({
-    id: s.id,
-    createdAt: s.createdAt.toISOString(),
-    user: s.user,
-  }));
+  return {
+    items: supports.map((support) => ({
+      id: support.id,
+      createdAt: support.createdAt.toISOString(),
+      user: support.user,
+    })),
+  };
 }

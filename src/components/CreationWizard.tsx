@@ -32,6 +32,7 @@ import {
   type ApiUserSearchResult,
   type IntentCategory,
 } from '../services/intentApi';
+import { PersonalContactListsPanel } from './PersonalContactListsPanel';
 
 interface CreationWizardProps {
   currentUser: UserAccount;
@@ -103,6 +104,7 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
   const [guardianSearchResults, setGuardianSearchResults] = useState<ApiUserSearchResult[]>([]);
   const [guardianSearchLoading, setGuardianSearchLoading] = useState(false);
   const [selectedGuardians, setSelectedGuardians] = useState<ApiUserSearchResult[]>([]);
+  const [includeCreatorAsGuardian, setIncludeCreatorAsGuardian] = useState(false);
   const [guardianApprovalGoal, setGuardianApprovalGoal] = useState(1);
   const [revealContent, setRevealContent] = useState('');
   const [error, setError] = useState('');
@@ -116,7 +118,15 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
   const SelectedCategoryIcon = selectedCategory.icon;
   const SelectedVisibilityIcon = selectedVisibility.icon;
   const SelectedConditionIcon = selectedCondition.icon;
-  const guardianIds = selectedGuardians.map((guardian) => guardian.id);
+  const creatorGuardian: ApiUserSearchResult = {
+    id: currentUser.id,
+    username: currentUser.username,
+    displayName: currentUser.name,
+    bio: currentUser.bio ?? null,
+    avatarUrl: currentUser.avatarUrl ?? null,
+  };
+  const selectedGuardianUsers = includeCreatorAsGuardian ? [creatorGuardian, ...selectedGuardians] : selectedGuardians;
+  const guardianIds = [...new Set(selectedGuardianUsers.map((guardian) => guardian.id))];
 
   function handleVisibilityChange(next: VisibilityOption) {
     setVisibility(next);
@@ -149,6 +159,7 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
   }
 
   function addGuardian(user: ApiUserSearchResult) {
+    if (user.id === currentUser.id) return;
     setSelectedGuardians((current) => current.some((guardian) => guardian.id === user.id) ? current : [...current, user]);
     setGuardianSearchResults((current) => current.filter((result) => result.id !== user.id));
     setGuardianSearch('');
@@ -327,9 +338,11 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
               </div>
               <div>
                 <span className="block text-xs font-bold mb-2">Guardioes selecionados</span>
-                {selectedGuardians.length === 0 ? <p className="text-sm text-[#666] bg-[#f5f3ef] border border-dashed border-[#c6c5d4] rounded-xl p-4">Nenhum guardiao selecionado.</p> : <div className="space-y-2">{selectedGuardians.map((guardian) => <div key={guardian.id} className="flex items-center justify-between gap-3 bg-[#f5f3ef] border border-[#e4e2de] rounded-xl p-3"><div className="min-w-0"><p className="text-sm font-bold truncate">{guardian.displayName}</p><p className="text-xs text-[#666] truncate">@{guardian.username.replace(/^@+/, '')}</p></div><button type="button" onClick={() => removeGuardian(guardian.id)} className="text-xs font-bold text-[#8c1d18]">Remover</button></div>)}</div>}
+                {selectedGuardianUsers.length === 0 ? <p className="text-sm text-[#666] bg-[#f5f3ef] border border-dashed border-[#c6c5d4] rounded-xl p-4">Nenhum guardiao selecionado.</p> : <div className="space-y-2">{selectedGuardianUsers.map((guardian) => <div key={guardian.id} className="flex items-center justify-between gap-3 bg-[#f5f3ef] border border-[#e4e2de] rounded-xl p-3"><div className="min-w-0"><p className="text-sm font-bold truncate">{guardian.id === currentUser.id ? 'Você' : guardian.displayName}</p><p className="text-xs text-[#666] truncate">@{guardian.username.replace(/^@+/, '')}</p></div><button type="button" onClick={() => guardian.id === currentUser.id ? setIncludeCreatorAsGuardian(false) : removeGuardian(guardian.id)} className="text-xs font-bold text-[#8c1d18]">Remover</button></div>)}</div>}
                 <span className="block text-xs text-[#666] mt-2">{guardianIds.length} guardiao(oes) selecionado(s).</span>
               </div>
+              <label className="flex items-start gap-3 rounded-xl border border-[#d2d1ff] bg-[#f7f6fc] p-3 cursor-pointer"><input type="checkbox" checked={includeCreatorAsGuardian} onChange={(event) => setIncludeCreatorAsGuardian(event.target.checked)} className="mt-1" /><span><span className="block text-sm font-bold text-[#000666]">Eu também vou aprovar esta Intent</span><span className="block text-xs text-[#666] mt-1">Sua aprovação não é automática. Ela será solicitada após criar a Intent e contará para o quórum.</span></span></label>
+              <PersonalContactListsPanel selectedUsers={selectedGuardianUsers} onSelectionChange={(users) => { setIncludeCreatorAsGuardian(users.some((user) => user.id === currentUser.id)); setSelectedGuardians(users.filter((user) => user.id !== currentUser.id)); }} />
               <label className="block"><span className="block text-xs font-bold mb-2">Quantos precisam aprovar?</span><input type="number" inputMode="numeric" min={1} max={Math.max(guardianIds.length, 1)} value={guardianApprovalGoal} onChange={(event) => setGuardianApprovalGoal(Number(event.target.value))} className="w-full bg-[#fbf9f5] border border-[#c6c5d4] rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000666]" /></label>
             </div>}
             <label className="block"><span className="flex justify-between text-xs font-bold mb-2"><span className="flex items-center gap-2"><Lock className="w-4 h-4" />O que sera revelado?</span><span className="text-[#888]">{revealContent.length}/10000</span></span><textarea value={revealContent} maxLength={10000} onChange={(event) => setRevealContent(event.target.value)} rows={4} placeholder="Este conteudo fica protegido ate a condicao ser cumprida." className="w-full bg-[#fbf9f5] border border-[#c6c5d4] rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000666] resize-none" /></label>
