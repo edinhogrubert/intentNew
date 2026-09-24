@@ -71,6 +71,16 @@ if (process.env.SHARED_APP_URL) {
   }
 }
 
+export function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return true;
+  const clean = origin.trim().replace(/\/+$/, '').toLowerCase();
+  if (allowedOriginsSet.has(clean) || config.corsOrigins.map((o) => o.toLowerCase()).includes(clean)) return true;
+  if (clean.startsWith('http://localhost:') || clean.startsWith('http://127.0.0.1:') || clean.startsWith('http://0.0.0.0:')) return true;
+  if (clean.endsWith('.run.app')) return true;
+  if (clean.endsWith('.google.com') || clean.endsWith('.googleusercontent.com') || clean.endsWith('.ai.studio') || clean.endsWith('.firebaseapp.com')) return true;
+  return false;
+}
+
 export const config = {
   nodeEnv: parsed.data.NODE_ENV,
   port: parsed.data.PORT,

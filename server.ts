@@ -21,18 +21,20 @@ async function startServer() {
 
   // Proteções de segurança e políticas HTTP para o Frontend (HTML / assets)
   app.use(helmet({
-    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-    crossOriginResourcePolicy: { policy: 'same-origin' },
-    // Desativa o X-Frame-Options legado em favor da diretiva estrita frame-ancestors no CSP abaixo
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
     frameguard: false,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        // Em desenvolvimento: permite unsafe-eval e unsafe-inline para o Vite HMR.
-        // Em produção: estritamente scripts empacotados da própria aplicação ('self'), sem eval, inline ou domínios externos desnecessários.
-        scriptSrc: isDev
-          ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
-          : ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          'https://apis.google.com',
+          'https://*.googleapis.com',
+          'https://*.firebaseapp.com',
+        ],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
         imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
@@ -40,13 +42,21 @@ async function startServer() {
           "'self'",
           'https://*.googleapis.com',
           'https://*.firebaseio.com',
+          'https://*.firebaseapp.com',
           'https://identitytoolkit.googleapis.com',
           'https://securetoken.googleapis.com',
-          ...(isDev ? ['ws://localhost:3000', 'wss://localhost:3000'] : []),
+          'https://apis.google.com',
+          ...(isDev ? ['ws://localhost:3000', 'wss://localhost:3000', 'ws:', 'wss:'] : []),
         ],
-        frameSrc: ["'self'", 'https://*.firebaseapp.com', 'https://accounts.google.com'],
-        // Permite incorporação estritamente na própria origem e nos hosts oficiais de preview do AI Studio
-        frameAncestors: ["'self'", 'https://ai.studio', 'https://aistudio.google.com'],
+        frameSrc: ["'self'", 'https://*.firebaseapp.com', 'https://accounts.google.com', 'https://*.google.com'],
+        frameAncestors: [
+          "'self'",
+          'https://ai.studio',
+          'https://aistudio.google.com',
+          'https://*.google.com',
+          'https://*.googleusercontent.com',
+          'https://*.run.app',
+        ],
         baseUri: ["'self'"],
         formAction: ["'self'"],
       },

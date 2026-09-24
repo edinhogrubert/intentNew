@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
-import { config } from './config.js';
+import { config, isAllowedOrigin } from './config.js';
 import { AppError } from './errors.js';
 import { logger } from './lib/logger.js';
 import { prisma, isTransientDbError } from './lib/prisma.js';
@@ -20,25 +20,9 @@ export function createApp() {
   const app = express();
 
   app.disable('x-powered-by');
-  app.use(helmet({
-    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-    crossOriginResourcePolicy: { policy: 'same-origin' },
-    frameguard: { action: 'deny' },
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'none'"],
-        frameAncestors: ["'none'"],
-      },
-    },
-  }));
   app.use(cors({
     origin(origin, callback) {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      const cleanOrigin = origin.replace(/\/+$/, '');
-      if (config.corsOrigins.includes(cleanOrigin)) {
+      if (!origin || isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
