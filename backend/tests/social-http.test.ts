@@ -649,6 +649,7 @@ describe('notificações HTTP autenticadas', () => {
 
   it('lista somente pelo usuário autenticado, com select e sem dados sensíveis', async () => {
     db.notification.findMany.mockResolvedValue([notification]);
+    db.intent.findMany.mockResolvedValue([{ id: intentId }]);
     const response = await get('/v1/notifications', 'Bearer synthetic-test-token');
     expect(response.status).toBe(200);
     const body = await response.json();

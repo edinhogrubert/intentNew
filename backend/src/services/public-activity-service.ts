@@ -67,7 +67,7 @@ export function decodeActivityCursor(cursor: string): { occurredAt: Date; id: st
   const [prefix, sourceId, extra] = id.split(':');
   if (!Number.isFinite(occurredAt.getTime()) || occurredAt.toISOString() !== timeStr
     || !eventPrefixes.includes(prefix!) || extra !== undefined
-    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(sourceId ?? '')
+    || !/^[0-9a-zA-Z_-]{1,64}$/.test(sourceId ?? '')
     || Buffer.from(raw).toString('base64url') !== cursor) return null;
   return { occurredAt, id };
 }
@@ -128,16 +128,29 @@ export async function listUserPublicActivity(
   };
   const take = safeLimit + 1;
 
-  const [createdIntents, supports, reactions, comments, realizedIntents] = await Promise.all([
+  const shouldFetchSupports = filterType === 'ALL' || filterType === 'INTENT_SUPPORTED' || filterType === 'INTENT_REALIZED_PARTICIPATION';
+  const supportStatusFilter = filterType === 'INTENT_SUPPORTED'
+    ? 'PUBLISHED'
+    : filterType === 'INTENT_REALIZED_PARTICIPATION'
+      ? 'REALIZED'
+      : undefined;
+
+  const [createdIntents, supports, reactions, comments] = await Promise.all([
     includeFilter(filterType, 'INTENT_CREATED') ? prisma.intent.findMany({
       where: { creatorId: userId, ...publicIntentScope,
         ...pageBoundary('createdAt', 'intent_created', parsedCursor) },
       take, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       select: { ...intentSelect, createdAt: true },
     }) : Promise.resolve([]),
-    includeFilter(filterType, 'INTENT_SUPPORTED') ? prisma.support.findMany({
-      where: { userId, intent: publicIntentScope,
-        ...pageBoundary('createdAt', 'intent_supported', parsedCursor) },
+    shouldFetchSupports ? prisma.support.findMany({
+      where: {
+        userId,
+        intent: {
+          ...publicIntentScope,
+          ...(supportStatusFilter ? { status: supportStatusFilter } : {}),
+        },
+        ...pageBoundary('createdAt', filterType === 'INTENT_REALIZED_PARTICIPATION' ? 'intent_realized_participation' : 'intent_supported', parsedCursor),
+      },
       take, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       select: { id: true, createdAt: true, intent: { select: intentSelect } },
     }) : Promise.resolve([]),
@@ -152,13 +165,6 @@ export async function listUserPublicActivity(
         ...pageBoundary('createdAt', 'intent_commented', parsedCursor) },
       take, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       select: { id: true, body: true, createdAt: true, intent: { select: intentSelect } },
-    }) : Promise.resolve([]),
-    includeFilter(filterType, 'INTENT_REALIZED_PARTICIPATION') ? prisma.intent.findMany({
-      where: { ...publicIntentScope, status: 'REALIZED', realizedAt: { not: null },
-        AND: [{ OR: [ { supports: { some: { userId } } },
-          { comments: { some: { authorId: userId } } }, { reactions: { some: { userId } } } ] },
-          pageBoundary('realizedAt', 'intent_realized_participation', parsedCursor)] },
-      take, orderBy: [{ realizedAt: 'desc' }, { id: 'desc' }], select: intentSelect,
     }) : Promise.resolve([]),
   ]);
 
@@ -179,24 +185,26 @@ export async function listUserPublicActivity(
   }
 
   for (const support of supports) {
-    rawEvents.push({ id: `intent_supported:${support.id}`, type: 'INTENT_SUPPORTED',
+    const isRealized = support.intent.status === 'REALIZED';
+    rawEvents.push({
+      id: isRealized ? `intent_realized_participation:${support.id}` : `intent_supported:${support.id}`,
+      type: isRealized ? 'INTENT_REALIZED_PARTICIPATION' : 'INTENT_SUPPORTED',
       occurredAt: support.createdAt.toISOString(),
-      metadata: { supportGoal: support.intent.supportGoal, supportCount: support.intent.supportCount },
-      intent: publicIntent(support.intent) });
-  }
-  for (const intent of realizedIntents) {
-    rawEvents.push({ id: `intent_realized_participation:${intent.id}`,
-      type: 'INTENT_REALIZED_PARTICIPATION', occurredAt: intent.realizedAt!.toISOString(),
-      metadata: { realizedAt: intent.realizedAt!.toISOString(),
-        supportGoal: intent.supportGoal, supportCount: intent.supportCount },
-      intent: publicIntent(intent) });
+      metadata: {
+        supportGoal: support.intent.supportGoal,
+        supportCount: support.intent.supportCount,
+        realizedAt: support.intent.realizedAt ? support.intent.realizedAt.toISOString() : null,
+      },
+      intent: publicIntent(support.intent),
+    });
   }
 
   for (const reaction of reactions) {
+    const reactionTime = reaction.updatedAt ?? (reaction as any).createdAt ?? new Date();
     rawEvents.push({
       id: `intent_reacted:${reaction.id}`,
       type: 'INTENT_REACTED',
-      occurredAt: reaction.updatedAt.toISOString(),
+      occurredAt: reactionTime instanceof Date ? reactionTime.toISOString() : new Date(reactionTime).toISOString(),
       metadata: {
         reactionType: reaction.type,
       },

@@ -48,7 +48,7 @@ async function verifyBearerToken(request: Request, required: boolean): Promise<D
   }
 
   try {
-    return await firebaseAuth.verifyIdToken(token, false);
+    return await firebaseAuth.verifyIdToken(token, true);
   } catch (error) {
     request.log.warn({ err: error }, 'Token verification failed');
     throw new AppError(401, 'AUTH_INVALID', 'Sua sessão não é válida ou expirou.');

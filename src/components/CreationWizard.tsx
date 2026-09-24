@@ -227,6 +227,7 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
         ...(conditionType === 'DATE' ? { revealAt: parseRevealDate(revealAt)!.toISOString() } : {}),
         ...(conditionType === 'GUARDIANS' ? { guardianIds, guardianApprovalGoal } : {}),
         revealContent: revealContent.trim(),
+        status: 'PUBLISHED',
       }, idempotencyKeyRef.current);
       setPublishedSuccess(created);
       window.setTimeout(() => onComplete(created), 800);
@@ -242,6 +243,43 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
     }
   }
 
+  async function handleSaveDraft() {
+    const validationError = validateCurrentStep();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError('');
+
+    setPublishing(true);
+    idempotencyKeyRef.current ||= createClientIdempotencyKey();
+    try {
+      const created = await createSupportIntent({
+        title: title.trim(),
+        story: story.trim(),
+        category,
+        visibility,
+        conditionType,
+        ...(conditionType === 'SUPPORT' ? { supportGoal } : {}),
+        ...(conditionType === 'DATE' ? { revealAt: parseRevealDate(revealAt)!.toISOString() } : {}),
+        ...(conditionType === 'GUARDIANS' ? { guardianIds, guardianApprovalGoal } : {}),
+        revealContent: revealContent.trim(),
+        status: 'DRAFT',
+      }, idempotencyKeyRef.current);
+      setPublishedSuccess(created);
+      window.setTimeout(() => onComplete(created), 800);
+    } catch (caught) {
+      if (caught instanceof IntentApiError) {
+        setError(caught.status === 401 || caught.code === 'AUTH_REQUIRED'
+          ? 'Sua sessao expirou. Entre novamente para salvar o rascunho.'
+          : caught.message || 'Nao foi possivel salvar o rascunho.');
+      } else {
+        setError('Nao foi possivel comunicar com o servidor. Tente novamente.');
+      }
+      setPublishing(false);
+    }
+  }
+
   function handleBack() {
     setError('');
     if (step === 1) onCancel();
@@ -249,15 +287,22 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
   }
 
   if (publishedSuccess) {
+    const isDraft = publishedSuccess.status === 'DRAFT';
     return (
       <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl border border-[#e4e2de] shadow-lg p-8 my-10 text-center">
         <div className="w-16 h-16 bg-[#e8f5e9] text-[#2e7d32] rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-8 h-8" /></div>
-        <h2 className="text-2xl font-black text-[#1b1c1a]">Intent criada com sucesso</h2>
-        <p className="text-sm text-[#454652] mt-2 max-w-md mx-auto">Sua Intent foi registrada e sera exibida conforme a visibilidade escolhida.</p>
+        <h2 className="text-2xl font-black text-[#1b1c1a]">{isDraft ? 'Rascunho salvo com sucesso' : 'Intent criada com sucesso'}</h2>
+        <p className="text-sm text-[#454652] mt-2 max-w-md mx-auto">
+          {isDraft
+            ? 'Sua Intent foi salva como rascunho. Ela permanece privada e só você pode vê-la ou publicá-la.'
+            : 'Sua Intent foi registrada e sera exibida conforme a visibilidade escolhida.'}
+        </p>
         <div className="mt-6 p-4 rounded-2xl bg-[#f7f6fc] border border-[#e4e2de] text-left max-w-md mx-auto">
           <p className="text-xs font-bold text-[#000666] uppercase tracking-wider">{conditionConfig[publishedSuccess.conditionType].title}</p>
           <p className="font-bold text-base mt-1 text-[#1b1c1a]">{publishedSuccess.title}</p>
-          <p className="text-xs text-[#666] mt-2">Visibilidade: {visibilityConfig[publishedSuccess.visibility].title}</p>
+          <p className="text-xs text-[#666] mt-2">
+            Status: <span className="font-semibold">{isDraft ? 'Rascunho (Privado)' : 'Publicada'}</span> · Visibilidade: {visibilityConfig[publishedSuccess.visibility].title}
+          </p>
         </div>
       </div>
     );
@@ -366,7 +411,21 @@ export function CreationWizard({ currentUser, onCancel, onComplete }: CreationWi
       {error && <div role="alert" className="mt-6 bg-[#ffdad6] text-[#8c1d18] rounded-xl px-4 py-3 text-sm font-semibold flex gap-2"><X className="w-4 h-4 shrink-0 mt-0.5 cursor-pointer" onClick={() => setError('')} /><span>{error}</span></div>}
       <footer className="mt-auto pt-8 flex items-center justify-between">
         <button onClick={handleBack} disabled={publishing} className="px-5 py-3 rounded-xl text-sm font-bold text-[#454652] hover:bg-[#eae8e4] disabled:opacity-50">{step === 1 ? 'Cancelar' : 'Voltar'}</button>
-        <button onClick={handleNext} disabled={publishing} className="px-6 py-3 rounded-xl bg-[#000666] text-white text-sm font-bold flex items-center gap-2 hover:bg-[#000880] disabled:opacity-60">{publishing ? <><Sparkles className="w-4 h-4 animate-pulse" />Publicando...</> : step === 3 ? <><Check className="w-4 h-4" />Publicar Intent</> : <>Continuar<ArrowRight className="w-4 h-4" /></>}</button>
+        <div className="flex items-center gap-3">
+          {step === 3 && (
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={publishing}
+              className="px-5 py-3 rounded-xl border border-[#c6c5d4] text-[#1b1c1a] text-sm font-bold hover:bg-[#f5f3ef] disabled:opacity-50"
+            >
+              Salvar como rascunho
+            </button>
+          )}
+          <button onClick={handleNext} disabled={publishing} className="px-6 py-3 rounded-xl bg-[#000666] text-white text-sm font-bold flex items-center gap-2 hover:bg-[#000880] disabled:opacity-60">
+            {publishing ? <><Sparkles className="w-4 h-4 animate-pulse" />Publicando...</> : step === 3 ? <><Check className="w-4 h-4" />Publicar Intent</> : <>Continuar<ArrowRight className="w-4 h-4" /></>}
+          </button>
+        </div>
       </footer>
     </div>
   );

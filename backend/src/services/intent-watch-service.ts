@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { AppError } from '../errors.js';
 import { prisma } from '../lib/prisma.js';
 import { requireIntentViewAccess } from './intent-service.js';
 
@@ -36,6 +37,13 @@ function visibleIntentWhere(viewerId: string): Prisma.IntentWhereInput {
 
 export async function watchIntent(intentId: string, viewerId: string) {
   await requireIntentViewAccess(intentId, viewerId);
+  const target = await prisma.intent.findUnique({
+    where: { id: intentId },
+    select: { status: true },
+  });
+  if (target?.status === 'DRAFT') {
+    throw new AppError(400, 'INTENT_NOT_PUBLISHED', 'Não é possível acompanhar uma Intent em rascunho.');
+  }
   await prisma.intentWatch.upsert({
     where: { intentId_userId: { intentId, userId: viewerId } },
     create: { intentId, userId: viewerId },

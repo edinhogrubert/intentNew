@@ -15,6 +15,7 @@ import {
   listFollowingFeed,
   listPublicFeed,
   listSocialFeed,
+  publishIntent,
   removeSupport,
   supportIntent,
 } from '../services/intent-service.js';
@@ -137,6 +138,16 @@ intentsRouter.post('/', requireAuthenticatedUser, async (request, response, next
     const command = createIntentSchema.parse(request.body);
     const intent = await createIntent(request.appUser!.id, command, request.get('Idempotency-Key'));
     response.status(201).json({ data: intent });
+  } catch (error) {
+    next(error);
+  }
+});
+
+intentsRouter.post('/:id/publish', requireAuthenticatedUser, async (request, response, next) => {
+  try {
+    const intentId = identifierSchema.parse(request.params.id);
+    const intent = await publishIntent(intentId, request.appUser!.id, request.get('Idempotency-Key'));
+    response.json({ data: intent });
   } catch (error) {
     next(error);
   }

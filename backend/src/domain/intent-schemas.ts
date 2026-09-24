@@ -25,6 +25,7 @@ export const createIntentSchema = z.object({
   guardianApprovalGoal: z.number().int().min(1).max(20).optional(),
   revealContent: z.string().min(1).max(10_000),
   visibility: z.enum(['PUBLIC', 'FOLLOWERS', 'PRIVATE']).default('PUBLIC'),
+  status: z.enum(['DRAFT', 'PUBLISHED']).default('PUBLISHED'),
 }).strict().superRefine((value, ctx) => {
   if (value.visibility === 'PRIVATE' && value.conditionType === 'SUPPORT') {
     ctx.addIssue({

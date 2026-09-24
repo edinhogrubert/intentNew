@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 const { db, verifyIdToken } = vi.hoisted(() => ({
   db: {
     user: { findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn().mockResolvedValue({}) },
+    intent: { findMany: vi.fn().mockResolvedValue([{ id: '20000000-0000-4000-8000-000000000001' }]) },
     notification: {
       count: vi.fn(),
       findMany: vi.fn(),
@@ -16,7 +17,7 @@ const { db, verifyIdToken } = vi.hoisted(() => ({
   verifyIdToken: vi.fn(),
 }));
 
-vi.mock('../src/lib/prisma.js', () => ({ prisma: db }));
+vi.mock('../src/lib/prisma.js', () => ({ prisma: db, isTransientDbError: () => false }));
 vi.mock('../src/lib/firebase.js', () => ({ firebaseAuth: { verifyIdToken } }));
 vi.mock('../src/config.js', () => ({
   config: {

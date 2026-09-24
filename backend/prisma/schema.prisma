@@ -69,7 +69,7 @@ model Intent {
   revealIv           String        @map("reveal_iv") @db.VarChar(64)
   revealAuthTag      String        @map("reveal_auth_tag") @db.VarChar(64)
   revealVersion      Int           @default(1) @map("reveal_version")
-  publishedAt        DateTime      @default(now()) @map("published_at") @db.Timestamptz(3)
+  publishedAt        DateTime?     @map("published_at") @db.Timestamptz(3)
   realizedAt         DateTime?     @map("realized_at") @db.Timestamptz(3)
   createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)

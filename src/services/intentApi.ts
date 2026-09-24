@@ -238,6 +238,7 @@ export interface CreateSupportIntentInput {
   guardianApprovalGoal?: number;
   revealContent: string;
   visibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
+  status?: 'DRAFT' | 'PUBLISHED';
 }
 
 export interface GuardianApprovalResult {
@@ -457,6 +458,19 @@ export async function createSupportIntent(input: CreateSupportIntentInput, idemp
     headers,
     body: JSON.stringify(input),
   });
+  return result.data;
+}
+
+export async function publishIntent(intentId: string, idempotencyKey?: string): Promise<ApiIntent> {
+  const headers: Record<string, string> = {};
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+  const result = await authenticatedRequest<ApiEnvelope<ApiIntent>>(
+    `/v1/intents/${encodeURIComponent(intentId)}/publish`,
+    {
+      method: 'POST',
+      headers,
+    },
+  );
   return result.data;
 }
 

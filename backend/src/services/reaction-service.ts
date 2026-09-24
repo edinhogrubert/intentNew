@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { AppError } from '../errors.js';
 import { prisma } from '../lib/prisma.js';
 import { requireIntentViewAccess } from './intent-service.js';
 import { createNotification } from './notification-service.js';
@@ -66,6 +67,14 @@ export async function setIntentReaction(
   type: ReactionType,
 ): Promise<IntentReactionSummary> {
   await requireIntentViewAccess(intentId, userId);
+
+  const target = await prisma.intent.findUnique({
+    where: { id: intentId },
+    select: { status: true },
+  });
+  if (target?.status === 'DRAFT') {
+    throw new AppError(400, 'INTENT_NOT_PUBLISHED', 'Não é possível reagir a uma Intent em rascunho.');
+  }
 
   await prisma.intentReaction.upsert({
     where: { intentId_userId: { intentId, userId } },

@@ -85,6 +85,13 @@ async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
     throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
   }
 
+  if (intent.status === 'DRAFT') {
+    if (!viewerId || intent.creatorId !== viewerId) {
+      throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
+    }
+    return intent;
+  }
+
   if (!['PUBLIC', 'FOLLOWERS', 'PRIVATE'].includes(intent.visibility)
     || !['PUBLISHED', 'REALIZED', 'CANCELLED'].includes(intent.status)) {
     throw new AppError(403, 'INTENT_FORBIDDEN', 'Esta Intent não está disponível.');
@@ -182,13 +189,17 @@ export async function createIntent(creatorId: string, input: unknown, idempotenc
         throw new AppError(400, 'INVALID_GUARDIANS', 'Todos os guardiões precisam ser usuários ativos.');
       }
     }
+    const status = (command as { status?: 'DRAFT' | 'PUBLISHED' }).status ?? 'PUBLISHED';
+    const now = new Date();
+    const publishedAt = status === 'DRAFT' ? null : now;
+
     const intent = await transaction.intent.create({
       data: {
         id: intentId,
         creatorId,
         type: 'SUPPORT_REVEAL',
         conditionType: command.conditionType,
-        status: 'PUBLISHED',
+        status,
         supportCount: 0,
         realizedAt: null,
         title: command.title,
@@ -204,6 +215,7 @@ export async function createIntent(creatorId: string, input: unknown, idempotenc
         revealIv: sealed.iv,
         revealAuthTag: sealed.authTag,
         revealVersion,
+        publishedAt,
       } as Prisma.IntentUncheckedCreateInput,
       select: publicIntentSelection,
     });
@@ -217,6 +229,8 @@ export async function createIntent(creatorId: string, input: unknown, idempotenc
         payload: {
           type: 'SUPPORT_REVEAL',
           conditionType: command.conditionType,
+          status,
+          publishedAt: publishedAt?.toISOString() ?? null,
           supportGoal: command.supportGoal ?? null,
           revealAt: command.revealAt?.toISOString() ?? null,
           guardianCount: command.guardianIds?.length ?? 0,
@@ -229,6 +243,71 @@ export async function createIntent(creatorId: string, input: unknown, idempotenc
     });
 
     return intent;
+  });
+}
+
+export async function publishIntent(
+  intentId: string,
+  actorId: string,
+  idempotencyKey?: string,
+) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(actorId, `PUBLISH_INTENT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
+    const existing = await transaction.intent.findUnique({
+      where: { id: intentId },
+      include: { creator: { select: { status: true } } },
+    });
+
+    if (!existing || existing.creator.status !== 'ACTIVE') {
+      throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
+    }
+
+    if (existing.creatorId !== actorId) {
+      throw new AppError(403, 'INTENT_FORBIDDEN', 'Apenas o criador pode publicar esta Intent.');
+    }
+
+    if (existing.status === 'PUBLISHED' || existing.status === 'REALIZED') {
+      return (await transaction.intent.findUnique({
+        where: { id: intentId },
+        select: publicIntentSelection,
+      }))!;
+    }
+
+    if (existing.status === 'CANCELLED') {
+      throw new AppError(409, 'CANNOT_PUBLISH_CANCELLED', 'Não é possível publicar uma Intent cancelada.');
+    }
+
+    if (existing.status !== 'DRAFT') {
+      throw new AppError(409, 'INVALID_INTENT_STATUS', `Status inválido para publicação: ${existing.status}`);
+    }
+
+    const now = new Date();
+
+    const updated = await transaction.intent.update({
+      where: { id: intentId },
+      data: {
+        status: 'PUBLISHED',
+        publishedAt: now,
+      },
+      select: publicIntentSelection,
+    });
+
+    await transaction.domainEvent.create({
+      data: {
+        intentId,
+        actorId,
+        type: 'INTENT_PUBLISHED',
+        idempotencyKey: `intent-published:${intentId}:v1`,
+        payload: {
+          previousStatus: 'DRAFT',
+          newStatus: 'PUBLISHED',
+          publishedAt: now.toISOString(),
+          visibility: existing.visibility,
+        },
+      },
+    });
+
+    return updated;
   });
 }
 
@@ -319,31 +398,8 @@ export async function listFollowingFeed(viewerId: string, cursor?: string, limit
   const hasMore = items.length > safeLimit;
   const page = hasMore ? items.slice(0, safeLimit) : items;
 
-  const ids = page.map((intent) => intent.id);
-  const [groups, viewerReactions, viewerSupports] = ids.length ? await Promise.all([
-    prisma.intentReaction.groupBy({ by: ['intentId', 'type'],
-      where: { intentId: { in: ids } }, _count: { _all: true } }),
-    prisma.intentReaction.findMany({ where: { userId: viewerId, intentId: { in: ids } },
-      select: { intentId: true, type: true } }),
-    prisma.support.findMany({ where: { userId: viewerId, intentId: { in: ids } },
-      select: { intentId: true } }),
-  ]) : [[], [], []];
-  const counts = new Map<string, { LIKE: number; LOVE: number; CELEBRATE: number; total: number }>();
-  for (const group of groups) {
-    const count = counts.get(group.intentId) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 };
-    count[group.type] = group._count._all;
-    count.total += group._count._all;
-    counts.set(group.intentId, count);
-  }
-  const reactions = new Map(viewerReactions.map((reaction) => [reaction.intentId, reaction.type]));
-  const supported = new Set(viewerSupports.map((support) => support.intentId));
-
   return {
-    items: page.map((intent) => ({ ...intent,
-      reactionCounts: counts.get(intent.id) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 },
-      viewerReaction: reactions.get(intent.id) ?? null,
-      viewerHasSupported: supported.has(intent.id),
-    })),
+    items: page,
     nextCursor: hasMore ? page.at(-1)?.id ?? null : null,
   };
 }

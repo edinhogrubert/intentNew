@@ -17,7 +17,7 @@ const { db, verifyIdToken } = vi.hoisted(() => ({
   verifyIdToken: vi.fn(),
 }));
 
-vi.mock('../src/lib/prisma.js', () => ({ prisma: db }));
+vi.mock('../src/lib/prisma.js', () => ({ prisma: db, isTransientDbError: () => false }));
 vi.mock('../src/lib/firebase.js', () => ({ firebaseAuth: { verifyIdToken } }));
 vi.mock('../src/config.js', () => ({
   config: {
@@ -90,6 +90,11 @@ beforeEach(() => {
     if (where.id === targetUser.id && where.status === 'ACTIVE') return targetUser;
     if (where.id === viewer.id && where.status === 'ACTIVE') return viewer;
     return null;
+  });
+  db.user.update.mockImplementation(async ({ where, data }: any) => {
+    if (where.id === viewer.id) return { ...viewer, ...data };
+    if (where.id === targetUser.id) return { ...targetUser, ...data };
+    return { ...viewer, ...data };
   });
 });
 

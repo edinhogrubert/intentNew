@@ -11,6 +11,7 @@ import {
   listIntentComments,
   listIntentHistory,
   listIntentSupporters,
+  publishIntent,
   removeIntentReaction,
   removeIntentSupport,
   setIntentReaction,
@@ -141,6 +142,7 @@ export function MvpIntentDetail({
   const [copySuccess, setCopySuccess] = useState(false);
   const [copyError, setCopyError] = useState('');
   const [watchPending, setWatchPending] = useState(false);
+  const [publishingDraft, setPublishingDraft] = useState(false);
   const [history, setHistory] = useState<ApiIntentHistoryEvent[]>([]);
   const [historyCursor, setHistoryCursor] = useState<string | null>(null);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -148,6 +150,23 @@ export function MvpIntentDetail({
   const [historyError, setHistoryError] = useState('');
   const intentRequestRef = useRef(0);
   const historyRequestRef = useRef(0);
+
+  async function handlePublishDraft() {
+    if (!intent || intent.status !== 'DRAFT') return;
+    setPublishingDraft(true);
+    setError('');
+    setNotice('');
+    try {
+      const published = await publishIntent(intent.id);
+      setIntent(published);
+      setNotice('Intent publicada com sucesso! Ela agora está disponível de acordo com a visibilidade configurada.');
+      void loadHistory(true);
+    } catch (caught) {
+      setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível publicar a Intent.');
+    } finally {
+      setPublishingDraft(false);
+    }
+  }
 
   async function handleCopyIntentLink() {
     const ok = await copyToClipboard(getIntentShareUrl(intentId));
@@ -419,6 +438,11 @@ export function MvpIntentDetail({
               <span className="inline-block px-2.5 py-1 rounded-full bg-[#f0efff] text-[#000666] text-xs font-bold">
                 {categoryLabels[intent.category] || 'Outros'}
               </span>
+              {intent.status === 'DRAFT' && (
+                <span className="inline-block px-2.5 py-1 rounded-full bg-[#fff3e0] text-[#e65100] border border-[#ffe082] text-xs font-bold">
+                  Rascunho
+                </span>
+              )}
               <VisibilityBadge visibility={intent.visibility} />
               <button type="button" onClick={() => void handleCopyIntentLink()} aria-live="polite"
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold text-[#000666]">
@@ -427,6 +451,33 @@ export function MvpIntentDetail({
               </button>
               {copyError && <span role="alert" className="text-xs text-red-700">{copyError}</span>}
             </div>
+
+            {intent.status === 'DRAFT' && (
+              <div className="mt-5 bg-[#fff9e6] border border-[#ffe082] rounded-2xl p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-bold text-[#b78103]">
+                      <Lock className="w-4 h-4" />
+                      <span>Rascunho Privado</span>
+                    </div>
+                    <p className="text-xs text-[#6d5100] mt-1">
+                      Esta Intent está salva como rascunho e só você pode vê-la. Ao publicar, ela ficará acessível conforme a visibilidade configurada e poderá receber apoios e interações.
+                    </p>
+                  </div>
+                  {isMine && (
+                    <button
+                      type="button"
+                      onClick={() => void handlePublishDraft()}
+                      disabled={publishingDraft}
+                      className="px-5 py-2.5 rounded-xl bg-[#000666] text-white text-xs font-bold hover:bg-[#000880] transition-colors flex items-center gap-2 self-start sm:self-auto shrink-0 disabled:opacity-50"
+                    >
+                      {publishingDraft ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                      {publishingDraft ? 'Publicando...' : 'Publicar Intent'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             <h1 className="text-2xl font-black mt-3 text-[#1a1a1a] leading-tight">{intent.title}</h1>
             <p className="text-sm text-[#454652] mt-3 whitespace-pre-wrap leading-relaxed">{intent.story}</p>

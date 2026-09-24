@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { AppError } from '../errors.js';
 import { createCommentSchema } from '../domain/comment-schemas.js';
 import { prisma } from '../lib/prisma.js';
 import { requireIntentViewAccess } from './intent-service.js';
@@ -51,13 +52,16 @@ export async function createIntentComment(intentId: string, authorId: string, in
   const command = createCommentSchema.parse(input);
   return prisma.$transaction(async (transaction) => {
     await requireIntentViewAccess(intentId, authorId, transaction);
+    const intent = await transaction.intent.findUnique({
+      where: { id: intentId },
+      select: { creatorId: true, status: true },
+    });
+    if (intent?.status === 'DRAFT') {
+      throw new AppError(400, 'INTENT_NOT_PUBLISHED', 'Não é possível comentar em uma Intent em rascunho.');
+    }
     const comment = await transaction.intentComment.create({
       data: { intentId, authorId, body: command.body },
       select: commentSelect,
-    });
-    const intent = await transaction.intent.findUnique({
-      where: { id: intentId },
-      select: { creatorId: true },
     });
     if (intent && intent.creatorId !== authorId) {
       await createNotification(transaction, {
