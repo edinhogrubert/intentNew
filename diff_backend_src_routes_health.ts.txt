@@ -1,0 +1,46 @@
+=== INTENT (OFICIAL) ===
+import { Router } from 'express';
+import { prisma } from '../lib/prisma.js';
+
+export const healthRouter = Router();
+
+healthRouter.get('/live', (_request, response) => {
+  response.json({ status: 'ok', service: 'intent-api' });
+});
+
+healthRouter.get('/ready', async (_request, response, next) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    response.json({ status: 'ready', database: 'ok' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+=== INTENTNEW (LAB) ===
+import { Router } from 'express';
+import { prisma } from '../lib/prisma.js';
+
+export const healthRouter = Router();
+
+healthRouter.get('/live', (_request, response) => {
+  response.json({ status: 'ok', service: 'intent-api' });
+});
+
+healthRouter.get('/ready', async (_request, response, next) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    response.json({ status: 'ready', database: 'ok' });
+  } catch (error) {
+    // Se a conexão foi terminada pelo Postgres (E57P01), tenta reconectar uma vez
+    try {
+      await prisma.$disconnect();
+      await prisma.$connect();
+      await prisma.$queryRaw`SELECT 1`;
+      response.json({ status: 'ready', database: 'ok' });
+    } catch {
+      next(error);
+    }
+  }
+});

@@ -1,0 +1,2576 @@
+{
+  "sha": "e079e0cd25f3ea7a65a1e9630142970b28767d6b",
+  "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/e079e0cd25f3ea7a65a1e9630142970b28767d6b",
+  "tree": [
+    {
+      "path": ".dockerignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a633753eecbeec0be7d65a6542be2e2c11408bb3",
+      "size": 94,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/a633753eecbeec0be7d65a6542be2e2c11408bb3"
+    },
+    {
+      "path": ".env.example",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a550fe79a56f6953f6afc76b0a10864d8956e25",
+      "size": 445,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7a550fe79a56f6953f6afc76b0a10864d8956e25"
+    },
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "77cc4288e0d19a4fd37fb0e86f70db0b4c02e8c9",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/77cc4288e0d19a4fd37fb0e86f70db0b4c02e8c9"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "92ba1540813efa36530cb398b839f8ccebbd6c6a",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/92ba1540813efa36530cb398b839f8ccebbd6c6a"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f376e59d2defd891f239868b743f4375299f92c",
+      "size": 2100,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/9f376e59d2defd891f239868b743f4375299f92c"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a86d2a8aeff6b6a27008e3e5f15000b27897f78",
+      "size": 73,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5a86d2a8aeff6b6a27008e3e5f15000b27897f78"
+    },
+    {
+      "path": "AGENTS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8467d9513978a1a77d1df6b76128262209cc23b8",
+      "size": 487,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8467d9513978a1a77d1df6b76128262209cc23b8"
+    },
+    {
+      "path": "JIRA.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72dcf4aa732f7b1738c3bdd03615d03693cb805e",
+      "size": 12678,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/72dcf4aa732f7b1738c3bdd03615d03693cb805e"
+    },
+    {
+      "path": "ProximasFuncionalidades.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eb08612969174f9c333db8548303817e470d7651",
+      "size": 25834,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/eb08612969174f9c333db8548303817e470d7651"
+    },
+    {
+      "path": "archive",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f60a60908f4bf167e645c222d8f915dccbd2d880",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/f60a60908f4bf167e645c222d8f915dccbd2d880"
+    },
+    {
+      "path": "archive/intentV1",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2f02a62ef06f883578bb41f0c4ea996f07297394",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/2f02a62ef06f883578bb41f0c4ea996f07297394"
+    },
+    {
+      "path": "archive/intentV1/.env.example",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a550fe79a56f6953f6afc76b0a10864d8956e25",
+      "size": 445,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7a550fe79a56f6953f6afc76b0a10864d8956e25"
+    },
+    {
+      "path": "archive/intentV1/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a86d2a8aeff6b6a27008e3e5f15000b27897f78",
+      "size": 73,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5a86d2a8aeff6b6a27008e3e5f15000b27897f78"
+    },
+    {
+      "path": "archive/intentV1/AGENTS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8467d9513978a1a77d1df6b76128262209cc23b8",
+      "size": 487,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8467d9513978a1a77d1df6b76128262209cc23b8"
+    },
+    {
+      "path": "archive/intentV1/JIRA.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72dcf4aa732f7b1738c3bdd03615d03693cb805e",
+      "size": 12678,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/72dcf4aa732f7b1738c3bdd03615d03693cb805e"
+    },
+    {
+      "path": "archive/intentV1/ProximasFuncionalidades.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5181cc92fef2f2c20d86996c897c3629d79db8d",
+      "size": 4268,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d5181cc92fef2f2c20d86996c897c3629d79db8d"
+    },
+    {
+      "path": "archive/intentV1/assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9858aebdc705046d075d2aeb3c895c6ca1322421",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/9858aebdc705046d075d2aeb3c895c6ca1322421"
+    },
+    {
+      "path": "archive/intentV1/assets/.aistudio",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a94f29a3cbca34c73ba7e45508d99a53b8900a1e",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/a94f29a3cbca34c73ba7e45508d99a53b8900a1e"
+    },
+    {
+      "path": "archive/intentV1/assets/.aistudio/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72e8ffc0db8aad71a934dd11e5968bd5109e54b4",
+      "size": 2,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/72e8ffc0db8aad71a934dd11e5968bd5109e54b4"
+    },
+    {
+      "path": "archive/intentV1/bun.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eac6f73465b8bac9b5409e75663b02eb3534313d",
+      "size": 93863,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/eac6f73465b8bac9b5409e75663b02eb3534313d"
+    },
+    {
+      "path": "archive/intentV1/firebase-applet-config.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55eb3548132391c4070bfde4e0edc907a769b052",
+      "size": 542,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/55eb3548132391c4070bfde4e0edc907a769b052"
+    },
+    {
+      "path": "archive/intentV1/firebase-blueprint.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "15fb6662925dcf70d5e814536e990b925da9b800",
+      "size": 1973,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/15fb6662925dcf70d5e814536e990b925da9b800"
+    },
+    {
+      "path": "archive/intentV1/firestore.rules",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fed2bdec65e9f99621223309a435cfbb724259aa",
+      "size": 688,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fed2bdec65e9f99621223309a435cfbb724259aa"
+    },
+    {
+      "path": "archive/intentV1/index.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1fed22f4c728e54a29042ba94d313447a32ef6fb",
+      "size": 855,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1fed22f4c728e54a29042ba94d313447a32ef6fb"
+    },
+    {
+      "path": "archive/intentV1/metadata.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c334cc9e5ac4f79349232701be00da85e562054c",
+      "size": 282,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c334cc9e5ac4f79349232701be00da85e562054c"
+    },
+    {
+      "path": "archive/intentV1/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cf3b3dcb46f9330d7faeaa192e662ba81a22323",
+      "size": 940,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1cf3b3dcb46f9330d7faeaa192e662ba81a22323"
+    },
+    {
+      "path": "archive/intentV1/projatual.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c3843d5e5f4bd32efde552d7b725f2a4201d9b9",
+      "size": 8823,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3c3843d5e5f4bd32efde552d7b725f2a4201d9b9"
+    },
+    {
+      "path": "archive/intentV1/projetocompleto.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1786e802f24dac36e12dff45f9ba161e0c11d21",
+      "size": 37417,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e1786e802f24dac36e12dff45f9ba161e0c11d21"
+    },
+    {
+      "path": "archive/intentV1/revisar.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e9c04fdbdc73c860768b1f99668ddc556224fbd",
+      "size": 6517,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6e9c04fdbdc73c860768b1f99668ddc556224fbd"
+    },
+    {
+      "path": "archive/intentV1/src",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "827a4be6538e7b53e66b610ac5753a4f8679e9d1",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/827a4be6538e7b53e66b610ac5753a4f8679e9d1"
+    },
+    {
+      "path": "archive/intentV1/src/App.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "73ce2d589b4e633d0716f46c0bb37314c28e3353",
+      "size": 8458,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/73ce2d589b4e633d0716f46c0bb37314c28e3353"
+    },
+    {
+      "path": "archive/intentV1/src/components",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "257e84448adbb0b43e49cd3e17fcf1c04b484852",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/257e84448adbb0b43e49cd3e17fcf1c04b484852"
+    },
+    {
+      "path": "archive/intentV1/src/components/AccountStatusCard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6473562282cccfa063bbf86fad0764a62421ab19",
+      "size": 6028,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6473562282cccfa063bbf86fad0764a62421ab19"
+    },
+    {
+      "path": "archive/intentV1/src/components/ApprovalWorkflow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0dd87159126998c497db9bffcf65a6f95c1b6a12",
+      "size": 18565,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0dd87159126998c497db9bffcf65a6f95c1b6a12"
+    },
+    {
+      "path": "archive/intentV1/src/components/AuthGate.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6b032d494b81500c2b100690fc9beca7638a53a",
+      "size": 17049,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d6b032d494b81500c2b100690fc9beca7638a53a"
+    },
+    {
+      "path": "archive/intentV1/src/components/BottomCardsRow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d3a0e24c43b9caa20894aee07b5cccc46ab46b9",
+      "size": 4173,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4d3a0e24c43b9caa20894aee07b5cccc46ab46b9"
+    },
+    {
+      "path": "archive/intentV1/src/components/CreationWizard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80f4209a90428283b67cfa7df895ef8065d2a213",
+      "size": 30264,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/80f4209a90428283b67cfa7df895ef8065d2a213"
+    },
+    {
+      "path": "archive/intentV1/src/components/DeleteAccountModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f1213770bc7adeaf5df1260f854115ed648cf50",
+      "size": 2643,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1f1213770bc7adeaf5df1260f854115ed648cf50"
+    },
+    {
+      "path": "archive/intentV1/src/components/DevInspectorBadge.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4e8f5c18710b908ce3b90855baff295683902586",
+      "size": 2012,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4e8f5c18710b908ce3b90855baff295683902586"
+    },
+    {
+      "path": "archive/intentV1/src/components/DynamicGreetingCard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a19b6efff194515e5dafff603b78012601d106e1",
+      "size": 8415,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/a19b6efff194515e5dafff603b78012601d106e1"
+    },
+    {
+      "path": "archive/intentV1/src/components/ErrorBoundary.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "183c6822e709a494850751ca17d0380b47e035ac",
+      "size": 2365,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/183c6822e709a494850751ca17d0380b47e035ac"
+    },
+    {
+      "path": "archive/intentV1/src/components/ExploreFeedView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "36c597660b711ae64083a4c10a34a54a9e1098b2",
+      "size": 14315,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/36c597660b711ae64083a4c10a34a54a9e1098b2"
+    },
+    {
+      "path": "archive/intentV1/src/components/IntentCelebrationView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32519bb380589798a18fa64299647ba3f9d31574",
+      "size": 10125,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/32519bb380589798a18fa64299647ba3f9d31574"
+    },
+    {
+      "path": "archive/intentV1/src/components/IntentDetailView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "83215567c07e771c7dac935aec7f04650c8e6662",
+      "size": 14198,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/83215567c07e771c7dac935aec7f04650c8e6662"
+    },
+    {
+      "path": "archive/intentV1/src/components/IntentManager.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "852374342d873ce47aebb9e56ec986cf19864f0a",
+      "size": 192236,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/852374342d873ce47aebb9e56ec986cf19864f0a"
+    },
+    {
+      "path": "archive/intentV1/src/components/IntentStructureModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43915267a096a28ece19f645bb36912cb2174f1a",
+      "size": 48868,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/43915267a096a28ece19f645bb36912cb2174f1a"
+    },
+    {
+      "path": "archive/intentV1/src/components/LandingHeroView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b1369cc5b99a6d82322c6767083c19138b96ad4",
+      "size": 9431,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5b1369cc5b99a6d82322c6767083c19138b96ad4"
+    },
+    {
+      "path": "archive/intentV1/src/components/MessagesView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02e8611e5ec1625e1ec553416309887d587d1d8c",
+      "size": 11007,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/02e8611e5ec1625e1ec553416309887d587d1d8c"
+    },
+    {
+      "path": "archive/intentV1/src/components/MobileBottomNav.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6401fbad1385468a2573805755c708300edf9c76",
+      "size": 2774,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6401fbad1385468a2573805755c708300edf9c76"
+    },
+    {
+      "path": "archive/intentV1/src/components/MyIntentsDashboard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89cc58a7b3cdb0f11579b28f157536262d9dc9d2",
+      "size": 8830,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/89cc58a7b3cdb0f11579b28f157536262d9dc9d2"
+    },
+    {
+      "path": "archive/intentV1/src/components/NotificationsView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "59d0585ab19fd3b0d8d070cd11d4424da1c7a5f3",
+      "size": 11299,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/59d0585ab19fd3b0d8d070cd11d4424da1c7a5f3"
+    },
+    {
+      "path": "archive/intentV1/src/components/ParticipantManager.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a26ba9c96419b95c8e3644ce168db07bd0ab717",
+      "size": 21233,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8a26ba9c96419b95c8e3644ce168db07bd0ab717"
+    },
+    {
+      "path": "archive/intentV1/src/components/ProtectedVaultPipeline.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a620de4bb6daa13b7b41f350976436ee48017d07",
+      "size": 21372,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/a620de4bb6daa13b7b41f350976436ee48017d07"
+    },
+    {
+      "path": "archive/intentV1/src/components/PublicSupportWorkflow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f3fa614015146482b9efca57edb36d2893affbbd",
+      "size": 23101,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/f3fa614015146482b9efca57edb36d2893affbbd"
+    },
+    {
+      "path": "archive/intentV1/src/components/SettingsView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "389880fc09753858236778547a3f581f66492ed8",
+      "size": 10445,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/389880fc09753858236778547a3f581f66492ed8"
+    },
+    {
+      "path": "archive/intentV1/src/components/Sidebar.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a40398adbfc3712d898be15365c006a8ba39c82",
+      "size": 17808,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0a40398adbfc3712d898be15365c006a8ba39c82"
+    },
+    {
+      "path": "archive/intentV1/src/components/SocialHistoryWorkflow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfbabc64f3b9ae1771660bc3c1dcdca5054adeff",
+      "size": 34814,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/dfbabc64f3b9ae1771660bc3c1dcdca5054adeff"
+    },
+    {
+      "path": "archive/intentV1/src/components/StagesChecklistModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "086fdecc64194540c0d82357c3d7adeec4b04e9f",
+      "size": 17820,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/086fdecc64194540c0d82357c3d7adeec4b04e9f"
+    },
+    {
+      "path": "archive/intentV1/src/components/TesterProfileSwitcherBar.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ce328de6771cbcf5f4af889349c2da2a973b20a",
+      "size": 4614,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8ce328de6771cbcf5f4af889349c2da2a973b20a"
+    },
+    {
+      "path": "archive/intentV1/src/components/UserProfileModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7a86ff01a6878c133252a1b723cffcde4069267",
+      "size": 27224,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c7a86ff01a6878c133252a1b723cffcde4069267"
+    },
+    {
+      "path": "archive/intentV1/src/components/UserProfileView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c18d38de01f5c3a5f47e64f49cb9fd8551d34e72",
+      "size": 11009,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c18d38de01f5c3a5f47e64f49cb9fd8551d34e72"
+    },
+    {
+      "path": "archive/intentV1/src/index.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "731e792f2d564557e94fb60e4d37163bc5c7d186",
+      "size": 1516,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/731e792f2d564557e94fb60e4d37163bc5c7d186"
+    },
+    {
+      "path": "archive/intentV1/src/main.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d0ccb2575652fa6337b982f21425da004155f83",
+      "size": 339,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2d0ccb2575652fa6337b982f21425da004155f83"
+    },
+    {
+      "path": "archive/intentV1/src/types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bef2a0b1a711de9b728cdcf4ad8b2f4b1f2c6e5d",
+      "size": 13123,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/bef2a0b1a711de9b728cdcf4ad8b2f4b1f2c6e5d"
+    },
+    {
+      "path": "archive/intentV1/src/utils",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c68fb52522dfbee52ddc6bb1c7725df258c696a5",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/c68fb52522dfbee52ddc6bb1c7725df258c696a5"
+    },
+    {
+      "path": "archive/intentV1/src/utils/conditionEvaluator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91795e5495b2eb72079f4eaff19fa410e15e4075",
+      "size": 15474,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/91795e5495b2eb72079f4eaff19fa410e15e4075"
+    },
+    {
+      "path": "archive/intentV1/src/utils/cryptoVault.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b22b5f6ba625bbaa50ec901f23c5f802fd64adf2",
+      "size": 6702,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b22b5f6ba625bbaa50ec901f23c5f802fd64adf2"
+    },
+    {
+      "path": "archive/intentV1/src/utils/firebase.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "172406af3251c283553d2871ca7b195a28a62cb6",
+      "size": 2287,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/172406af3251c283553d2871ca7b195a28a62cb6"
+    },
+    {
+      "path": "archive/intentV1/src/utils/intentSchema.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7405496c8e75014278b9d9fd6698cfce93c00c36",
+      "size": 8994,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7405496c8e75014278b9d9fd6698cfce93c00c36"
+    },
+    {
+      "path": "archive/intentV1/src/utils/storage.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c9e878d133c3afc6a32e69f386730b3b1d102320",
+      "size": 9669,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c9e878d133c3afc6a32e69f386730b3b1d102320"
+    },
+    {
+      "path": "archive/intentV1/src/utils/testPersonas.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc0c9b9fce2efe65f7fc957135edc6733ab11e3d",
+      "size": 2546,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/cc0c9b9fce2efe65f7fc957135edc6733ab11e3d"
+    },
+    {
+      "path": "archive/intentV1/src/utils/time.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4aa999f6c212f021d5084bfab0c5abf42e8218fe",
+      "size": 1793,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4aa999f6c212f021d5084bfab0c5abf42e8218fe"
+    },
+    {
+      "path": "archive/intentV1/src/utils/timeCondition.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "498dc49009f7b6e966bf9a9188009cc3361fac58",
+      "size": 4892,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/498dc49009f7b6e966bf9a9188009cc3361fac58"
+    },
+    {
+      "path": "archive/intentV1/tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d88f175b08822f946e8333471fd7fec70ffffff2",
+      "size": 508,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d88f175b08822f946e8333471fd7fec70ffffff2"
+    },
+    {
+      "path": "archive/intentV1/visaodedoisenior.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3bdfe491f25a1d909d1dd58c3776e31ceac499d1",
+      "size": 20230,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3bdfe491f25a1d909d1dd58c3776e31ceac499d1"
+    },
+    {
+      "path": "archive/intentV1/vite.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc23e76fd18e1162c5ca1019bfb4229907183361",
+      "size": 708,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fc23e76fd18e1162c5ca1019bfb4229907183361"
+    },
+    {
+      "path": "assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9858aebdc705046d075d2aeb3c895c6ca1322421",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/9858aebdc705046d075d2aeb3c895c6ca1322421"
+    },
+    {
+      "path": "assets/.aistudio",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a94f29a3cbca34c73ba7e45508d99a53b8900a1e",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/a94f29a3cbca34c73ba7e45508d99a53b8900a1e"
+    },
+    {
+      "path": "assets/.aistudio/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72e8ffc0db8aad71a934dd11e5968bd5109e54b4",
+      "size": 2,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/72e8ffc0db8aad71a934dd11e5968bd5109e54b4"
+    },
+    {
+      "path": "backend",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "17f4ebd25ef133865c4bb0b5bd4d6ef9ae71bfee",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/17f4ebd25ef133865c4bb0b5bd4d6ef9ae71bfee"
+    },
+    {
+      "path": "backend/.dockerignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4beb3b60bef08024ebb672f0cfb3020ea4692274",
+      "size": 38,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4beb3b60bef08024ebb672f0cfb3020ea4692274"
+    },
+    {
+      "path": "backend/.env.example",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ecbef61bc2907bb456a99bcd8ad6f4379e5ad24",
+      "size": 268,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/9ecbef61bc2907bb456a99bcd8ad6f4379e5ad24"
+    },
+    {
+      "path": "backend/Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "215c22ed2632d7f86544d7def311fa011e4a7b97",
+      "size": 899,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/215c22ed2632d7f86544d7def311fa011e4a7b97"
+    },
+    {
+      "path": "backend/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d01aa14d8c4bc8348ebfd7023cc6c06b7ab7a0f",
+      "size": 984,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2d01aa14d8c4bc8348ebfd7023cc6c06b7ab7a0f"
+    },
+    {
+      "path": "backend/compose.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f0b587705a47caf40d5f2f86cb8d1824d674506",
+      "size": 941,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4f0b587705a47caf40d5f2f86cb8d1824d674506"
+    },
+    {
+      "path": "backend/docker-entrypoint.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e055c410dd1222d0340495fe4520f671c0af971f",
+      "size": 423,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e055c410dd1222d0340495fe4520f671c0af971f"
+    },
+    {
+      "path": "backend/package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25ce9bdef8fd3029a2f6eda9c08085034da3a61a",
+      "size": 179538,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/25ce9bdef8fd3029a2f6eda9c08085034da3a61a"
+    },
+    {
+      "path": "backend/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d3ee6a9a42dc89342cc539581eaee2eafeef439",
+      "size": 961,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2d3ee6a9a42dc89342cc539581eaee2eafeef439"
+    },
+    {
+      "path": "backend/prisma",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "621cd5369c4271fbcbe46c0475152e4eb14f3301",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/621cd5369c4271fbcbe46c0475152e4eb14f3301"
+    },
+    {
+      "path": "backend/prisma/migrations",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fd5b79c2132c29a211c9e2f1dfebaeec8c53003a",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/fd5b79c2132c29a211c9e2f1dfebaeec8c53003a"
+    },
+    {
+      "path": "backend/prisma/migrations/20260903000100_initial",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9074a0f3f73aeebb3e0c8a951422b200e34582c3",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/9074a0f3f73aeebb3e0c8a951422b200e34582c3"
+    },
+    {
+      "path": "backend/prisma/migrations/20260903000100_initial/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bab9c5b1366c250e77351395a9ffd847a3d6e51e",
+      "size": 4590,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/bab9c5b1366c250e77351395a9ffd847a3d6e51e"
+    },
+    {
+      "path": "backend/prisma/migrations/20260904000100_add_intent_category",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "82255763419091dc977e0a8256f2a02123ad66ab",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/82255763419091dc977e0a8256f2a02123ad66ab"
+    },
+    {
+      "path": "backend/prisma/migrations/20260904000100_add_intent_category/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0489f8314ba2d2f64c4594b14694e1b955dbb80f",
+      "size": 82,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0489f8314ba2d2f64c4594b14694e1b955dbb80f"
+    },
+    {
+      "path": "backend/prisma/migrations/20260905000100_add_social_follows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3ee02678905a7b48ec6a938691e7a16d74ab3584",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/3ee02678905a7b48ec6a938691e7a16d74ab3584"
+    },
+    {
+      "path": "backend/prisma/migrations/20260905000100_add_social_follows/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "008e888a708619d0e78f7f2330435e09a225215c",
+      "size": 973,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/008e888a708619d0e78f7f2330435e09a225215c"
+    },
+    {
+      "path": "backend/prisma/migrations/20260908000100_add_request_idempotency",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c8a38f04c61d89bce6302fd31378e0ac4869e89e",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/c8a38f04c61d89bce6302fd31378e0ac4869e89e"
+    },
+    {
+      "path": "backend/prisma/migrations/20260908000100_add_request_idempotency/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0ee693c4b971cee0508c39beb11ae0c2b24df3c",
+      "size": 704,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e0ee693c4b971cee0508c39beb11ae0c2b24df3c"
+    },
+    {
+      "path": "backend/prisma/migrations/20260912000100_add_reveal_conditions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0c866ef657419fdf16965ebd9ae9dbd1363172c1",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/0c866ef657419fdf16965ebd9ae9dbd1363172c1"
+    },
+    {
+      "path": "backend/prisma/migrations/20260912000100_add_reveal_conditions/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bdd36cc443726fe842a93b7bb29c90453895ac97",
+      "size": 481,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/bdd36cc443726fe842a93b7bb29c90453895ac97"
+    },
+    {
+      "path": "backend/prisma/migrations/20260913000100_add_notifications",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2bd54a0f2f7838e2c5e93c2b554d2f7f215663d9",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/2bd54a0f2f7838e2c5e93c2b554d2f7f215663d9"
+    },
+    {
+      "path": "backend/prisma/migrations/20260913000100_add_notifications/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b99f3a1b351ac61ebf946f0a2418aeba4efdd108",
+      "size": 1093,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b99f3a1b351ac61ebf946f0a2418aeba4efdd108"
+    },
+    {
+      "path": "backend/prisma/migrations/20260913000200_add_intent_comments",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dd3aaf0240e53d44367cce64349e2abd427896ed",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/dd3aaf0240e53d44367cce64349e2abd427896ed"
+    },
+    {
+      "path": "backend/prisma/migrations/20260913000200_add_intent_comments/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e6861b4122efad4823aa6ba6a3d1b10f83f5f41",
+      "size": 796,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6e6861b4122efad4823aa6ba6a3d1b10f83f5f41"
+    },
+    {
+      "path": "backend/prisma/migrations/20260914000100_add_intent_reactions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "58a8773c5f627ef2eb2823edc4160aa8b0d779b1",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/58a8773c5f627ef2eb2823edc4160aa8b0d779b1"
+    },
+    {
+      "path": "backend/prisma/migrations/20260914000100_add_intent_reactions/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4203267f565900d3a4c73b91b538b55adbbf34de",
+      "size": 1025,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4203267f565900d3a4c73b91b538b55adbbf34de"
+    },
+    {
+      "path": "backend/prisma/migrations/20260914000200_add_social_notification_types",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "16ba56f705089a39d2b7612f244e4e33ca0817e1",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/16ba56f705089a39d2b7612f244e4e33ca0817e1"
+    },
+    {
+      "path": "backend/prisma/migrations/20260914000200_add_social_notification_types/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ada8d977acb165843a426dbf6c01a3cbd09f1ddf",
+      "size": 393,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/ada8d977acb165843a426dbf6c01a3cbd09f1ddf"
+    },
+    {
+      "path": "backend/prisma/migrations/20260920000100_add_intent_watches",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "940226a03e6f107b2cc64553f36c627e27404bbe",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/940226a03e6f107b2cc64553f36c627e27404bbe"
+    },
+    {
+      "path": "backend/prisma/migrations/20260920000100_add_intent_watches/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "70c0df4f297195cae89b2a024a958b69e74a12f1",
+      "size": 817,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/70c0df4f297195cae89b2a024a958b69e74a12f1"
+    },
+    {
+      "path": "backend/prisma/migrations/20260921000100_add_watched_intent_realized_notification",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "783629297b45230c25488576aab9555731427d6c",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/783629297b45230c25488576aab9555731427d6c"
+    },
+    {
+      "path": "backend/prisma/migrations/20260921000100_add_watched_intent_realized_notification/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "149d2e8f1d7ab311f6dfc7f2b37167f59b5ffaa9",
+      "size": 67,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/149d2e8f1d7ab311f6dfc7f2b37167f59b5ffaa9"
+    },
+    {
+      "path": "backend/prisma/migrations/20260922000100_add_personal_contact_lists",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0b6daa401d6cbad26c367ca77f5c17c2b451acc7",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/0b6daa401d6cbad26c367ca77f5c17c2b451acc7"
+    },
+    {
+      "path": "backend/prisma/migrations/20260922000100_add_personal_contact_lists/migration.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7a9ebc22eb208caf8652703cdc1e33e3ec510c2",
+      "size": 1823,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c7a9ebc22eb208caf8652703cdc1e33e3ec510c2"
+    },
+    {
+      "path": "backend/prisma/migrations/migration_lock.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2fe25d87cc30b78fc25be5e171a4876951691252",
+      "size": 24,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2fe25d87cc30b78fc25be5e171a4876951691252"
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee047d2cc861532e43318f30c674d389ebc5efd0",
+      "size": 10424,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/ee047d2cc861532e43318f30c674d389ebc5efd0"
+    },
+    {
+      "path": "backend/prisma/seed.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "feab7bed93c8af331698613f6b16abcbb9524a5f",
+      "size": 15609,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/feab7bed93c8af331698613f6b16abcbb9524a5f"
+    },
+    {
+      "path": "backend/src",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "721826424fd530974a5837500da8ce5834055224",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/721826424fd530974a5837500da8ce5834055224"
+    },
+    {
+      "path": "backend/src/app.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc936c82cc7c987b7c0c6012d0dd88c0451b3f7e",
+      "size": 4479,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/dc936c82cc7c987b7c0c6012d0dd88c0451b3f7e"
+    },
+    {
+      "path": "backend/src/config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ba0d7d0dede136db8f7917e5e2a6d235ff0e3dc0",
+      "size": 2573,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/ba0d7d0dede136db8f7917e5e2a6d235ff0e3dc0"
+    },
+    {
+      "path": "backend/src/domain",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8014dcce73d7576e54693c9e637f4781fae96580",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/8014dcce73d7576e54693c9e637f4781fae96580"
+    },
+    {
+      "path": "backend/src/domain/comment-schemas.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "509a446bccbc1abaa7e470e83f77ae383746a9ca",
+      "size": 128,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/509a446bccbc1abaa7e470e83f77ae383746a9ca"
+    },
+    {
+      "path": "backend/src/domain/intent-schemas.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6eafb54101f1406772213da7c9e542899d71b0b4",
+      "size": 3129,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6eafb54101f1406772213da7c9e542899d71b0b4"
+    },
+    {
+      "path": "backend/src/domain/public-user.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0722be408cb9ae1f6e2032469c17e5590b6d34d",
+      "size": 641,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d0722be408cb9ae1f6e2032469c17e5590b6d34d"
+    },
+    {
+      "path": "backend/src/domain/reaction-schemas.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03433d9d925b189bb20cfd57370fcc33ff5f26fa",
+      "size": 248,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/03433d9d925b189bb20cfd57370fcc33ff5f26fa"
+    },
+    {
+      "path": "backend/src/domain/reveal-crypto.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6829229b0ec0d729a31de1ec2c1dd225d47d7c4",
+      "size": 1497,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e6829229b0ec0d729a31de1ec2c1dd225d47d7c4"
+    },
+    {
+      "path": "backend/src/domain/support-condition.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b8c4521d6eb0610368703fd52c6b74b473e795b",
+      "size": 434,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3b8c4521d6eb0610368703fd52c6b74b473e795b"
+    },
+    {
+      "path": "backend/src/errors.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7275099a4d2fd4c951576c778569ab06271b195a",
+      "size": 208,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7275099a4d2fd4c951576c778569ab06271b195a"
+    },
+    {
+      "path": "backend/src/lib",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "69be976ab1bb67784d91735260c777c642641031",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/69be976ab1bb67784d91735260c777c642641031"
+    },
+    {
+      "path": "backend/src/lib/db-url.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0282d90a45913441042bd93a88dab9306a71e04",
+      "size": 3699,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c0282d90a45913441042bd93a88dab9306a71e04"
+    },
+    {
+      "path": "backend/src/lib/firebase.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8d4cc8de96f9cdf11dc339c84e1924ef2c272268",
+      "size": 600,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8d4cc8de96f9cdf11dc339c84e1924ef2c272268"
+    },
+    {
+      "path": "backend/src/lib/logger.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb3870aeb595ee7b74dda26e0e2ec647ba46f4ac",
+      "size": 331,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fb3870aeb595ee7b74dda26e0e2ec647ba46f4ac"
+    },
+    {
+      "path": "backend/src/lib/prisma.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8d98eb379a69fcc7f9cc5745a56cfd4cb114ad74",
+      "size": 651,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8d98eb379a69fcc7f9cc5745a56cfd4cb114ad74"
+    },
+    {
+      "path": "backend/src/middleware",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "910d362ae228361bacd0af384d7adc882f08b28e",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/910d362ae228361bacd0af384d7adc882f08b28e"
+    },
+    {
+      "path": "backend/src/middleware/auth.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "52e4c8601b07f15728bfbfa1ee386ffc61d4df36",
+      "size": 4398,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/52e4c8601b07f15728bfbfa1ee386ffc61d4df36"
+    },
+    {
+      "path": "backend/src/routes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a1bf0702703cf6a65c11d30738e53dbe93f4bd9f",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/a1bf0702703cf6a65c11d30738e53dbe93f4bd9f"
+    },
+    {
+      "path": "backend/src/routes/health.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5ca4a36f4201e5e6ce04691aa499273f0922ce0",
+      "size": 723,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c5ca4a36f4201e5e6ce04691aa499273f0922ce0"
+    },
+    {
+      "path": "backend/src/routes/intents.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8d8edad8b4c4675c4b25636f374e76bce6dd5c7",
+      "size": 8636,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/f8d8edad8b4c4675c4b25636f374e76bce6dd5c7"
+    },
+    {
+      "path": "backend/src/routes/notifications.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2a8feb8a404f49bf1c052012c78398202066b774",
+      "size": 2571,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2a8feb8a404f49bf1c052012c78398202066b774"
+    },
+    {
+      "path": "backend/src/routes/personal-contact-lists.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9eef8fea80f04de4e1b4284502e862315274052",
+      "size": 2345,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d9eef8fea80f04de4e1b4284502e862315274052"
+    },
+    {
+      "path": "backend/src/routes/search.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d332dc590737f47e2866fe3d76540d4f7095c381",
+      "size": 712,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d332dc590737f47e2866fe3d76540d4f7095c381"
+    },
+    {
+      "path": "backend/src/routes/users.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "79a320ded8da5f72c782cfc97dd10a81981c65e2",
+      "size": 5642,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/79a320ded8da5f72c782cfc97dd10a81981c65e2"
+    },
+    {
+      "path": "backend/src/scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c5203e632b1c52e4cee596449814a9d44203d80a",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/c5203e632b1c52e4cee596449814a9d44203d80a"
+    },
+    {
+      "path": "backend/src/scripts/seed-mock-social.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9a80da0467af4706c7e3f754f910c57d09d6f99",
+      "size": 16841,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d9a80da0467af4706c7e3f754f910c57d09d6f99"
+    },
+    {
+      "path": "backend/src/server.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "867e4d979ab300ad5bb20b652698c89e68b66d85",
+      "size": 672,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/867e4d979ab300ad5bb20b652698c89e68b66d85"
+    },
+    {
+      "path": "backend/src/services",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3f01e1c96a6dc38abb7bf695be122dcac8b373c9",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/3f01e1c96a6dc38abb7bf695be122dcac8b373c9"
+    },
+    {
+      "path": "backend/src/services/comment-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "728e331badab55434af94df0f247168afddebb1f",
+      "size": 2311,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/728e331badab55434af94df0f247168afddebb1f"
+    },
+    {
+      "path": "backend/src/services/intent-history-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8fd1ddf130a373e467049bb5e4889370098dd2fe",
+      "size": 1180,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8fd1ddf130a373e467049bb5e4889370098dd2fe"
+    },
+    {
+      "path": "backend/src/services/intent-mutation.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "19e77067261308142f51a8d4b79d7cc3f8061a71",
+      "size": 3707,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/19e77067261308142f51a8d4b79d7cc3f8061a71"
+    },
+    {
+      "path": "backend/src/services/intent-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f106d9e1930e8ce5ca0723aa78038e55aec47a0",
+      "size": 32250,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4f106d9e1930e8ce5ca0723aa78038e55aec47a0"
+    },
+    {
+      "path": "backend/src/services/intent-watch-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfacddf1abae66b8cb8c5bc4e948f4466903186c",
+      "size": 2341,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/dfacddf1abae66b8cb8c5bc4e948f4466903186c"
+    },
+    {
+      "path": "backend/src/services/notification-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b3e09f74a075ac2304a8c60013eaaccc41b3477",
+      "size": 5844,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1b3e09f74a075ac2304a8c60013eaaccc41b3477"
+    },
+    {
+      "path": "backend/src/services/personal-contact-list-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "233065943060923fc75ad81735260fff19de866a",
+      "size": 4054,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/233065943060923fc75ad81735260fff19de866a"
+    },
+    {
+      "path": "backend/src/services/public-activity-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad16069c746ccecdef5f1c325dfe1f1e3532c7c2",
+      "size": 9390,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/ad16069c746ccecdef5f1c325dfe1f1e3532c7c2"
+    },
+    {
+      "path": "backend/src/services/public-profile-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4779fcf7696173c8a5f59e9aa68507ca4a9f86bd",
+      "size": 2933,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4779fcf7696173c8a5f59e9aa68507ca4a9f86bd"
+    },
+    {
+      "path": "backend/src/services/reaction-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75d0fb4f03508285c4893f76965d42f00ff176d7",
+      "size": 3299,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/75d0fb4f03508285c4893f76965d42f00ff176d7"
+    },
+    {
+      "path": "backend/src/services/search-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "affce5de27257cf693f459342e6bd2c1f9dccbea",
+      "size": 3657,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/affce5de27257cf693f459342e6bd2c1f9dccbea"
+    },
+    {
+      "path": "backend/src/services/social-service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "818ebf18414465926ebada2971202d921a37ce8a",
+      "size": 6957,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/818ebf18414465926ebada2971202d921a37ce8a"
+    },
+    {
+      "path": "backend/src/types",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "184e23e9c7b7f460940cd01714a09effb77ba77e",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/184e23e9c7b7f460940cd01714a09effb77ba77e"
+    },
+    {
+      "path": "backend/src/types/express.d.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75592abab91f735f97f30ad75371caaf55f183d4",
+      "size": 280,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/75592abab91f735f97f30ad75371caaf55f183d4"
+    },
+    {
+      "path": "backend/tests-postgres",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2b92e14c0a0b71bd3d3ed7076e0eb94dc99d1615",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/2b92e14c0a0b71bd3d3ed7076e0eb94dc99d1615"
+    },
+    {
+      "path": "backend/tests-postgres/comments.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e044031016c181179b6ab2323e6a1a6daef7de6f",
+      "size": 3207,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e044031016c181179b6ab2323e6a1a6daef7de6f"
+    },
+    {
+      "path": "backend/tests-postgres/idempotency.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc81ffcff2355bb72d566de6888c0524ddc523d1",
+      "size": 17029,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/cc81ffcff2355bb72d566de6888c0524ddc523d1"
+    },
+    {
+      "path": "backend/tests-postgres/reactions.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62a54f38eb999793c6e309429077c82237acaf21",
+      "size": 6170,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/62a54f38eb999793c6e309429077c82237acaf21"
+    },
+    {
+      "path": "backend/tests",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bcb5d3c4a33e65428da80b2ae31f30cf7afcd267",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/bcb5d3c4a33e65428da80b2ae31f30cf7afcd267"
+    },
+    {
+      "path": "backend/tests/comment-schemas.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "300a2ede495beba8a1d53b4c725498a62950ea51",
+      "size": 862,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/300a2ede495beba8a1d53b4c725498a62950ea51"
+    },
+    {
+      "path": "backend/tests/intent-schemas.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "097f9a43c5d5f876344b59941810272f9d904716",
+      "size": 2115,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/097f9a43c5d5f876344b59941810272f9d904716"
+    },
+    {
+      "path": "backend/tests/notification-http.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8b00a914eb03476926a4b237b903e34dcb7cb10",
+      "size": 4149,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b8b00a914eb03476926a4b237b903e34dcb7cb10"
+    },
+    {
+      "path": "backend/tests/profile-editing.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4cb412e8913d598627949d2a1086e0f41adc629f",
+      "size": 8181,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4cb412e8913d598627949d2a1086e0f41adc629f"
+    },
+    {
+      "path": "backend/tests/public-activity.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41bb206123cf713e1d9442752d58d5e4286f214e",
+      "size": 18123,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/41bb206123cf713e1d9442752d58d5e4286f214e"
+    },
+    {
+      "path": "backend/tests/reaction-http.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1998558e581608086e12bf41075129a09deed5c9",
+      "size": 16088,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1998558e581608086e12bf41075129a09deed5c9"
+    },
+    {
+      "path": "backend/tests/reveal-crypto.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d504aa21254bbd2f2ab1ffc36cc258d0b1712a5",
+      "size": 709,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1d504aa21254bbd2f2ab1ffc36cc258d0b1712a5"
+    },
+    {
+      "path": "backend/tests/search-service.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6d4a9c8f2d3011a08c52fd348c5cfa5e13e8a2a",
+      "size": 5763,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b6d4a9c8f2d3011a08c52fd348c5cfa5e13e8a2a"
+    },
+    {
+      "path": "backend/tests/share-link.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "071fddf5f3fb6a375395a847e4fa53577a1f8be7",
+      "size": 3711,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/071fddf5f3fb6a375395a847e4fa53577a1f8be7"
+    },
+    {
+      "path": "backend/tests/social-http.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5010bbfc90f648be672f17e8bee3a705f2f47a4f",
+      "size": 43764,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5010bbfc90f648be672f17e8bee3a705f2f47a4f"
+    },
+    {
+      "path": "backend/tests/social-regression.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "109e691095490cc695dda61a71e048857ab952ec",
+      "size": 29110,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/109e691095490cc695dda61a71e048857ab952ec"
+    },
+    {
+      "path": "backend/tests/social-stats.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "51beea0735a1a71f843443eade1b319f67c3689c",
+      "size": 553,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/51beea0735a1a71f843443eade1b319f67c3689c"
+    },
+    {
+      "path": "backend/tests/support-condition.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5643951ecfaaa9d56ca31b64c5c895545fa305c",
+      "size": 619,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d5643951ecfaaa9d56ca31b64c5c895545fa305c"
+    },
+    {
+      "path": "backend/tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "928ce8857642da3a003a1b55b44c4624aaefabc2",
+      "size": 600,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/928ce8857642da3a003a1b55b44c4624aaefabc2"
+    },
+    {
+      "path": "backend/vitest.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0e95a5a89d388f95239ae3c93e873b4656799a0",
+      "size": 158,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b0e95a5a89d388f95239ae3c93e873b4656799a0"
+    },
+    {
+      "path": "backend/vitest.postgres.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e60ce910b02a4aa9841e119dfd102d4dfc0fee87",
+      "size": 1037,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e60ce910b02a4aa9841e119dfd102d4dfc0fee87"
+    },
+    {
+      "path": "bun.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90f224b74a677bb653a7f8a87ff94b90821ffe96",
+      "size": 125519,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/90f224b74a677bb653a7f8a87ff94b90821ffe96"
+    },
+    {
+      "path": "deploy",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f1e2a3fac0eae68f08efeb74c3270caaaeff0892",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/f1e2a3fac0eae68f08efeb74c3270caaaeff0892"
+    },
+    {
+      "path": "deploy/oracle",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "483ba15e8c35e5e14a53a1651560c6e236c8c09f",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/483ba15e8c35e5e14a53a1651560c6e236c8c09f"
+    },
+    {
+      "path": "deploy/oracle/08-deploy-backend.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "406fd3cfaa14338ddef64c5fc00281ab254ede89",
+      "size": 11320,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/406fd3cfaa14338ddef64c5fc00281ab254ede89"
+    },
+    {
+      "path": "deploy/oracle/frontend.Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1f64813368e74aefa4c600838af6ec6f42c8875",
+      "size": 449,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b1f64813368e74aefa4c600838af6ec6f42c8875"
+    },
+    {
+      "path": "deploy/oracle/frontend.compose.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "512d39343592b58e992b171a2e7fb21862670dbf",
+      "size": 847,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/512d39343592b58e992b171a2e7fb21862670dbf"
+    },
+    {
+      "path": "deploy/oracle/frontend.nginx.conf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fed4b5110897b282d4a6730ec56c73643caf99a0",
+      "size": 2514,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fed4b5110897b282d4a6730ec56c73643caf99a0"
+    },
+    {
+      "path": "docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "303c96497c90c66a719a2510fa664c8f48f874de",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/303c96497c90c66a719a2510fa664c8f48f874de"
+    },
+    {
+      "path": "docs/RECUPERACAO_MAIN.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5c8acf3bc9c7a85bced9229ae9c49308f486e5d",
+      "size": 1377,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c5c8acf3bc9c7a85bced9229ae9c49308f486e5d"
+    },
+    {
+      "path": "docs/ai-handoff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7b107f0e1c2a24b7c670fb8cd46af2cefde986f1",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/7b107f0e1c2a24b7c670fb8cd46af2cefde986f1"
+    },
+    {
+      "path": "docs/ai-handoff/GEMINI_BACKEND_INTENT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "28f273e20c4c27f4735eb633e32f8287114a928e",
+      "size": 924,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/28f273e20c4c27f4735eb633e32f8287114a928e"
+    },
+    {
+      "path": "docs/ai-handoff/block-20",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "be9c48fe92095e3a02219d6748c5476a68476471",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/be9c48fe92095e3a02219d6748c5476a68476471"
+    },
+    {
+      "path": "docs/ai-handoff/block-20/diff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "daea2a52066e9412b87656808122dea4d1afc380",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/daea2a52066e9412b87656808122dea4d1afc380"
+    },
+    {
+      "path": "docs/ai-handoff/block-20/diff/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "abe8b9d29dbdb73e9de9691283dda0ac0eed03c7",
+      "size": 1353,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/abe8b9d29dbdb73e9de9691283dda0ac0eed03c7"
+    },
+    {
+      "path": "docs/ai-handoff/block-20/reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "db80071dd1b19b574e860697ae9b6b1b0c231940",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/db80071dd1b19b574e860697ae9b6b1b0c231940"
+    },
+    {
+      "path": "docs/ai-handoff/block-20/reports/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66a549fb54d6976895367d5000b841d6877ee17b",
+      "size": 2240,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/66a549fb54d6976895367d5000b841d6877ee17b"
+    },
+    {
+      "path": "docs/ai-handoff/block-20/reports/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4aed603e7656f1011864fd1e002f36dcf46777ae",
+      "size": 1530,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4aed603e7656f1011864fd1e002f36dcf46777ae"
+    },
+    {
+      "path": "docs/ai-handoff/block-21",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "863600a6296a202079fcaf0e641a7f4d6d61a011",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/863600a6296a202079fcaf0e641a7f4d6d61a011"
+    },
+    {
+      "path": "docs/ai-handoff/block-21/diff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6c5023e0921a93e074a7be3fef92cd460d12e12d",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/6c5023e0921a93e074a7be3fef92cd460d12e12d"
+    },
+    {
+      "path": "docs/ai-handoff/block-21/diff/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0fc7d054c7e59b0d90aed7227cc22b40317b1b5a",
+      "size": 827,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0fc7d054c7e59b0d90aed7227cc22b40317b1b5a"
+    },
+    {
+      "path": "docs/ai-handoff/block-21/reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4c963542febd764a4e54bb7a84fb1d034dd1a51c",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/4c963542febd764a4e54bb7a84fb1d034dd1a51c"
+    },
+    {
+      "path": "docs/ai-handoff/block-21/reports/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "641a564bea950976b6919423473ae6b89b2ec568",
+      "size": 1681,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/641a564bea950976b6919423473ae6b89b2ec568"
+    },
+    {
+      "path": "docs/ai-handoff/block-21/reports/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0de44b325df0fef47cb22986df49aca7afcde9b9",
+      "size": 880,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0de44b325df0fef47cb22986df49aca7afcde9b9"
+    },
+    {
+      "path": "docs/ai-handoff/block-22",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0b874c736a2c8267df6ea4f74397537cc55a7ec9",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/0b874c736a2c8267df6ea4f74397537cc55a7ec9"
+    },
+    {
+      "path": "docs/ai-handoff/block-22/diff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e9867ee37684f504a23ebd9b206abba25114cf9e",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/e9867ee37684f504a23ebd9b206abba25114cf9e"
+    },
+    {
+      "path": "docs/ai-handoff/block-22/diff/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7f7857c4666ace58f185483dbbfeabd7ef75cca0",
+      "size": 1493,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7f7857c4666ace58f185483dbbfeabd7ef75cca0"
+    },
+    {
+      "path": "docs/ai-handoff/block-22/reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e8f4208f97b91f8d92f06429a4478a404a78e897",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/e8f4208f97b91f8d92f06429a4478a404a78e897"
+    },
+    {
+      "path": "docs/ai-handoff/block-22/reports/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b396604f9286d7fa4d6ba542e5a9be2971f8ca94",
+      "size": 2135,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b396604f9286d7fa4d6ba542e5a9be2971f8ca94"
+    },
+    {
+      "path": "docs/ai-handoff/block-22/reports/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b350e21e9287c30a46ef98f6d9e6a0de87794086",
+      "size": 1383,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b350e21e9287c30a46ef98f6d9e6a0de87794086"
+    },
+    {
+      "path": "docs/ai-handoff/block-23",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6a18715c3235fad2107cd902b4a7f3fc32f4b6ac",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/6a18715c3235fad2107cd902b4a7f3fc32f4b6ac"
+    },
+    {
+      "path": "docs/ai-handoff/block-23/diff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d6fb1794c08a888c82ce58b57c0955d270402ac6",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/d6fb1794c08a888c82ce58b57c0955d270402ac6"
+    },
+    {
+      "path": "docs/ai-handoff/block-23/diff/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e083ba0e1dcd32448ce82d4f5ded13f93213745a",
+      "size": 1298,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e083ba0e1dcd32448ce82d4f5ded13f93213745a"
+    },
+    {
+      "path": "docs/ai-handoff/block-23/reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7e7030a90f634bd9022fc5eb0655421951f928a0",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/7e7030a90f634bd9022fc5eb0655421951f928a0"
+    },
+    {
+      "path": "docs/ai-handoff/block-23/reports/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2f46ad00fa0d3d54192980342ab606b357a568ac",
+      "size": 1757,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2f46ad00fa0d3d54192980342ab606b357a568ac"
+    },
+    {
+      "path": "docs/ai-handoff/block-23/reports/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d373bde7ff1108a75cd02051ff3f0590a7b77127",
+      "size": 1639,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d373bde7ff1108a75cd02051ff3f0590a7b77127"
+    },
+    {
+      "path": "docs/ai-handoff/block-25a",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ab39a074af92d8b4288abfd929d047c89535354b",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/ab39a074af92d8b4288abfd929d047c89535354b"
+    },
+    {
+      "path": "docs/ai-handoff/block-25a/diff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c32adab12453ffd274e6df58855f8245c4723080",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/c32adab12453ffd274e6df58855f8245c4723080"
+    },
+    {
+      "path": "docs/ai-handoff/block-25a/diff/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c1c603ae33ea423085a7df10e27c66fad023578f",
+      "size": 2584,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c1c603ae33ea423085a7df10e27c66fad023578f"
+    },
+    {
+      "path": "docs/ai-handoff/block-25a/reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bb3f18ff1e1f8e998159b031f320bd636dafe1c7",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/bb3f18ff1e1f8e998159b031f320bd636dafe1c7"
+    },
+    {
+      "path": "docs/ai-handoff/block-25a/reports/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7413b406c6e29c1e50cd3e2cc78942a6770882a9",
+      "size": 4631,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7413b406c6e29c1e50cd3e2cc78942a6770882a9"
+    },
+    {
+      "path": "docs/ai-handoff/block-25a/reports/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bfc511c5ea090173a458d2d9dd53608b4eda54cd",
+      "size": 3914,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/bfc511c5ea090173a458d2d9dd53608b4eda54cd"
+    },
+    {
+      "path": "docs/ai-handoff/block-25b",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fa541ac7eee173e70b07b5f9c7830529147dbd4c",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/fa541ac7eee173e70b07b5f9c7830529147dbd4c"
+    },
+    {
+      "path": "docs/ai-handoff/block-25b/diff",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "eb3452509140f698d52f939fb2ae651275ebfa8f",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/eb3452509140f698d52f939fb2ae651275ebfa8f"
+    },
+    {
+      "path": "docs/ai-handoff/block-25b/diff/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80232d482ff32a97b08a9f85d3ea51277732c015",
+      "size": 1945,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/80232d482ff32a97b08a9f85d3ea51277732c015"
+    },
+    {
+      "path": "docs/ai-handoff/block-25b/reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9956e946c362c8e0cd5fda0cc0868f468b76d698",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/9956e946c362c8e0cd5fda0cc0868f468b76d698"
+    },
+    {
+      "path": "docs/ai-handoff/block-25b/reports/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4544ce393eeacae1d36071bc84e9cd6c989ca9f",
+      "size": 2775,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c4544ce393eeacae1d36071bc84e9cd6c989ca9f"
+    },
+    {
+      "path": "docs/ai-handoff/block-25b/reports/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3e7e69811172c98c3035184fed1c08d62eaf68b1",
+      "size": 3106,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3e7e69811172c98c3035184fed1c08d62eaf68b1"
+    },
+    {
+      "path": "docs/ai-handoff/block-25c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9f06d4644e5bddf008d278f630480037b2556f79",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/9f06d4644e5bddf008d278f630480037b2556f79"
+    },
+    {
+      "path": "docs/ai-handoff/block-25c/arquivos-alterados.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da67adbb563f70b6e6c23e280525b914d1b35537",
+      "size": 3196,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/da67adbb563f70b6e6c23e280525b914d1b35537"
+    },
+    {
+      "path": "docs/ai-handoff/block-25c/resumo-implementacao.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c0ff1a46d3829741c625d3e2ac4f84c9861b796",
+      "size": 3968,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4c0ff1a46d3829741c625d3e2ac4f84c9861b796"
+    },
+    {
+      "path": "docs/ai-handoff/block-25c/validacoes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ddc2292e9b77d540287048fe7e2c814c7f64d04",
+      "size": 2554,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2ddc2292e9b77d540287048fe7e2c814c7f64d04"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-12-home-social-3-colunas.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eba9414119efcf4c413f2195fbd0cf5b7db5cf11",
+      "size": 1505,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/eba9414119efcf4c413f2195fbd0cf5b7db5cf11"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-12-migracao-codex.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d78ec6610d02013a42279961c9db1ab806ae6b7",
+      "size": 4209,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2d78ec6610d02013a42279961c9db1ab806ae6b7"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-13-reacoes-intents.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4a662cf5323f613cf03e22217ed24a9a1d8358cb",
+      "size": 9365,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4a662cf5323f613cf03e22217ed24a9a1d8358cb"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-14-notificacoes-sociais.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "929d3591d15539189fbdcadcf8ab3dccc53786c1",
+      "size": 2327,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/929d3591d15539189fbdcadcf8ab3dccc53786c1"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-15-central-notificacoes-frontend.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d836ca86ad260e9e47f460499399e440d08c5b2",
+      "size": 861,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6d836ca86ad260e9e47f460499399e440d08c5b2"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-16-navegacao-notificacoes-intent.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fcc64fbb4117418f273d0c84cc90b5b56dd682d9",
+      "size": 1119,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fcc64fbb4117418f273d0c84cc90b5b56dd682d9"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-17-polimento-social-intent.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d857ed2acfc1ceef35dd0c3996dc6697eae395b",
+      "size": 2050,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3d857ed2acfc1ceef35dd0c3996dc6697eae395b"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-18-feed-social-vivo.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "183a8454820cc4750d388b7779fa77943af84a27",
+      "size": 3284,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/183a8454820cc4750d388b7779fa77943af84a27"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-19-perfil-social-publico.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a968b906c6970c5bce6ddfeda1d6804fadbe0580",
+      "size": 3455,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/a968b906c6970c5bce6ddfeda1d6804fadbe0580"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-20-perfil-social-mais-vivo.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4e9a248100f17cdaeae378ee4fcef5fa68093f58",
+      "size": 3407,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4e9a248100f17cdaeae378ee4fcef5fa68093f58"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-21-seguir-usuarios.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5008a6710e61cd74bce8b37f3d89c1e9db30c269",
+      "size": 2653,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5008a6710e61cd74bce8b37f3d89c1e9db30c269"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-22-identidade-social-do-usuario.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7b0e687e65b8af5f394b7fedd57126fdd39df0c",
+      "size": 2605,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c7b0e687e65b8af5f394b7fedd57126fdd39df0c"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-23-feed-de-seguidos.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "984da96113e5fd48e62e79ca1990dce210c68fe7",
+      "size": 3212,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/984da96113e5fd48e62e79ca1990dce210c68fe7"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-25a-links-compartilhaveis.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6eb4d197f88ad798a305c7b0cc6e0d390152a83a",
+      "size": 2924,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6eb4d197f88ad798a305c7b0cc6e0d390152a83a"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-25b-edicao-perfil.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85c570b1e7e98080b7c77d5b274be5b3cfe4852f",
+      "size": 3890,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/85c570b1e7e98080b7c77d5b274be5b3cfe4852f"
+    },
+    {
+      "path": "docs/ai-handoff/bloco-25c-filtros-atividade.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7d8bb53bc19ca6d04a32af4de164dd96bed9ecc",
+      "size": 3908,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c7d8bb53bc19ca6d04a32af4de164dd96bed9ecc"
+    },
+    {
+      "path": "docs/arquitetura-mvp.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "756acc04868683d8d9b69c868bfacf30a24e589c",
+      "size": 5049,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/756acc04868683d8d9b69c868bfacf30a24e589c"
+    },
+    {
+      "path": "docs/backend-authority-f0.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c859963943d5dcbaaf79a6b91cfc3574add3ca8e",
+      "size": 5551,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c859963943d5dcbaaf79a6b91cfc3574add3ca8e"
+    },
+    {
+      "path": "docs/backups-e-rollback.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fa3c5aaf2695f3b31227d510876bdf15c30b701e",
+      "size": 7758,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fa3c5aaf2695f3b31227d510876bdf15c30b701e"
+    },
+    {
+      "path": "docs/fluxo-git-vm.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "96777930af9a1efc8179b97a0a39a008d7d1e13e",
+      "size": 5024,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/96777930af9a1efc8179b97a0a39a008d7d1e13e"
+    },
+    {
+      "path": "docs/implantacao-oracle.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "105d0ebb7193cc7982587cb8af02d0a104a72beb",
+      "size": 6990,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/105d0ebb7193cc7982587cb8af02d0a104a72beb"
+    },
+    {
+      "path": "docs/intent-comments.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "071ee15746ee4609476a696a58834d5b17dd1fbe",
+      "size": 2361,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/071ee15746ee4609476a696a58834d5b17dd1fbe"
+    },
+    {
+      "path": "docs/minimal-notifications.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "601cd215e13f37e50140d95dded3f56b1e5c68d6",
+      "size": 3456,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/601cd215e13f37e50140d95dded3f56b1e5c68d6"
+    },
+    {
+      "path": "docs/recuperacao-completa.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5aa45e258d3d70bf1697b6387a879f9d7e2db9e5",
+      "size": 5343,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5aa45e258d3d70bf1697b6387a879f9d7e2db9e5"
+    },
+    {
+      "path": "docs/simple-search.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5cbd0154dfab7bf05b611cec07401bd22ac871e9",
+      "size": 2004,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5cbd0154dfab7bf05b611cec07401bd22ac871e9"
+    },
+    {
+      "path": "firebase-applet-config.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a8b877758050c1dbd3ee3f5f77d13a7c29ef057",
+      "size": 287,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1a8b877758050c1dbd3ee3f5f77d13a7c29ef057"
+    },
+    {
+      "path": "firebase-blueprint.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "15fb6662925dcf70d5e814536e990b925da9b800",
+      "size": 1973,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/15fb6662925dcf70d5e814536e990b925da9b800"
+    },
+    {
+      "path": "firestore.rules",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fed2bdec65e9f99621223309a435cfbb724259aa",
+      "size": 688,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/fed2bdec65e9f99621223309a435cfbb724259aa"
+    },
+    {
+      "path": "index.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4eb0e0e6f8c07ccac4dc9b70c20fbebad6013f0d",
+      "size": 913,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4eb0e0e6f8c07ccac4dc9b70c20fbebad6013f0d"
+    },
+    {
+      "path": "metadata.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c334cc9e5ac4f79349232701be00da85e562054c",
+      "size": 282,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c334cc9e5ac4f79349232701be00da85e562054c"
+    },
+    {
+      "path": "package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a6acdf89e425e0dbd815ff465339c6638a394f8",
+      "size": 123897,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8a6acdf89e425e0dbd815ff465339c6638a394f8"
+    },
+    {
+      "path": "package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a11bd04e1ffa8f37ffc5e786ec00866ba6e393e",
+      "size": 1317,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7a11bd04e1ffa8f37ffc5e786ec00866ba6e393e"
+    },
+    {
+      "path": "projatual.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c3843d5e5f4bd32efde552d7b725f2a4201d9b9",
+      "size": 8823,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3c3843d5e5f4bd32efde552d7b725f2a4201d9b9"
+    },
+    {
+      "path": "projetocompleto.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1786e802f24dac36e12dff45f9ba161e0c11d21",
+      "size": 37417,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e1786e802f24dac36e12dff45f9ba161e0c11d21"
+    },
+    {
+      "path": "revisar.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e9c04fdbdc73c860768b1f99668ddc556224fbd",
+      "size": 6517,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6e9c04fdbdc73c860768b1f99668ddc556224fbd"
+    },
+    {
+      "path": "server.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "354bbc14849042925aca1299a07bea4fcf525a64",
+      "size": 2859,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/354bbc14849042925aca1299a07bea4fcf525a64"
+    },
+    {
+      "path": "src",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8716016fe68a51f49b5811f368b5c26b1dd4c2a8",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/8716016fe68a51f49b5811f368b5c26b1dd4c2a8"
+    },
+    {
+      "path": "src/App.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a2cb5a2906baca2a58ae9dc53892322e3cccb6b",
+      "size": 17259,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0a2cb5a2906baca2a58ae9dc53892322e3cccb6b"
+    },
+    {
+      "path": "src/appVersion.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f95ab41e5b0125ace97ad62058f0b7da2d1b524c",
+      "size": 94,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/f95ab41e5b0125ace97ad62058f0b7da2d1b524c"
+    },
+    {
+      "path": "src/components",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b50ec6bf74ed3d7e6e8c2cb4d86aa0610c334b1a",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/b50ec6bf74ed3d7e6e8c2cb4d86aa0610c334b1a"
+    },
+    {
+      "path": "src/components/AccountStatusCard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6473562282cccfa063bbf86fad0764a62421ab19",
+      "size": 6028,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6473562282cccfa063bbf86fad0764a62421ab19"
+    },
+    {
+      "path": "src/components/ApprovalWorkflow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0dd87159126998c497db9bffcf65a6f95c1b6a12",
+      "size": 18565,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/0dd87159126998c497db9bffcf65a6f95c1b6a12"
+    },
+    {
+      "path": "src/components/AuthGate.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b2e2b8330beb0a940f9ef1d141ae36a8381eb20",
+      "size": 9396,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4b2e2b8330beb0a940f9ef1d141ae36a8381eb20"
+    },
+    {
+      "path": "src/components/BottomCardsRow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d3a0e24c43b9caa20894aee07b5cccc46ab46b9",
+      "size": 4173,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4d3a0e24c43b9caa20894aee07b5cccc46ab46b9"
+    },
+    {
+      "path": "src/components/CreationWizard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e64c62e09cf3c7749b543f6f22424be67a6fe90",
+      "size": 29244,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1e64c62e09cf3c7749b543f6f22424be67a6fe90"
+    },
+    {
+      "path": "src/components/DeleteAccountModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f1213770bc7adeaf5df1260f854115ed648cf50",
+      "size": 2643,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/1f1213770bc7adeaf5df1260f854115ed648cf50"
+    },
+    {
+      "path": "src/components/DevInspectorBadge.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4e8f5c18710b908ce3b90855baff295683902586",
+      "size": 2012,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4e8f5c18710b908ce3b90855baff295683902586"
+    },
+    {
+      "path": "src/components/DynamicGreetingCard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a19b6efff194515e5dafff603b78012601d106e1",
+      "size": 8415,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/a19b6efff194515e5dafff603b78012601d106e1"
+    },
+    {
+      "path": "src/components/EditProfileModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2d3766b697b89baa173206837785a0f3787d044",
+      "size": 13762,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/d2d3766b697b89baa173206837785a0f3787d044"
+    },
+    {
+      "path": "src/components/ErrorBoundary.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "183c6822e709a494850751ca17d0380b47e035ac",
+      "size": 2365,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/183c6822e709a494850751ca17d0380b47e035ac"
+    },
+    {
+      "path": "src/components/ExploreFeedView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "36c597660b711ae64083a4c10a34a54a9e1098b2",
+      "size": 14315,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/36c597660b711ae64083a4c10a34a54a9e1098b2"
+    },
+    {
+      "path": "src/components/IntentCelebrationView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32519bb380589798a18fa64299647ba3f9d31574",
+      "size": 10125,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/32519bb380589798a18fa64299647ba3f9d31574"
+    },
+    {
+      "path": "src/components/IntentDetailView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "83215567c07e771c7dac935aec7f04650c8e6662",
+      "size": 14198,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/83215567c07e771c7dac935aec7f04650c8e6662"
+    },
+    {
+      "path": "src/components/IntentManager.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e8178d09abe295c5565b043e35a4dcc49cf005cc",
+      "size": 192846,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e8178d09abe295c5565b043e35a4dcc49cf005cc"
+    },
+    {
+      "path": "src/components/IntentStructureModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43915267a096a28ece19f645bb36912cb2174f1a",
+      "size": 48868,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/43915267a096a28ece19f645bb36912cb2174f1a"
+    },
+    {
+      "path": "src/components/LandingHeroView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b1369cc5b99a6d82322c6767083c19138b96ad4",
+      "size": 9431,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5b1369cc5b99a6d82322c6767083c19138b96ad4"
+    },
+    {
+      "path": "src/components/MessagesView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02e8611e5ec1625e1ec553416309887d587d1d8c",
+      "size": 11007,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/02e8611e5ec1625e1ec553416309887d587d1d8c"
+    },
+    {
+      "path": "src/components/MobileBottomNav.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6401fbad1385468a2573805755c708300edf9c76",
+      "size": 2774,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/6401fbad1385468a2573805755c708300edf9c76"
+    },
+    {
+      "path": "src/components/MvpConnectionsList.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4602a24f08c245ce7c4932cc467cfc4984f46e8c",
+      "size": 5015,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4602a24f08c245ce7c4932cc467cfc4984f46e8c"
+    },
+    {
+      "path": "src/components/MvpHomeFeed.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e5a300a25c4b6a1ade8397234a290216389eed5",
+      "size": 47322,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/5e5a300a25c4b6a1ade8397234a290216389eed5"
+    },
+    {
+      "path": "src/components/MvpIntentDetail.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "953eb4dbaa9d5701bf04185f61459f773fd54bca",
+      "size": 38660,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/953eb4dbaa9d5701bf04185f61459f773fd54bca"
+    },
+    {
+      "path": "src/components/MvpSocialProfile.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2add576ed99572ecf7b96e6567134302aed9f15e",
+      "size": 10580,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2add576ed99572ecf7b96e6567134302aed9f15e"
+    },
+    {
+      "path": "src/components/MyIntentsDashboard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1241651eff2199cefb3750ac85a5c2483d4634b",
+      "size": 9424,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b1241651eff2199cefb3750ac85a5c2483d4634b"
+    },
+    {
+      "path": "src/components/NotificationsModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3cf957ac70e24efd62e3347ba0b49411477a4a9c",
+      "size": 11144,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3cf957ac70e24efd62e3347ba0b49411477a4a9c"
+    },
+    {
+      "path": "src/components/NotificationsView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "59d0585ab19fd3b0d8d070cd11d4424da1c7a5f3",
+      "size": 11299,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/59d0585ab19fd3b0d8d070cd11d4424da1c7a5f3"
+    },
+    {
+      "path": "src/components/ParticipantManager.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a26ba9c96419b95c8e3644ce168db07bd0ab717",
+      "size": 21233,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8a26ba9c96419b95c8e3644ce168db07bd0ab717"
+    },
+    {
+      "path": "src/components/PersonalContactListsPanel.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72797eb0f3490c913be65acdf2c9d963cbb4df7c",
+      "size": 8176,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/72797eb0f3490c913be65acdf2c9d963cbb4df7c"
+    },
+    {
+      "path": "src/components/ProtectedVaultPipeline.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a620de4bb6daa13b7b41f350976436ee48017d07",
+      "size": 21372,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/a620de4bb6daa13b7b41f350976436ee48017d07"
+    },
+    {
+      "path": "src/components/PublicSupportWorkflow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f3fa614015146482b9efca57edb36d2893affbbd",
+      "size": 23101,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/f3fa614015146482b9efca57edb36d2893affbbd"
+    },
+    {
+      "path": "src/components/PublicUserActivity.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "42ff577323f685d0fc2fdd60c8502d46cbb9a506",
+      "size": 20015,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/42ff577323f685d0fc2fdd60c8502d46cbb9a506"
+    },
+    {
+      "path": "src/components/PublicUserProfile.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6cec492bd6aeaa37a2a59a1d02ffcd9e61623ce",
+      "size": 49020,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b6cec492bd6aeaa37a2a59a1d02ffcd9e61623ce"
+    },
+    {
+      "path": "src/components/SettingsView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "389880fc09753858236778547a3f581f66492ed8",
+      "size": 10445,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/389880fc09753858236778547a3f581f66492ed8"
+    },
+    {
+      "path": "src/components/Sidebar.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14d83ea2dbd767a02e65a580f026d0e5c70030d3",
+      "size": 17829,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/14d83ea2dbd767a02e65a580f026d0e5c70030d3"
+    },
+    {
+      "path": "src/components/SocialHistoryWorkflow.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfbabc64f3b9ae1771660bc3c1dcdca5054adeff",
+      "size": 34814,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/dfbabc64f3b9ae1771660bc3c1dcdca5054adeff"
+    },
+    {
+      "path": "src/components/StagesChecklistModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "086fdecc64194540c0d82357c3d7adeec4b04e9f",
+      "size": 17820,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/086fdecc64194540c0d82357c3d7adeec4b04e9f"
+    },
+    {
+      "path": "src/components/SupportersSection.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e03a49dd9ac8619138dbffc41973fdf576f5ec91",
+      "size": 17923,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e03a49dd9ac8619138dbffc41973fdf576f5ec91"
+    },
+    {
+      "path": "src/components/TesterProfileSwitcherBar.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ce328de6771cbcf5f4af889349c2da2a973b20a",
+      "size": 4614,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/8ce328de6771cbcf5f4af889349c2da2a973b20a"
+    },
+    {
+      "path": "src/components/UserProfileModal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7a86ff01a6878c133252a1b723cffcde4069267",
+      "size": 27224,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/c7a86ff01a6878c133252a1b723cffcde4069267"
+    },
+    {
+      "path": "src/components/UserProfileView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "06d5d035f1bfdf8f0799b46e94550f316cc44f5f",
+      "size": 11030,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/06d5d035f1bfdf8f0799b46e94550f316cc44f5f"
+    },
+    {
+      "path": "src/index.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9d3920d6625536ddf2f109db6fbe580e24b8879a",
+      "size": 1891,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/9d3920d6625536ddf2f109db6fbe580e24b8879a"
+    },
+    {
+      "path": "src/main.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d0ccb2575652fa6337b982f21425da004155f83",
+      "size": 339,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/2d0ccb2575652fa6337b982f21425da004155f83"
+    },
+    {
+      "path": "src/services",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "09bf6d1b9cfa05f5fc437dcc8f5c5d6a8dea089d",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/09bf6d1b9cfa05f5fc437dcc8f5c5d6a8dea089d"
+    },
+    {
+      "path": "src/services/intentApi.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e92925aaa62113ca06f5727210dc2b1d7c09af1d",
+      "size": 22661,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/e92925aaa62113ca06f5727210dc2b1d7c09af1d"
+    },
+    {
+      "path": "src/types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bef2a0b1a711de9b728cdcf4ad8b2f4b1f2c6e5d",
+      "size": 13123,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/bef2a0b1a711de9b728cdcf4ad8b2f4b1f2c6e5d"
+    },
+    {
+      "path": "src/utils",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "605380b8036cc9ea67deb823a3f129e63b2f6a88",
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/trees/605380b8036cc9ea67deb823a3f129e63b2f6a88"
+    },
+    {
+      "path": "src/utils/conditionEvaluator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91795e5495b2eb72079f4eaff19fa410e15e4075",
+      "size": 15474,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/91795e5495b2eb72079f4eaff19fa410e15e4075"
+    },
+    {
+      "path": "src/utils/cryptoVault.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b22b5f6ba625bbaa50ec901f23c5f802fd64adf2",
+      "size": 6702,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/b22b5f6ba625bbaa50ec901f23c5f802fd64adf2"
+    },
+    {
+      "path": "src/utils/firebase.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9376fd0583a98bfa0b5c9af6e9badb594d484cca",
+      "size": 1517,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/9376fd0583a98bfa0b5c9af6e9badb594d484cca"
+    },
+    {
+      "path": "src/utils/intentSchema.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7405496c8e75014278b9d9fd6698cfce93c00c36",
+      "size": 8994,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/7405496c8e75014278b9d9fd6698cfce93c00c36"
+    },
+    {
+      "path": "src/utils/shareLink.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce46b982417e0390d95364348f9b61d928d2406f",
+      "size": 5391,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/ce46b982417e0390d95364348f9b61d928d2406f"
+    },
+    {
+      "path": "src/utils/storage.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37f39da9f8b0c5853bbd86efe5c2c77500ccf632",
+      "size": 9654,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/37f39da9f8b0c5853bbd86efe5c2c77500ccf632"
+    },
+    {
+      "path": "src/utils/testPersonas.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc0c9b9fce2efe65f7fc957135edc6733ab11e3d",
+      "size": 2546,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/cc0c9b9fce2efe65f7fc957135edc6733ab11e3d"
+    },
+    {
+      "path": "src/utils/time.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4aa999f6c212f021d5084bfab0c5abf42e8218fe",
+      "size": 1793,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/4aa999f6c212f021d5084bfab0c5abf42e8218fe"
+    },
+    {
+      "path": "src/utils/timeCondition.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "498dc49009f7b6e966bf9a9188009cc3361fac58",
+      "size": 4892,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/498dc49009f7b6e966bf9a9188009cc3361fac58"
+    },
+    {
+      "path": "tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "caf381d27de4fb726773da51581b0a9e76793d51",
+      "size": 654,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/caf381d27de4fb726773da51581b0a9e76793d51"
+    },
+    {
+      "path": "visaodedoisenior.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3bdfe491f25a1d909d1dd58c3776e31ceac499d1",
+      "size": 20230,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/3bdfe491f25a1d909d1dd58c3776e31ceac499d1"
+    },
+    {
+      "path": "vite.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "230760121a30fff9902e4aef7b09a9a68b55c85d",
+      "size": 1198,
+      "url": "https://api.github.com/repos/edinhogrubert/intentNew/git/blobs/230760121a30fff9902e4aef7b09a9a68b55c85d"
+    }
+  ],
+  "truncated": false
+}

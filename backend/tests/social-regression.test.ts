@@ -10,13 +10,14 @@ const { db, key } = vi.hoisted(() => ({
     user: { findUnique: vi.fn() },
     intent: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn(), count: vi.fn() },
     follow: { findUnique: vi.fn(), createManyAndReturn: vi.fn(), deleteMany: vi.fn(), count: vi.fn() },
-    support: { findUnique: vi.fn(), create: vi.fn(), delete: vi.fn(), count: vi.fn() },
-    intentReaction: { groupBy: vi.fn().mockResolvedValue([]), findUnique: vi.fn().mockResolvedValue(null), upsert: vi.fn(), deleteMany: vi.fn() },
+    support: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]), create: vi.fn(), delete: vi.fn(), count: vi.fn() },
+    intentReaction: { groupBy: vi.fn().mockResolvedValue([]), findUnique: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]), upsert: vi.fn(), deleteMany: vi.fn() },
+    intentWatch: { findUnique: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
     domainEvent: { create: vi.fn() },
     notification: { createMany: vi.fn() },
   },
 }));
-vi.mock('../src/lib/prisma.js', () => ({ prisma: db }));
+vi.mock('../src/lib/prisma.js', () => ({ prisma: db, isTransientDbError: vi.fn().mockReturnValue(false) }));
 vi.mock('../src/config.js', () => ({ config: { revealEncryptionKey: key } }));
 
 import { approveGuardianIntent, createIntent, getIntent, listFollowingFeed, listPublicFeed, removeSupport, supportIntent } from '../src/services/intent-service.js';
@@ -46,6 +47,10 @@ beforeEach(() => {
   db.notification.createMany.mockResolvedValue({ count: 1 });
   db.intentReaction.groupBy.mockResolvedValue([]);
   db.intentReaction.findUnique.mockResolvedValue(null);
+  db.intentReaction.findMany.mockResolvedValue([]);
+  db.support.findMany.mockResolvedValue([]);
+  db.intentWatch.findMany.mockResolvedValue([]);
+  db.intentWatch.findUnique.mockResolvedValue(null);
 });
 
 describe('criação e acesso às Intents', () => {
@@ -182,7 +187,8 @@ describe('contratos de consulta dos feeds', () => {
   it.each(['public', 'following'] as const)('pagina o feed %s sem entregar o item extra ou selecionar segredos', async (scope) => {
     db.intent.findMany.mockResolvedValue([{ id: 'first' }, { id: 'second' }, { id: 'extra' }]);
     const result = scope === 'public' ? await listPublicFeed('cursor', 2) : await listFollowingFeed(viewerId, 'cursor', 2);
-    expect(result).toEqual({ items: [{ id: 'first' }, { id: 'second' }], nextCursor: 'second' });
+    expect(result.items).toMatchObject([{ id: 'first' }, { id: 'second' }]);
+    expect(result.nextCursor).toBe('second');
     const query = db.intent.findMany.mock.calls[0]![0];
     expect(query).toMatchObject({ take: 3, cursor: { id: 'cursor' }, skip: 1, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
     for (const field of ['revealCiphertext', 'revealIv', 'revealAuthTag', 'revealContent']) expect(query.select).not.toHaveProperty(field);

@@ -1,0 +1,219 @@
+=== INTENT (OFICIAL) ===
+import { Prisma } from '@prisma/client';
+import { AppError } from '../errors.js';
+import { prisma } from '../lib/prisma.js';
+
+export type SearchKind = 'all' | 'intents' | 'users';
+export type SearchStatus = 'PUBLISHED' | 'REALIZED';
+export type SearchPeriod = 'all' | 'week' | 'month';
+export interface SearchOptions { kind?: SearchKind | undefined; status?: SearchStatus | undefined; period?: SearchPeriod | undefined; cursor?: string | undefined; limit?: number | undefined; }
+
+const searchIntentSelect = {
+  id: true, type: true, conditionType: true, status: true, visibility: true, category: true,
+  title: true, story: true, supportGoal: true, supportCount: true, revealAt: true,
+  guardianApprovalGoal: true, publishedAt: true, realizedAt: true, createdAt: true,
+  creator: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+} satisfies Prisma.IntentSelect;
+const searchUserSelect = { id: true, username: true, displayName: true, bio: true, avatarUrl: true } satisfies Prisma.UserSelect;
+type SearchIntent = Prisma.IntentGetPayload<{ select: typeof searchIntentSelect }>;
+type SearchUser = Prisma.UserGetPayload<{ select: typeof searchUserSelect }>;
+type SearchCursor = { kind: 'intents'; createdAt: string; id: string } | { kind: 'users'; displayName: string; id: string };
+
+function toSearchIntent(intent: SearchIntent) {
+  return { id: intent.id, type: intent.type, conditionType: intent.conditionType, status: intent.status,
+    visibility: intent.visibility, category: intent.category, title: intent.title, story: intent.story,
+    supportGoal: intent.supportGoal, supportCount: intent.supportCount, revealAt: intent.revealAt,
+    guardianApprovalGoal: intent.guardianApprovalGoal, publishedAt: intent.publishedAt,
+    realizedAt: intent.realizedAt, createdAt: intent.createdAt,
+    creator: { id: intent.creator.id, username: intent.creator.username, displayName: intent.creator.displayName, avatarUrl: intent.creator.avatarUrl } };
+}
+function toSearchUser(user: SearchUser) { return { id: user.id, username: user.username, displayName: user.displayName, bio: user.bio, avatarUrl: user.avatarUrl }; }
+function encodeCursor(cursor: SearchCursor) { return Buffer.from(JSON.stringify(cursor)).toString('base64url'); }
+function decodeCursor<K extends Exclude<SearchKind, 'all'>>(cursor: string | undefined, kind: K): Extract<SearchCursor, { kind: K }> | undefined {
+  if (!cursor) return undefined;
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as SearchCursor;
+    if (decoded.kind !== kind || typeof decoded.id !== 'string'
+      || (decoded.kind === 'intents' && (typeof decoded.createdAt !== 'string' || Number.isNaN(Date.parse(decoded.createdAt))))
+      || (decoded.kind === 'users' && typeof decoded.displayName !== 'string')) throw new Error('invalid');
+    return decoded as Extract<SearchCursor, { kind: K }>;
+  } catch { throw new AppError(400, 'INVALID_CURSOR', 'Cursor de busca inválido.'); }
+}
+function periodStart(period: SearchPeriod | undefined) {
+  if (!period || period === 'all') return undefined;
+  const now = new Date(); now.setUTCDate(now.getUTCDate() - (period === 'week' ? 7 : 30)); return now;
+}
+
+export async function searchIntentsAndUsers(viewerId: string, text: string, input: SearchOptions | number = {}) {
+  const options = typeof input === 'number' ? { limit: input } : input;
+  const query = text.trim(); const usernameQuery = query.replace(/^@+/, '');
+  const kind = options.kind ?? 'all'; const safeLimit = Math.min(Math.max(options.limit ?? 10, 1), 20);
+  const createdAfter = periodStart(options.period); const requestedStatus = options.status;
+  if (kind === 'all' && options.cursor) throw new AppError(400, 'INVALID_CURSOR', 'Escolha uma aba para continuar a busca.');
+  const intentWhere: Prisma.IntentWhereInput = {
+    status: requestedStatus ?? { in: ['PUBLISHED', 'REALIZED'] }, creator: { status: 'ACTIVE' },
+    AND: [
+      { OR: [{ title: { contains: query, mode: 'insensitive' } }, { story: { contains: query, mode: 'insensitive' } }, { creator: { displayName: { contains: query, mode: 'insensitive' } } }, { creator: { username: { contains: usernameQuery, mode: 'insensitive' } } }] },
+      { OR: [{ visibility: 'PUBLIC' }, { creatorId: viewerId }, { visibility: 'FOLLOWERS', creator: { followers: { some: { followerId: viewerId } } } }, { visibility: 'PRIVATE', conditionType: 'GUARDIANS', guardianIds: { array_contains: [viewerId] } }] },
+      ...(createdAfter ? [{ createdAt: { gte: createdAfter } }] : []),
+    ],
+  };
+  const userWhere: Prisma.UserWhereInput = { status: 'ACTIVE', OR: [{ displayName: { contains: query, mode: 'insensitive' } }, { username: { contains: usernameQuery, mode: 'insensitive' } }] };
+  if (kind === 'intents') {
+    const cursor = decodeCursor(options.cursor, 'intents');
+    if (cursor) intentWhere.AND = [...(intentWhere.AND as Prisma.IntentWhereInput[]), { OR: [{ createdAt: { lt: new Date(cursor.createdAt) } }, { createdAt: new Date(cursor.createdAt), id: { lt: cursor.id } }] }];
+    const records = await prisma.intent.findMany({ where: intentWhere, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: safeLimit + 1, select: searchIntentSelect });
+    const hasMore = records.length > safeLimit; const items = (hasMore ? records.slice(0, -1) : records).map(toSearchIntent); const last = items.at(-1);
+    return { intents: items, users: [], nextCursor: hasMore && last ? encodeCursor({ kind: 'intents', createdAt: last.createdAt.toISOString(), id: last.id }) : null };
+  }
+  if (kind === 'users') {
+    const cursor = decodeCursor(options.cursor, 'users');
+    if (cursor) userWhere.AND = [{ OR: [{ displayName: { gt: cursor.displayName } }, { displayName: cursor.displayName, id: { gt: cursor.id } }] }];
+    const records = await prisma.user.findMany({ where: userWhere, orderBy: [{ displayName: 'asc' }, { id: 'asc' }], take: safeLimit + 1, select: searchUserSelect });
+    const hasMore = records.length > safeLimit; const items = (hasMore ? records.slice(0, -1) : records).map(toSearchUser); const last = items.at(-1);
+    return { intents: [], users: items, nextCursor: hasMore && last ? encodeCursor({ kind: 'users', displayName: last.displayName, id: last.id }) : null };
+  }
+  const [intents, users] = await Promise.all([
+    prisma.intent.findMany({ where: intentWhere, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: safeLimit, select: searchIntentSelect }),
+    prisma.user.findMany({ where: userWhere, orderBy: [{ displayName: 'asc' }, { id: 'asc' }], take: safeLimit, select: searchUserSelect }),
+  ]);
+  return { intents: intents.map(toSearchIntent), users: users.map(toSearchUser), nextCursor: null };
+}
+
+
+=== INTENTNEW (LAB) ===
+import { Prisma } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
+
+const searchIntentSelect = {
+  id: true,
+  type: true,
+  conditionType: true,
+  status: true,
+  visibility: true,
+  category: true,
+  title: true,
+  story: true,
+  supportGoal: true,
+  supportCount: true,
+  revealAt: true,
+  guardianApprovalGoal: true,
+  publishedAt: true,
+  realizedAt: true,
+  createdAt: true,
+  creator: {
+    select: {
+      id: true,
+      username: true,
+      displayName: true,
+      avatarUrl: true,
+    },
+  },
+} satisfies Prisma.IntentSelect;
+
+const searchUserSelect = {
+  id: true,
+  username: true,
+  displayName: true,
+  bio: true,
+  avatarUrl: true,
+} satisfies Prisma.UserSelect;
+
+type SearchIntent = Prisma.IntentGetPayload<{ select: typeof searchIntentSelect }>;
+type SearchUser = Prisma.UserGetPayload<{ select: typeof searchUserSelect }>;
+
+function toSearchIntent(intent: SearchIntent) {
+  return {
+    id: intent.id,
+    type: intent.type,
+    conditionType: intent.conditionType,
+    status: intent.status,
+    visibility: intent.visibility,
+    category: intent.category,
+    title: intent.title,
+    story: intent.story,
+    supportGoal: intent.supportGoal,
+    supportCount: intent.supportCount,
+    revealAt: intent.revealAt,
+    guardianApprovalGoal: intent.guardianApprovalGoal,
+    publishedAt: intent.publishedAt,
+    realizedAt: intent.realizedAt,
+    createdAt: intent.createdAt,
+    creator: {
+      id: intent.creator.id,
+      username: intent.creator.username,
+      displayName: intent.creator.displayName,
+      avatarUrl: intent.creator.avatarUrl,
+    },
+  };
+}
+
+function toSearchUser(user: SearchUser) {
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    bio: user.bio,
+    avatarUrl: user.avatarUrl,
+  };
+}
+
+export async function searchIntentsAndUsers(viewerId: string, text: string, limit = 10) {
+  const query = text.trim();
+  const usernameQuery = query.replace(/^@+/, '');
+  const safeLimit = Math.min(Math.max(limit, 1), 20);
+
+  const [intents, users] = await Promise.all([
+    prisma.intent.findMany({
+      where: {
+        status: { in: ['PUBLISHED', 'REALIZED'] },
+        creator: { status: 'ACTIVE' },
+        AND: [
+          {
+            OR: [
+              { title: { contains: query, mode: 'insensitive' } },
+              { story: { contains: query, mode: 'insensitive' } },
+              { creator: { displayName: { contains: query, mode: 'insensitive' } } },
+              { creator: { username: { contains: usernameQuery, mode: 'insensitive' } } },
+            ],
+          },
+          {
+            OR: [
+              { visibility: 'PUBLIC' },
+              { creatorId: viewerId },
+              {
+                visibility: 'FOLLOWERS',
+                creator: { followers: { some: { followerId: viewerId } } },
+              },
+              {
+                visibility: 'PRIVATE',
+                conditionType: 'GUARDIANS',
+                guardianIds: { array_contains: [viewerId] },
+              },
+            ],
+          },
+        ],
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: safeLimit,
+      select: searchIntentSelect,
+    }),
+    prisma.user.findMany({
+      where: {
+        status: 'ACTIVE',
+        OR: [
+          { displayName: { contains: query, mode: 'insensitive' } },
+          { username: { contains: usernameQuery, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: [{ displayName: 'asc' }, { id: 'asc' }],
+      take: safeLimit,
+      select: searchUserSelect,
+    }),
+  ]);
+
+  return {
+    intents: intents.map(toSearchIntent),
+    users: users.map(toSearchUser),
+  };
+}

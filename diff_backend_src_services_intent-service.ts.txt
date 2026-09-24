@@ -1,3 +1,4 @@
+=== INTENT (OFICIAL) ===
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { config } from '../config.js';
@@ -303,7 +304,853 @@ export async function listFollowingFeed(viewerId: string, cursor?: string, limit
   const safeLimit = Math.min(Math.max(limit, 1), 50);
   const items = await prisma.intent.findMany({
     where: {
-      visibility: { in: ['PUBLIC', 'FOLLOWERS'] },
+      visibility: 'PUBLIC',
+      status: { in: ['PUBLISHED', 'REALIZED'] },
+      creator: {
+        status: 'ACTIVE',
+        followers: { some: { followerId: viewerId } },
+      },
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: safeLimit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    select: publicIntentSelection,
+  });
+
+  const hasMore = items.length > safeLimit;
+  const page = hasMore ? items.slice(0, safeLimit) : items;
+
+  const ids = page.map((intent) => intent.id);
+  const [groups, viewerReactions, viewerSupports] = ids.length ? await Promise.all([
+    prisma.intentReaction.groupBy({ by: ['intentId', 'type'],
+      where: { intentId: { in: ids } }, _count: { _all: true } }),
+    prisma.intentReaction.findMany({ where: { userId: viewerId, intentId: { in: ids } },
+      select: { intentId: true, type: true } }),
+    prisma.support.findMany({ where: { userId: viewerId, intentId: { in: ids } },
+      select: { intentId: true } }),
+  ]) : [[], [], []];
+  const counts = new Map<string, { LIKE: number; LOVE: number; CELEBRATE: number; total: number }>();
+  for (const group of groups) {
+    const count = counts.get(group.intentId) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 };
+    count[group.type] = group._count._all;
+    count.total += group._count._all;
+    counts.set(group.intentId, count);
+  }
+  const reactions = new Map(viewerReactions.map((reaction) => [reaction.intentId, reaction.type]));
+  const supported = new Set(viewerSupports.map((support) => support.intentId));
+
+  return {
+    items: page.map((intent) => ({ ...intent,
+      reactionCounts: counts.get(intent.id) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 },
+      viewerReaction: reactions.get(intent.id) ?? null,
+      viewerHasSupported: supported.has(intent.id),
+    })),
+    nextCursor: hasMore ? page.at(-1)?.id ?? null : null,
+  };
+}
+
+/** Public, viewer-authorized projection; encrypted reveal fields are never selected. */
+export async function listSocialFeed(viewerId: string, filter: SocialFeedFilter = 'recent', cursor?: string, limit = 20) {
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const where: Prisma.IntentWhereInput = {
+    OR: [
+      { visibility: 'PUBLIC' }, { creatorId: viewerId },
+      { visibility: 'FOLLOWERS', creator: { followers: { some: { followerId: viewerId } } } },
+      { visibility: 'PRIVATE', guardianIds: { array_contains: [viewerId] } },
+    ],
+    creator: { status: 'ACTIVE' },
+    status: filter === 'realized' ? 'REALIZED' : { in: ['PUBLISHED', 'REALIZED'] },
+    ...(filter === 'supported' ? { supports: { some: { userId: viewerId } } } : {}),
+    ...(filter === 'mine' ? { creatorId: viewerId } : {}),
+  };
+  const orderBy = filter === 'popular'
+    ? [{ supportCount: 'desc' as const }, { createdAt: 'desc' as const }, { id: 'desc' as const }]
+    : [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
+  const rows = await prisma.intent.findMany({ where, orderBy, take: safeLimit + 1, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), select: socialFeedIntentSelection });
+  const page = rows.slice(0, safeLimit);
+  const ids = page.map((intent) => intent.id);
+  const [groups, reactions, supports, comments, watches] = ids.length ? await Promise.all([
+    prisma.intentReaction.groupBy({ by: ['intentId', 'type'], where: { intentId: { in: ids } }, _count: { _all: true } }),
+    prisma.intentReaction.findMany({ where: { userId: viewerId, intentId: { in: ids } }, select: { intentId: true, type: true } }),
+    prisma.support.findMany({ where: { userId: viewerId, intentId: { in: ids } }, select: { intentId: true } }),
+    prisma.intentComment.findMany({ where: { intentId: { in: ids }, author: { status: 'ACTIVE' } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: safeLimit * 3, select: socialFeedCommentSelection }),
+    prisma.intentWatch?.findMany({ where: { userId: viewerId, intentId: { in: ids } }, select: { intentId: true } }) ?? Promise.resolve([]),
+  ]) : [[], [], [], [], []];
+  const counts = new Map<string, { LIKE: number; LOVE: number; CELEBRATE: number; total: number }>();
+  for (const group of groups) { const count = counts.get(group.intentId) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 }; count[group.type] = group._count._all; count.total += group._count._all; counts.set(group.intentId, count); }
+  const reactionByIntent = new Map(reactions.map((item) => [item.intentId, item.type]));
+  const supportedIds = new Set(supports.map((item) => item.intentId));
+  const watchedIds = new Set(watches.map((item) => item.intentId));
+  const commentsByIntent = new Map<string, typeof comments>();
+  for (const comment of comments) { const items = commentsByIntent.get(comment.intentId) ?? []; if (items.length < 2) items.push(comment); commentsByIntent.set(comment.intentId, items); }
+  return {
+    items: page.map((intent) => {
+      // Prisma's select already excludes these. Dropping them defensively keeps
+      // the feed safe if a future repository implementation widens a row.
+      const { guardianIds: _guardianIds, guardianApprovals: _guardianApprovals,
+        revealCiphertext: _revealCiphertext, revealIv: _revealIv,
+        revealAuthTag: _revealAuthTag, revealContent: _revealContent,
+        ...summary } = intent as typeof intent & Record<string, unknown>;
+      return {
+        ...summary,
+        reactionCounts: counts.get(intent.id) ?? { LIKE: 0, LOVE: 0, CELEBRATE: 0, total: 0 },
+        viewerReaction: reactionByIntent.get(intent.id) ?? null,
+        viewerSupported: supportedIds.has(intent.id),
+        viewerHasSupported: supportedIds.has(intent.id),
+        viewerWatching: watchedIds.has(intent.id),
+        recentComments: (commentsByIntent.get(intent.id) ?? [])
+          .map(({ id, body, createdAt, updatedAt, author }) => ({ id, body, createdAt, updatedAt, author })),
+      };
+    }),
+    nextCursor: rows.length > safeLimit ? page.at(-1)?.id ?? null : null,
+  };
+}
+
+export async function getIntent(intentId: string, viewerId?: string) {
+  let intent = await prisma.intent.findUnique({
+    where: { id: intentId },
+    include: {
+      creator: {
+        select: { id: true, username: true, displayName: true, avatarUrl: true, status: true },
+      },
+    },
+  });
+
+  intent = await assertIntentViewAccess(intent, viewerId, prisma);
+
+  const viewerIsGuardian = Boolean(viewerId && asStringArray(intent.guardianIds).includes(viewerId));
+  const guardianApprovalCount = asStringArray(intent!.guardianApprovals)
+    .filter((id) => asStringArray(intent!.guardianIds).includes(id)).length;
+
+  const viewerSupport = viewerId
+    ? await prisma.support.findUnique({
+        where: { intentId_userId: { intentId, userId: viewerId } },
+        select: { id: true },
+      })
+    : null;
+  const viewerWatch = viewerId
+    ? await prisma.intentWatch?.findUnique({
+        where: { intentId_userId: { intentId, userId: viewerId } },
+        select: { id: true },
+      })
+    : null;
+
+  const {
+    revealCiphertext,
+    revealIv,
+    revealAuthTag,
+    guardianIds: _guardianIds,
+    guardianApprovals: _guardianApprovals,
+    ...publicIntent
+  } = intent;
+
+  if (intent.status === 'PUBLISHED' && isRevealConditionSatisfied(intent)) {
+    const realizedIntent = intent;
+    const result = await prisma.$transaction(async (transaction) => {
+      const update = await transaction.intent.updateMany({
+        where: { id: intentId, status: 'PUBLISHED' },
+        data: { status: 'REALIZED', realizedAt: new Date() },
+      });
+      if (update.count === 1) {
+        await transaction.domainEvent.create({
+          data: {
+            intentId,
+            actorId: realizedIntent.creatorId,
+            type: 'INTENT_REALIZED',
+            idempotencyKey: `intent-realized:${intentId}:v${realizedIntent.revealVersion}`,
+            payload: { conditionType: realizedIntent.conditionType, revealVersion: realizedIntent.revealVersion },
+          },
+        });
+        await notifyIntentWatchersOfRealization(transaction, {
+          intentId,
+          actorId: realizedIntent.creatorId,
+          creatorId: realizedIntent.creatorId,
+          visibility: realizedIntent.visibility,
+          guardianIds: realizedIntent.guardianIds,
+        });
+      }
+      return update;
+    });
+    if (result.count === 1) {
+      intent = await prisma.intent.findUniqueOrThrow({
+        where: { id: intentId },
+        include: {
+          creator: {
+            select: { id: true, username: true, displayName: true, avatarUrl: true, status: true },
+          },
+        },
+      });
+    }
+  }
+
+  const { reactionCounts, viewerReaction } = await getIntentReactionSummary(intentId, viewerId);
+
+  if (intent.status !== 'REALIZED') {
+    return {
+      ...publicIntent,
+      guardianIds: publicGuardianIds(intent, viewerId),
+      guardianApprovals: publicGuardianApprovals(intent, viewerId),
+      guardianApprovalCount,
+      viewerIsGuardian,
+      viewerHasApprovedAsGuardian: Boolean(viewerId && asStringArray(intent.guardianApprovals).includes(viewerId)),
+      revealContent: null,
+      viewerHasSupported: Boolean(viewerSupport),
+      reactionCounts,
+      viewerReaction,
+      viewerWatching: Boolean(viewerWatch),
+    };
+  }
+
+  if (!intent.realizedAt || !isRevealConditionSatisfied(intent)) {
+    throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+  }
+
+  const revealContent = openReveal(
+    {
+      ciphertext: revealCiphertext,
+      iv: revealIv,
+      authTag: revealAuthTag,
+    },
+    config.revealEncryptionKey,
+    revealAssociatedData(intent.id, intent.revealVersion),
+  );
+
+  const { revealCiphertext: _c, revealIv: _i, revealAuthTag: _a, guardianIds: _g, guardianApprovals: _ga, ...realizedPublicIntent } = intent;
+  return {
+    ...realizedPublicIntent,
+    guardianIds: publicGuardianIds(intent, viewerId),
+    guardianApprovals: publicGuardianApprovals(intent, viewerId),
+    guardianApprovalCount,
+    viewerIsGuardian,
+    viewerHasApprovedAsGuardian: Boolean(viewerId && asStringArray(intent.guardianApprovals).includes(viewerId)),
+    revealContent,
+    viewerHasSupported: Boolean(viewerSupport),
+    viewerWatching: Boolean(viewerWatch),
+    reactionCounts,
+    viewerReaction,
+  };
+}
+
+async function ensureSupportAccess(
+  transaction: Prisma.TransactionClient,
+  intent: { creatorId: string; visibility: string },
+  supporterId: string,
+): Promise<void> {
+  if (!['PUBLIC', 'FOLLOWERS'].includes(intent.visibility)) {
+    throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não pode apoiar uma Intent privada.');
+  }
+
+  if (intent.visibility === 'FOLLOWERS') {
+    const followsCreator = await transaction.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: supporterId,
+          followingId: intent.creatorId,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!followsCreator) {
+      throw new AppError(403, 'INTENT_FORBIDDEN', 'Somente seguidores podem apoiar esta Intent.');
+    }
+  }
+}
+
+export async function supportIntent(intentId: string, supporterId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(supporterId, `SUPPORT_INTENT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
+    const existing = await transaction.intent.findUnique({
+      where: { id: intentId },
+      include: { creator: { select: { status: true } } },
+    });
+
+    if (!existing || existing.creator.status !== 'ACTIVE') {
+      throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
+    }
+
+    if (existing.creatorId === supporterId) {
+      throw new AppError(409, 'CREATOR_CANNOT_SUPPORT', 'O criador não pode apoiar a própria Intent.');
+    }
+
+    if (existing.status !== 'PUBLISHED') {
+      throw new AppError(409, 'INTENT_NOT_OPEN', 'Esta Intent não está aberta para novos apoios.');
+    }
+
+    if (existing.conditionType !== 'SUPPORT') {
+      throw new AppError(409, 'INTENT_NOT_SUPPORT_BASED', 'Esta Intent não usa apoios como condição.');
+    }
+
+    assertPublishedState(existing);
+
+    await ensureSupportAccess(transaction, existing, supporterId);
+
+    const support = await transaction.support.create({
+      data: { intentId, userId: supporterId },
+    }).catch((error: unknown) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new AppError(409, 'SUPPORT_ALREADY_EXISTS', 'Você já apoiou esta Intent.');
+      }
+      throw error;
+    });
+
+    const updated = await transaction.intent.update({
+      where: { id: intentId },
+      data: { supportCount: { increment: 1 } },
+    });
+
+    await transaction.domainEvent.create({
+      data: {
+        intentId,
+        actorId: supporterId,
+        type: 'SUPPORT_RECEIVED',
+        idempotencyKey: `support-received:${support.id}`,
+        payload: {
+          supportId: support.id,
+          supportCount: updated.supportCount,
+          supportGoal: updated.supportGoal,
+        },
+      },
+    });
+
+    await createNotification(transaction, {
+      userId: existing.creatorId,
+      actorId: supporterId,
+      type: 'SUPPORT_RECEIVED',
+      intentId,
+      deduplicationKey: `support:${support.id}`,
+    });
+
+    let realizedNow = false;
+    if (isRevealConditionSatisfied(updated)) {
+      const result = await transaction.intent.updateMany({
+        where: { id: intentId, status: 'PUBLISHED' },
+        data: { status: 'REALIZED', realizedAt: new Date() },
+      });
+
+      realizedNow = result.count === 1;
+
+      if (!realizedNow) {
+        // Abort the entire transaction, including the support and its event.
+        throw new AppError(409, 'INTENT_STATE_CONFLICT', 'Não foi possível realizar esta Intent.');
+      }
+
+      if (realizedNow) {
+        await transaction.domainEvent.create({
+          data: {
+            intentId,
+            actorId: supporterId,
+            type: 'INTENT_REALIZED',
+            idempotencyKey: `intent-realized:${intentId}:v${updated.revealVersion}`,
+            payload: {
+              supportCount: updated.supportCount,
+              supportGoal: updated.supportGoal,
+              revealVersion: updated.revealVersion,
+            },
+          },
+        });
+        await notifyIntentWatchersOfRealization(transaction, {
+          intentId,
+          actorId: supporterId,
+          creatorId: existing.creatorId,
+          visibility: updated.visibility,
+          guardianIds: updated.guardianIds,
+        });
+      }
+    }
+
+    return {
+      intentId,
+      supportCount: updated.supportCount,
+      supportGoal: updated.supportGoal,
+      supported: true,
+      realized: realizedNow || updated.status === 'REALIZED',
+      realizedNow,
+    };
+  });
+}
+
+export async function approveGuardianIntent(intentId: string, guardianId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(guardianId, `GUARDIAN_APPROVE:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
+    const intent = await transaction.intent.findUnique({
+      where: { id: intentId },
+      include: { creator: { select: { status: true } } },
+    });
+
+    if (!intent || intent.creator.status !== 'ACTIVE') {
+      throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
+    }
+    if (intent.conditionType !== 'GUARDIANS') {
+      throw new AppError(409, 'INTENT_NOT_GUARDIAN_BASED', 'Esta Intent não usa guardiões como condição.');
+    }
+    if (intent.status !== 'PUBLISHED') {
+      throw new AppError(409, 'INTENT_NOT_OPEN', 'Esta Intent não está aberta para aprovação.');
+    }
+
+    const guardianIds = asStringArray(intent.guardianIds);
+    if (!guardianIds.includes(guardianId)) {
+      throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não é guardião desta Intent.');
+    }
+
+    const approvals = new Set(asStringArray(intent.guardianApprovals));
+    const hadApproved = approvals.has(guardianId);
+    approvals.add(guardianId);
+    const nextApprovals = [...approvals];
+
+    const updated = await transaction.intent.update({
+      where: { id: intentId },
+      data: { guardianApprovals: nextApprovals },
+    });
+
+    if (!hadApproved) {
+      await transaction.domainEvent.create({
+        data: {
+          intentId,
+          actorId: guardianId,
+          type: 'GUARDIAN_APPROVED',
+          idempotencyKey: `guardian-approved:${intentId}:${guardianId}`,
+          payload: {
+            approvals: nextApprovals.length,
+            guardianApprovalGoal: updated.guardianApprovalGoal,
+          },
+        },
+      });
+      if (guardianId !== intent.creatorId) {
+        await createNotification(transaction, {
+          userId: intent.creatorId,
+          actorId: guardianId,
+          type: 'GUARDIAN_APPROVAL_RECEIVED',
+          intentId,
+          deduplicationKey: `guardian-approval:${intentId}:${guardianId}`,
+        });
+      }
+    }
+
+    let realizedNow = false;
+    if (isRevealConditionSatisfied(updated)) {
+      const result = await transaction.intent.updateMany({
+        where: { id: intentId, status: 'PUBLISHED' },
+        data: { status: 'REALIZED', realizedAt: new Date() },
+      });
+      realizedNow = result.count === 1;
+      if (realizedNow) {
+        await transaction.domainEvent.create({
+          data: {
+            intentId,
+            actorId: guardianId,
+            type: 'INTENT_REALIZED',
+            idempotencyKey: `intent-realized:${intentId}:v${updated.revealVersion}`,
+            payload: {
+              conditionType: updated.conditionType,
+              guardianApprovalGoal: updated.guardianApprovalGoal,
+              approvals: nextApprovals.length,
+              revealVersion: updated.revealVersion,
+            },
+          },
+        });
+        await notifyIntentWatchersOfRealization(transaction, {
+          intentId,
+          actorId: guardianId,
+          creatorId: intent.creatorId,
+          visibility: updated.visibility,
+          guardianIds: updated.guardianIds,
+        });
+      }
+    }
+
+    return {
+      intentId,
+      approved: true,
+      approvals: nextApprovals.length,
+      guardianApprovalGoal: updated.guardianApprovalGoal,
+      realized: realizedNow || updated.status === 'REALIZED',
+      realizedNow,
+    };
+  });
+}
+
+export async function removeSupport(intentId: string, supporterId: string, idempotencyKey?: string) {
+  intentId = intentId.toLowerCase();
+  return runIntentMutation(supporterId, `REMOVE_SUPPORT:${intentId}`, idempotencyKey, { intentId }, async (transaction) => {
+    const intent = await transaction.intent.findUnique({ where: { id: intentId } });
+
+    if (!intent) {
+      throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
+    }
+
+    if (intent.creatorId === supporterId) {
+      throw new AppError(409, 'CREATOR_CANNOT_SUPPORT', 'O criador não participa do apoio à própria Intent.');
+    }
+
+    if (intent.status !== 'PUBLISHED') {
+      throw new AppError(409, 'SUPPORT_LOCKED_AFTER_REVEAL', 'O apoio não pode ser alterado depois da realização.');
+    }
+
+    assertPublishedState(intent);
+
+    const support = await transaction.support.findUnique({
+      where: { intentId_userId: { intentId, userId: supporterId } },
+    });
+
+    if (!support) {
+      return {
+        intentId,
+        supportCount: intent.supportCount,
+        supportGoal: intent.supportGoal,
+        supported: false,
+        removed: false,
+        realized: false,
+        realizedNow: false,
+      };
+    }
+
+    if (intent.supportCount === 0) {
+      throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+    }
+
+    await transaction.support.delete({ where: { id: support.id } });
+    const updated = await transaction.intent.update({
+      where: { id: intentId },
+      data: {
+        supportCount: { decrement: 1 },
+      },
+    });
+
+    await transaction.domainEvent.create({
+      data: {
+        intentId,
+        actorId: supporterId,
+        type: 'SUPPORT_REMOVED',
+        idempotencyKey: `support-removed:${support.id}`,
+        payload: {
+          supportId: support.id,
+          supportCount: updated.supportCount,
+          supportGoal: updated.supportGoal,
+        },
+      },
+    });
+
+    return {
+      intentId,
+      supportCount: updated.supportCount,
+      supportGoal: updated.supportGoal,
+      supported: false,
+      removed: true,
+      realized: false,
+      realizedNow: false,
+    };
+  });
+}
+
+
+=== INTENTNEW (LAB) ===
+import { randomUUID } from 'node:crypto';
+import { Prisma } from '@prisma/client';
+import { config } from '../config.js';
+import { AppError } from '../errors.js';
+import { prisma } from '../lib/prisma.js';
+import { openReveal, revealAssociatedData, sealReveal } from '../domain/reveal-crypto.js';
+import { isSupportConditionSatisfied } from '../domain/support-condition.js';
+import { createIntentSchema } from '../domain/intent-schemas.js';
+import { runIntentMutation } from './intent-mutation.js';
+import { createNotification, notifyIntentWatchersOfRealization } from './notification-service.js';
+import { getIntentReactionSummary } from './reaction-service.js';
+
+const publicIntentSelection = {
+  id: true,
+  type: true,
+  conditionType: true,
+  status: true,
+  visibility: true,
+  category: true,
+  title: true,
+  story: true,
+  supportGoal: true,
+  supportCount: true,
+  revealAt: true,
+  guardianIds: true,
+  guardianApprovals: true,
+  guardianApprovalGoal: true,
+  publishedAt: true,
+  realizedAt: true,
+  createdAt: true,
+  creator: {
+    select: {
+      id: true,
+      username: true,
+      displayName: true,
+      avatarUrl: true,
+    },
+  },
+} as Prisma.IntentSelect;
+
+export type SocialFeedFilter = 'recent' | 'realized' | 'supported' | 'mine' | 'popular';
+const socialFeedCommentSelection = {
+  id: true, intentId: true, body: true, createdAt: true, updatedAt: true,
+  author: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+} satisfies Prisma.IntentCommentSelect;
+
+// Feed summaries never expose guardian membership or approvals. Those remain
+// available only through the detail projection and its access rules.
+const socialFeedIntentSelection = {
+  id: true, type: true, conditionType: true, status: true, visibility: true,
+  category: true, title: true, story: true, supportGoal: true, supportCount: true,
+  revealAt: true, guardianApprovalGoal: true, publishedAt: true, realizedAt: true,
+  createdAt: true,
+  creator: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+} satisfies Prisma.IntentSelect;
+
+function assertPublishedState(intent: { supportCount: number; supportGoal: number; realizedAt: Date | null }) {
+  if (!Number.isInteger(intent.supportCount) || intent.supportCount < 0
+    || !Number.isInteger(intent.supportGoal) || intent.supportGoal < 1
+    || intent.supportCount >= intent.supportGoal || intent.realizedAt != null) {
+    throw new AppError(409, 'INTENT_STATE_INVALID', 'O estado da Intent é inconsistente.');
+  }
+}
+
+function asStringArray(value: Prisma.JsonValue | unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+type IntentAccessClient = Pick<Prisma.TransactionClient, 'intent' | 'follow'>;
+
+interface IntentViewAccessRecord {
+  creatorId: string;
+  visibility: string;
+  status: string;
+  guardianIds: Prisma.JsonValue | unknown;
+  creator: { status: string };
+}
+
+async function assertIntentViewAccess<T extends IntentViewAccessRecord>(
+  intent: T | null,
+  viewerId: string | undefined,
+  client: IntentAccessClient,
+): Promise<T> {
+  if (!intent || (intent.creator.status !== 'ACTIVE' && intent.creatorId !== viewerId)) {
+    throw new AppError(404, 'INTENT_NOT_FOUND', 'Intent não encontrada.');
+  }
+
+  if (!['PUBLIC', 'FOLLOWERS', 'PRIVATE'].includes(intent.visibility)
+    || !['PUBLISHED', 'REALIZED', 'CANCELLED'].includes(intent.status)) {
+    throw new AppError(403, 'INTENT_FORBIDDEN', 'Esta Intent não está disponível.');
+  }
+
+  const viewerIsGuardian = Boolean(viewerId && asStringArray(intent.guardianIds).includes(viewerId));
+  if (intent.visibility === 'PRIVATE' && intent.creatorId !== viewerId && !viewerIsGuardian) {
+    throw new AppError(403, 'INTENT_FORBIDDEN', 'Você não pode acessar esta Intent.');
+  }
+
+  if (intent.visibility === 'FOLLOWERS' && intent.creatorId !== viewerId) {
+    const followsCreator = viewerId
+      ? await client.follow.findUnique({
+          where: { followerId_followingId: { followerId: viewerId, followingId: intent.creatorId } },
+          select: { id: true },
+        })
+      : null;
+    if (!followsCreator) {
+      throw new AppError(403, 'INTENT_FORBIDDEN', 'Esta Intent é visível somente para seguidores.');
+    }
+  }
+  return intent;
+}
+
+export async function requireIntentViewAccess(
+  intentId: string,
+  viewerId: string,
+  client: IntentAccessClient = prisma,
+): Promise<void> {
+  const intent = await client.intent.findUnique({
+    where: { id: intentId },
+    select: {
+      creatorId: true,
+      visibility: true,
+      status: true,
+      guardianIds: true,
+      creator: { select: { status: true } },
+    },
+  });
+  await assertIntentViewAccess(intent, viewerId, client);
+}
+
+function isRevealConditionSatisfied(intent: {
+  conditionType: string;
+  supportCount: number;
+  supportGoal: number;
+  revealAt: Date | null;
+  guardianIds: Prisma.JsonValue | unknown;
+  guardianApprovals: Prisma.JsonValue | unknown;
+  guardianApprovalGoal: number | null;
+}): boolean {
+  if (intent.conditionType === 'SUPPORT') {
+    return isSupportConditionSatisfied(intent.supportCount, intent.supportGoal);
+  }
+  if (intent.conditionType === 'DATE') {
+    return Boolean(intent.revealAt && intent.revealAt.getTime() <= Date.now());
+  }
+  if (intent.conditionType === 'GUARDIANS') {
+    const guardianIds = new Set(asStringArray(intent.guardianIds));
+    const approvals = asStringArray(intent.guardianApprovals).filter((id) => guardianIds.has(id));
+    return approvals.length >= (intent.guardianApprovalGoal ?? guardianIds.size);
+  }
+  return false;
+}
+
+function publicGuardianIds(intent: { creatorId: string; guardianIds: Prisma.JsonValue | unknown }, viewerId?: string) {
+  if (intent.creatorId === viewerId) return asStringArray(intent.guardianIds);
+  return undefined;
+}
+
+function publicGuardianApprovals(intent: { creatorId: string; guardianApprovals: Prisma.JsonValue | unknown }, viewerId?: string) {
+  if (intent.creatorId === viewerId) return asStringArray(intent.guardianApprovals);
+  return undefined;
+}
+
+// Actor IDs come from the authenticated server context, never from command fields.
+export async function createIntent(creatorId: string, input: unknown, idempotencyKey?: string) {
+  const command = createIntentSchema.parse(input);
+  const intentId = randomUUID();
+  const revealVersion = 1;
+  const sealed = sealReveal(
+    command.revealContent,
+    config.revealEncryptionKey,
+    revealAssociatedData(intentId, revealVersion),
+  );
+
+  return runIntentMutation(creatorId, 'CREATE_INTENT', idempotencyKey, command, async (transaction) => {
+    if (command.conditionType === 'GUARDIANS') {
+      const guardianIds = command.guardianIds ?? [];
+      const activeGuardians = await transaction.user.findMany({
+        where: { id: { in: guardianIds }, status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (activeGuardians.length !== guardianIds.length) {
+        throw new AppError(400, 'INVALID_GUARDIANS', 'Todos os guardiões precisam ser usuários ativos.');
+      }
+    }
+    const intent = await transaction.intent.create({
+      data: {
+        id: intentId,
+        creatorId,
+        type: 'SUPPORT_REVEAL',
+        conditionType: command.conditionType,
+        status: 'PUBLISHED',
+        supportCount: 0,
+        realizedAt: null,
+        title: command.title,
+        story: command.story,
+        category: command.category,
+        supportGoal: command.supportGoal ?? command.guardianApprovalGoal ?? 1,
+        visibility: command.visibility,
+        revealAt: command.revealAt ?? null,
+        guardianIds: command.guardianIds ?? [],
+        guardianApprovals: [],
+        guardianApprovalGoal: command.guardianApprovalGoal ?? null,
+        revealCiphertext: sealed.ciphertext,
+        revealIv: sealed.iv,
+        revealAuthTag: sealed.authTag,
+        revealVersion,
+      } as Prisma.IntentUncheckedCreateInput,
+      select: publicIntentSelection,
+    });
+
+    await transaction.domainEvent.create({
+      data: {
+        intentId,
+        actorId: creatorId,
+        type: 'INTENT_CREATED',
+        idempotencyKey: `intent-created:${intentId}:v1`,
+        payload: {
+          type: 'SUPPORT_REVEAL',
+          conditionType: command.conditionType,
+          supportGoal: command.supportGoal ?? null,
+          revealAt: command.revealAt?.toISOString() ?? null,
+          guardianCount: command.guardianIds?.length ?? 0,
+          guardianApprovalGoal: command.guardianApprovalGoal ?? null,
+          category: command.category,
+          visibility: command.visibility,
+          revealVersion,
+        },
+      },
+    });
+
+    return intent;
+  });
+}
+
+export async function listUserIntents(creatorId: string, cursor?: string, limit = 20) {
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const items = await prisma.intent.findMany({
+    where: { creatorId },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: safeLimit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    select: publicIntentSelection,
+  });
+
+  const hasMore = items.length > safeLimit;
+  const page = hasMore ? items.slice(0, safeLimit) : items;
+
+  return {
+    items: page,
+    nextCursor: hasMore ? page.at(-1)?.id ?? null : null,
+  };
+}
+
+export async function listGuardianRequests(guardianId: string, cursor?: string, limit = 20) {
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const items = await prisma.intent.findMany({
+    where: {
+      conditionType: 'GUARDIANS',
+      status: { in: ['PUBLISHED', 'REALIZED'] },
+      creatorId: { not: guardianId },
+      creator: { status: 'ACTIVE' },
+      guardianIds: { array_contains: [guardianId] },
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: safeLimit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    select: publicIntentSelection,
+  });
+
+  const hasMore = items.length > safeLimit;
+  const page = hasMore ? items.slice(0, safeLimit) : items;
+
+  return {
+    items: page,
+    nextCursor: hasMore ? page.at(-1)?.id ?? null : null,
+  };
+}
+
+export async function listPublicFeed(cursor?: string, limit = 20) {
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const items = await prisma.intent.findMany({
+    where: {
+      visibility: 'PUBLIC',
+      status: { in: ['PUBLISHED', 'REALIZED'] },
+      creator: { status: 'ACTIVE' },
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: safeLimit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    select: publicIntentSelection,
+  });
+
+  const hasMore = items.length > safeLimit;
+  const page = hasMore ? items.slice(0, safeLimit) : items;
+
+  return {
+    items: page,
+    nextCursor: hasMore ? page.at(-1)?.id ?? null : null,
+  };
+}
+
+export async function listFollowingFeed(viewerId: string, cursor?: string, limit = 20) {
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const items = await prisma.intent.findMany({
+    where: {
+      visibility: 'PUBLIC',
       status: { in: ['PUBLISHED', 'REALIZED'] },
       creator: {
         status: 'ACTIVE',

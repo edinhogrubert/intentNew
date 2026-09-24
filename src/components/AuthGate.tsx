@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowRight, CheckCircle2, LogIn, ShieldCheck, UserPlus } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, LogIn, ShieldCheck, UserPlus } from 'lucide-react';
 import type { UserAccount } from '../types';
 import { auth, createUserWithEmailAndPassword, googleProvider, signInWithEmailAndPassword, signInWithPopup, signOut, updateCurrentUser, updateProfile, type FirebaseUser } from '../utils/firebase';
 import { IntentApiError, syncAuthenticatedUser } from '../services/intentApi';
@@ -8,6 +8,8 @@ interface AuthGateProps {
   onAuthenticated: (user: UserAccount) => void;
   onAuthFlowStart: () => void;
   onAuthFlowEnd: () => void;
+  onBackToLanding?: () => void;
+  initialRegister?: boolean;
 }
 
 function authMessage(error: unknown) {
@@ -38,8 +40,8 @@ class GoogleLoginTimeoutError extends Error {
   }
 }
 
-export function AuthGate({ onAuthenticated, onAuthFlowStart, onAuthFlowEnd }: AuthGateProps) {
-  const [register, setRegister] = useState(false);
+export function AuthGate({ onAuthenticated, onAuthFlowStart, onAuthFlowEnd, onBackToLanding, initialRegister = false }: AuthGateProps) {
+  const [register, setRegister] = useState(initialRegister);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -145,6 +147,16 @@ export function AuthGate({ onAuthenticated, onAuthFlowStart, onAuthFlowEnd }: Au
   }
 
   return <div className="min-h-screen bg-[#f5f6fb] flex items-center justify-center p-4"><div className="w-full max-w-md bg-white border border-[#e4e2de] rounded-3xl shadow-lg p-7 sm:p-9">
+    {onBackToLanding && (
+      <button
+        type="button"
+        onClick={onBackToLanding}
+        className="mb-5 text-xs font-bold text-[#555] hover:text-[#000666] flex items-center gap-1.5 transition-colors cursor-pointer"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        <span>Voltar para apresentação</span>
+      </button>
+    )}
     <div className="w-12 h-12 rounded-2xl bg-[#000666] text-white flex items-center justify-center font-black mb-6">IT</div>
     <p className="text-xs font-bold text-[#000666] flex items-center gap-2"><ShieldCheck className="w-4 h-4"/>Acesso protegido</p><h1 className="text-2xl font-black mt-3">O que você quer fazer acontecer?</h1><p className="text-sm text-[#666] mt-2">Entre para criar, apoiar e acompanhar Intents reais.</p>
     <button onClick={() => void googleLogin()} disabled={googleLoading || formLoading} className="w-full mt-7 py-3.5 rounded-xl border border-[#c6c5d4] text-sm font-bold disabled:opacity-50">{googleLoading ? 'Aguardando o Google...' : 'Continuar com Google'}</button>

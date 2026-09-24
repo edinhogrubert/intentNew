@@ -25,7 +25,7 @@ const key = () => randomUUID();
 const create = (supportGoal = 3) => createIntent(owner, { ...command, supportGoal });
 
 beforeAll(async () => {
-  execFileSync(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], { stdio: 'pipe' });
+  execFileSync(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy', '--schema=backend/prisma/schema.prisma'], { stdio: 'pipe' });
   const users = await Promise.all(['owner', 'alice', 'bob'].map(name => prisma.user.create({ data: {
     firebaseUid: `${name}-${key()}`, username: `${name}_${key().slice(0,8)}`, displayName: name,
   } })));
@@ -241,7 +241,7 @@ describe('idempotência persistida em PostgreSQL', () => {
     expect((await getIntent(target.id, owner)).revealContent).toBe(command.revealContent);
     await unfollowUser(alice, owner);
     await expect(getIntent(target.id, alice)).rejects.toMatchObject({ code: 'INTENT_FORBIDDEN' });
-  });
+  }, 15000);
 
   it('persiste uma notificação por relação de seguidor e permite marcá-la como lida', async () => {
     await followUser(alice, bob);

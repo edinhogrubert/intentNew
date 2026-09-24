@@ -1,0 +1,130 @@
+{
+  "sha": "bc095b4f3612351237c4e3e1bcac4c463f71b947",
+  "node_id": "C_kwDOT4-tFdoAKGJjMDk1YjRmMzYxMjM1MTIzN2M0ZTNlMWJjYWM0YzQ2M2Y3MWI5NDc",
+  "commit": {
+    "author": {
+      "name": "edinhogrubert",
+      "email": "edinho.grubert@gmail.com",
+      "date": "2026-09-21T05:52:41Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2026-09-21T05:52:41Z"
+    },
+    "message": "Merge pull request #47 from edinhogrubert/fix/intent-state-sync\n\nfix: synchronize intent detail state",
+    "tree": {
+      "sha": "5443f8b3466eaae881f263add619129412d724d7",
+      "url": "https://api.github.com/repos/edinhogrubert/Intent/git/trees/5443f8b3466eaae881f263add619129412d724d7"
+    },
+    "url": "https://api.github.com/repos/edinhogrubert/Intent/git/commits/bc095b4f3612351237c4e3e1bcac4c463f71b947",
+    "comment_count": 0,
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqsMYpCRC1aQ7uu5UhlAAA+tYQAD9GmvpOHEYIhDyPFSBGHZ9j\nmQAH/taojy3NXLrMsiAC6G5vUcza3Ak88ENX0s/JMbcPNVg+0gCq3SqAnHIkOwhw\nFSg0BcLq6Szt5BORpPY6axBpAI418pInsz4+sUBa3qBBC2yookkP6HEHH3LwSLP0\n96gVBjb8hWYfRfpZzVqAqaeU2cKPdyaZz46cPkz3AgJF1bLCxHRg2SKm5D4T5EZf\nrejwgNy1Cto9iWniHumotkBzu3uYSlzySmYJ7hF6VS5cftUrFVWZbH4Cu+s/+I9L\nqWvwG8RpuEKFm0m2D+FO8geaeqrj9uj6JoVANfvTL7WdeIs7WI0BKX5ugAYWe/v8\nuB67fFtnk90EIAmVXZwk89hHS1rxSOPcOdU0ftelRpwr6YD8JrZ7V8Qp0aXlWJ8M\niNX1kvgp1UgFUJ76jLxZz6iy5qNXKh4rd7ApsMXv1J/ZJGkXPbnG53iaJ4SpwrxY\nwueqriXDILs4qeG3JP5SeoNWh0D/aD31r2UYyZcAs6+H4QqxTOi93nbBaHjMbIA4\ne0YrKgb47Vv58fhn5osocud9wnTVeEO+EpnBNuu2D3XuRr8eCZoQ149x4f3PnpXa\ni56EnWwlT40/g9mbapcGxveSQ+86h71neIJJS/KL5QPzEjZZuKAg1G0B3TxTUKdY\n0G2yCQ6QQNJbyPJCBpfo\n=bcu6\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 5443f8b3466eaae881f263add619129412d724d7\nparent ea896dead128b1037f2095e8da6a547a6633b9af\nparent ff1cc0969b6704b6a074f06187f07c90c2e3cc43\nauthor edinhogrubert <edinho.grubert@gmail.com> 1789969961 -0300\ncommitter GitHub <noreply@github.com> 1789969961 -0300\n\nMerge pull request #47 from edinhogrubert/fix/intent-state-sync\n\nfix: synchronize intent detail state",
+      "verified_at": "2026-09-21T05:52:42Z"
+    }
+  },
+  "url": "https://api.github.com/repos/edinhogrubert/Intent/commits/bc095b4f3612351237c4e3e1bcac4c463f71b947",
+  "html_url": "https://github.com/edinhogrubert/Intent/commit/bc095b4f3612351237c4e3e1bcac4c463f71b947",
+  "comments_url": "https://api.github.com/repos/edinhogrubert/Intent/commits/bc095b4f3612351237c4e3e1bcac4c463f71b947/comments",
+  "author": {
+    "login": "edinhogrubert",
+    "id": 225504440,
+    "node_id": "U_kgDODXDsuA",
+    "avatar_url": "https://avatars.githubusercontent.com/u/225504440?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/edinhogrubert",
+    "html_url": "https://github.com/edinhogrubert",
+    "followers_url": "https://api.github.com/users/edinhogrubert/followers",
+    "following_url": "https://api.github.com/users/edinhogrubert/following{/other_user}",
+    "gists_url": "https://api.github.com/users/edinhogrubert/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/edinhogrubert/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/edinhogrubert/subscriptions",
+    "organizations_url": "https://api.github.com/users/edinhogrubert/orgs",
+    "repos_url": "https://api.github.com/users/edinhogrubert/repos",
+    "events_url": "https://api.github.com/users/edinhogrubert/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/edinhogrubert/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "web-flow",
+    "id": 19864447,
+    "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+    "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/web-flow",
+    "html_url": "https://github.com/web-flow",
+    "followers_url": "https://api.github.com/users/web-flow/followers",
+    "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+    "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+    "organizations_url": "https://api.github.com/users/web-flow/orgs",
+    "repos_url": "https://api.github.com/users/web-flow/repos",
+    "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/web-flow/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "ea896dead128b1037f2095e8da6a547a6633b9af",
+      "url": "https://api.github.com/repos/edinhogrubert/Intent/commits/ea896dead128b1037f2095e8da6a547a6633b9af",
+      "html_url": "https://github.com/edinhogrubert/Intent/commit/ea896dead128b1037f2095e8da6a547a6633b9af"
+    },
+    {
+      "sha": "ff1cc0969b6704b6a074f06187f07c90c2e3cc43",
+      "url": "https://api.github.com/repos/edinhogrubert/Intent/commits/ff1cc0969b6704b6a074f06187f07c90c2e3cc43",
+      "html_url": "https://github.com/edinhogrubert/Intent/commit/ff1cc0969b6704b6a074f06187f07c90c2e3cc43"
+    }
+  ],
+  "stats": {
+    "total": 74,
+    "additions": 56,
+    "deletions": 18
+  },
+  "files": [
+    {
+      "sha": "b48e15e233786e267410ca053da435d1c825ec70",
+      "filename": "backend/src/services/intent-service.ts",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "blob_url": "https://github.com/edinhogrubert/Intent/blob/bc095b4f3612351237c4e3e1bcac4c463f71b947/backend%2Fsrc%2Fservices%2Fintent-service.ts",
+      "raw_url": "https://github.com/edinhogrubert/Intent/raw/bc095b4f3612351237c4e3e1bcac4c463f71b947/backend%2Fsrc%2Fservices%2Fintent-service.ts",
+      "contents_url": "https://api.github.com/repos/edinhogrubert/Intent/contents/backend%2Fsrc%2Fservices%2Fintent-service.ts?ref=bc095b4f3612351237c4e3e1bcac4c463f71b947",
+      "patch": "@@ -496,6 +496,7 @@ export async function getIntent(intentId: string, viewerId?: string) {\n       viewerHasSupported: Boolean(viewerSupport),\n       reactionCounts,\n       viewerReaction,\n+      viewerWatching: Boolean(viewerWatch),\n     };\n   }\n "
+    },
+    {
+      "sha": "49508c45029af544a6b1b98363599715feeea227",
+      "filename": "backend/tests/social-regression.test.ts",
+      "status": "modified",
+      "additions": 7,
+      "deletions": 0,
+      "changes": 7,
+      "blob_url": "https://github.com/edinhogrubert/Intent/blob/bc095b4f3612351237c4e3e1bcac4c463f71b947/backend%2Ftests%2Fsocial-regression.test.ts",
+      "raw_url": "https://github.com/edinhogrubert/Intent/raw/bc095b4f3612351237c4e3e1bcac4c463f71b947/backend%2Ftests%2Fsocial-regression.test.ts",
+      "contents_url": "https://api.github.com/repos/edinhogrubert/Intent/contents/backend%2Ftests%2Fsocial-regression.test.ts?ref=bc095b4f3612351237c4e3e1bcac4c463f71b947",
+      "patch": "@@ -90,6 +90,13 @@ describe('criação e acesso às Intents', () => {\n     expect(db.follow.findUnique).toHaveBeenCalledWith({ where: { followerId_followingId: { followerId: viewerId, followingId: creatorId } }, select: { id: true } });\n   });\n \n+  it('retorna viewerWatching também para uma Intent publicada', async () => {\n+    db.intentWatch.findUnique.mockResolvedValue({ id: 'watch-link' });\n+    await expect(getIntent(intentId, viewerId)).resolves.toMatchObject({ viewerWatching: true });\n+    db.intentWatch.findUnique.mockResolvedValue(null);\n+    await expect(getIntent(intentId, viewerId)).resolves.toMatchObject({ viewerWatching: false });\n+  });\n+\n   it.each([undefined, viewerId])('bloqueia visitante sem vínculo (%s) na Intent exclusiva', async (viewer) => {\n     db.intent.findUnique.mockResolvedValue({ ...intent, visibility: 'FOLLOWERS' });\n     await expect(getIntent(intentId, viewer)).rejects.toMatchObject({ statusCode: 403, code: 'INTENT_FORBIDDEN' });"
+    },
+    {
+      "sha": "1707f833c3301ccda7a595eaae49dc77fb8e38bd",
+      "filename": "src/components/MvpIntentDetail.tsx",
+      "status": "modified",
+      "additions": 48,
+      "deletions": 18,
+      "changes": 66,
+      "blob_url": "https://github.com/edinhogrubert/Intent/blob/bc095b4f3612351237c4e3e1bcac4c463f71b947/src%2Fcomponents%2FMvpIntentDetail.tsx",
+      "raw_url": "https://github.com/edinhogrubert/Intent/raw/bc095b4f3612351237c4e3e1bcac4c463f71b947/src%2Fcomponents%2FMvpIntentDetail.tsx",
+      "contents_url": "https://api.github.com/repos/edinhogrubert/Intent/contents/src%2Fcomponents%2FMvpIntentDetail.tsx?ref=bc095b4f3612351237c4e3e1bcac4c463f71b947",
+      "patch": "@@ -1,4 +1,4 @@\n-import { useEffect, useState } from 'react';\n+import { useEffect, useRef, useState } from 'react';\n import { AlertCircle, ArrowLeft, Calendar, Check, CheckCircle2, Clock3, Globe, Heart, Info, LoaderCircle, Lock, MessageCircle, Share2, Sparkles, ThumbsUp, Users, Vote } from 'lucide-react';\n import { copyToClipboard, getIntentShareUrl } from '../utils/shareLink';\n import type { UserAccount } from '../types';\n@@ -132,6 +132,8 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta\n   const [historyLoading, setHistoryLoading] = useState(true);\n   const [historyLoadingMore, setHistoryLoadingMore] = useState(false);\n   const [historyError, setHistoryError] = useState('');\n+  const intentRequestRef = useRef(0);\n+  const historyRequestRef = useRef(0);\n \n   async function handleCopyIntentLink() {\n     const ok = await copyToClipboard(getIntentShareUrl(intentId));\n@@ -148,14 +150,17 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta\n   }, [copySuccess]);\n \n   async function load() {\n+    const requestId = ++intentRequestRef.current;\n+    const requestedIntentId = intentId;\n     setLoading(true);\n     setError('');\n     try {\n-      setIntent(await getIntent(intentId));\n+      const nextIntent = await getIntent(requestedIntentId);\n+      if (requestId === intentRequestRef.current && requestedIntentId === intentId) setIntent(nextIntent);\n     } catch (caught) {\n-      setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar esta Intent.');\n+      if (requestId === intentRequestRef.current && requestedIntentId === intentId) setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar esta Intent.');\n     } finally {\n-      setLoading(false);\n+      if (requestId === intentRequestRef.current && requestedIntentId === intentId) setLoading(false);\n     }\n   }\n \n@@ -172,32 +177,53 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta\n     }\n   }\n \n+  async function refreshAfterMutation() {\n+    const requestId = ++intentRequestRef.current;\n+    const requestedIntentId = intentId;\n+    try {\n+      const nextIntent = await getIntent(requestedIntentId);\n+      if (requestId === intentRequestRef.current && requestedIntentId === intentId) setIntent(nextIntent);\n+      return true;\n+    } catch {\n+      if (requestId === intentRequestRef.current && requestedIntentId === intentId) setError('A ação foi registrada, mas a atualização da Intent está pendente. Tente recarregar.');\n+      return false;\n+    }\n+  }\n+\n   async function loadHistory() {\n+    const requestId = ++historyRequestRef.current;\n+    const requestedIntentId = intentId;\n     setHistoryLoading(true);\n     setHistoryError('');\n     try {\n-      const page = await listIntentHistory(intentId);\n-      setHistory(page.items);\n-      setHistoryCursor(page.nextCursor);\n+      const page = await listIntentHistory(requestedIntentId);\n+      if (requestId === historyRequestRef.current && requestedIntentId === intentId) {\n+        setHistory(page.items);\n+        setHistoryCursor(page.nextCursor);\n+      }\n     } catch (caught) {\n-      setHistoryError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar a história desta Intent.');\n+      if (requestId === historyRequestRef.current && requestedIntentId === intentId) setHistoryError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar a história desta Intent.');\n     } finally {\n-      setHistoryLoading(false);\n+      if (requestId === historyRequestRef.current && requestedIntentId === intentId) setHistoryLoading(false);\n     }\n   }\n \n   async function loadMoreHistory() {\n     if (!historyCursor || historyLoadingMore) return;\n+    const requestedIntentId = intentId;\n+    const requestId = historyRequestRef.current;\n     setHistoryLoadingMore(true);\n     setHistoryError('');\n     try {\n-      const page = await listIntentHistory(intentId, historyCursor);\n-      setHistory((current) => [...current, ...page.items]);\n-      setHistoryCursor(page.nextCursor);\n+      const page = await listIntentHistory(requestedIntentId, historyCursor);\n+      if (requestId === historyRequestRef.current && requestedIntentId === intentId) {\n+        setHistory((current) => [...current, ...page.items]);\n+        setHistoryCursor(page.nextCursor);\n+      }\n     } catch (caught) {\n-      setHistoryError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar mais acontecimentos.');\n+      if (requestId === historyRequestRef.current && requestedIntentId === intentId) setHistoryError(caught instanceof IntentApiError ? caught.message : 'Não foi possível carregar mais acontecimentos.');\n     } finally {\n-      setHistoryLoadingMore(false);\n+      if (requestId === historyRequestRef.current && requestedIntentId === intentId) setHistoryLoadingMore(false);\n     }\n   }\n \n@@ -233,8 +259,10 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta\n       const result = intent?.viewerHasSupported\n         ? await removeIntentSupport(intentId)\n         : await supportIntent(intentId);\n-      setNotice(result.realizedNow ? 'Você realizou esta Intent!' : result.supported ? 'Seu apoio foi registrado.' : 'Seu apoio foi retirado.');\n-      setIntent(await getIntent(intentId));\n+      setNotice(result.realizedNow ? 'A realização foi registrada. Atualizando a Intent...' : result.supported ? 'Seu apoio foi registrado.' : 'Seu apoio foi retirado.');\n+      setIntent((current) => current && current.id === intentId ? { ...current, supportCount: result.supportCount, supportGoal: result.supportGoal, viewerHasSupported: result.supported } : current);\n+      await refreshAfterMutation();\n+      await loadHistory();\n     } catch (caught) {\n       setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível registrar o apoio.');\n     } finally {\n@@ -248,8 +276,10 @@ export function MvpIntentDetail({ intentId, currentUser, onBack }: MvpIntentDeta\n     setNotice('');\n     try {\n       const result = await approveGuardianIntent(intentId);\n-      setNotice(result.realizedNow ? 'Sua aprovação realizou esta Intent!' : 'Sua aprovação foi registrada.');\n-      setIntent(await getIntent(intentId));\n+      setNotice(result.realizedNow ? 'A realização foi registrada. Atualizando a Intent...' : 'Sua aprovação foi registrada.');\n+      setIntent((current) => current && current.id === intentId ? { ...current, guardianApprovalCount: result.approvals, viewerHasApprovedAsGuardian: true } : current);\n+      await refreshAfterMutation();\n+      await loadHistory();\n     } catch (caught) {\n       setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível registrar a aprovação.');\n     } finally {"
+    }
+  ]
+}
