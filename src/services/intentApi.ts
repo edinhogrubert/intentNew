@@ -49,7 +49,7 @@ export interface ApiIntent {
   id: string;
   type: 'SUPPORT_REVEAL' | 'CONDITIONAL_REVEAL';
   conditionType: 'SUPPORT' | 'DATE' | 'GUARDIANS';
-  status: 'PUBLISHED' | 'REALIZED';
+  status: 'DRAFT' | 'PUBLISHED' | 'REALIZED' | 'CANCELLED' | 'EXPIRED';
   visibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
   category: IntentCategory;
   title: string;
@@ -61,7 +61,7 @@ export interface ApiIntent {
   guardianApprovals?: string[];
   guardianApprovalGoal: number | null;
   guardianApprovalCount?: number;
-  publishedAt: string;
+  publishedAt: string | null;
   realizedAt: string | null;
   createdAt: string;
   creator: { id: string; username: string; displayName: string; avatarUrl: string | null };

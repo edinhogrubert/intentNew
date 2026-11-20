@@ -12,14 +12,14 @@ import {
   ShieldCheck,
   TrendingUp,
 } from 'lucide-react';
-import type { ApiIntentSupporter } from '../services/intentApi';
+import type { ApiIntent, ApiIntentSupporter } from '../services/intentApi';
 
 interface SupportersSectionProps {
   supporters: ApiIntentSupporter[];
   supportGoal: number;
   supportCount: number;
   conditionType: 'SUPPORT' | 'DATE' | 'GUARDIANS';
-  status: 'PUBLISHED' | 'REALIZED';
+  status: ApiIntent['status'];
   isMine: boolean;
   viewerHasSupported?: boolean;
   supporting: boolean;

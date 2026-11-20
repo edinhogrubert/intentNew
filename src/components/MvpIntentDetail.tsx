@@ -160,7 +160,7 @@ export function MvpIntentDetail({
       const published = await publishIntent(intent.id);
       setIntent(published);
       setNotice('Intent publicada com sucesso! Ela agora está disponível de acordo com a visibilidade configurada.');
-      void loadHistory(true);
+      void loadHistory();
     } catch (caught) {
       setError(caught instanceof IntentApiError ? caught.message : 'Não foi possível publicar a Intent.');
     } finally {
